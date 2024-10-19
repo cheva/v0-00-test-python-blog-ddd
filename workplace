@@ -1,9 +1,0 @@
-<NotepadPlus>
-    <Project name="v0-00-test-python-blog-ddd">
-        <Folder name="app">
-            <File name="app\routes.py" />
-            <File name="app\__init__.py" />
-            <File name="app\microblog.py" />
-        </Folder>
-    </Project>
-</NotepadPlus>
