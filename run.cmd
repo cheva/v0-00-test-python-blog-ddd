@@ -1,2 +1,2 @@
 FLASK_APP=microblog.py
-start flask run
+start flask run --port 88
