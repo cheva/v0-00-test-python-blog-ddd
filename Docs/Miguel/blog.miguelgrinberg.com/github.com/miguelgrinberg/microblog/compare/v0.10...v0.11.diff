@@ -1,0 +1,471 @@
+diff --git a/app/templates/_post.html b/app/templates/_post.html
+index a705b311..29caf6f1 100644
+--- a/app/templates/_post.html
++++ b/app/templates/_post.html
+@@ -1,6 +1,17 @@
+-    <table>
+-        <tr valign="top">
+-            <td><img src="{{ post.author.avatar(36) }}"></td>
+-            <td><a href="{{ url_for('user', username=post.author.username) }}">{{ post.author.username }}</a> says:<br>{{ post.body }}</td>
++    <table class="table table-hover">
++        <tr>
++            <td width="70px">
++                <a href="{{ url_for('user', username=post.author.username) }}">
++                    <img src="{{ post.author.avatar(70) }}" />
++                </a>
++            </td>
++            <td>
++                <a href="{{ url_for('user', username=post.author.username) }}">
++                    {{ post.author.username }}
++                </a>
++                says:
++                <br>
++                {{ post.body }}
++            </td>
+         </tr>
+     </table>
+diff --git a/app/templates/base.html b/app/templates/base.html
+index bd9f6e1d..e08b1c9e 100644
+--- a/app/templates/base.html
++++ b/app/templates/base.html
+@@ -1,34 +1,66 @@
+ <!doctype html>
+-<html>
+-    <head>
+-        {% if title %}
+-        <title>{{ title }} - Microblog</title>
+-        {% else %}
+-        <title>Welcome to Microblog</title>
+-        {% endif %}
+-    </head>
+-    <body>
+-        <div>
+-            Microblog:
+-            <a href="{{ url_for('index') }}">Home</a>
+-            <a href="{{ url_for('explore') }}">Explore</a>
++<html lang="en">
++  <head>
++    <meta charset="utf-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1">
++    {% if title %}
++    <title>{{ title }} - Microblog</title>
++    {% else %}
++    <title>Welcome to Microblog</title>
++    {% endif %}
++    <link
++        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
++        rel="stylesheet"
++        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
++        crossorigin="anonymous">
++  </head>
++  <body>
++    <nav class="navbar navbar-expand-lg bg-body-tertiary">
++      <div class="container">
++        <a class="navbar-brand" href="{{ url_for('index') }}">Microblog</a>
++        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
++          <span class="navbar-toggler-icon"></span>
++        </button>
++        <div class="collapse navbar-collapse" id="navbarSupportedContent">
++          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
++            <li class="nav-item">
++              <a class="nav-link" aria-current="page" href="{{ url_for('index') }}">Home</a>
++            </li>
++            <li class="nav-item">
++              <a class="nav-link" aria-current="page" href="{{ url_for('explore') }}">Explore</a>
++            </li>
++          </ul>
++          <ul class="navbar-nav mb-2 mb-lg-0">
+             {% if current_user.is_anonymous %}
+-            <a href="{{ url_for('login') }}">Login</a>
++            <li class="nav-item">
++              <a class="nav-link" aria-current="page" href="{{ url_for('login') }}">Login</a>
++            </li>
+             {% else %}
+-            <a href="{{ url_for('user', username=current_user.username) }}">Profile</a>
+-            <a href="{{ url_for('logout') }}">Logout</a>
++            <li class="nav-item">
++              <a class="nav-link" aria-current="page" href="{{ url_for('user', username=current_user.username) }}">Profile</a>
++            </li>
++            <li class="nav-item">
++              <a class="nav-link" aria-current="page" href="{{ url_for('logout') }}">Logout</a>
++            </li>
+             {% endif %}
++          </ul>
+         </div>
+-        <hr>
+-        {% with messages = get_flashed_messages() %}
+-        {% if messages %}
+-        <ul>
+-            {% for message in messages %}
+-            <li>{{ message }}</li>
+-            {% endfor %}
+-        </ul>
+-        {% endif %}
+-        {% endwith %}
+-        {% block content %}{% endblock %}
++      </div>
++    </nav>
++    <div class="container mt-3">
++      {% with messages = get_flashed_messages() %}
++      {% if messages %}
++        {% for message in messages %}
++        <div class="alert alert-info" role="alert">{{ message }}</div>
++        {% endfor %}
++      {% endif %}
++      {% endwith %}
++      {% block content %}{% endblock %}
++    </div>
++    <script
++        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
++        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
++        crossorigin="anonymous">
++    </script>
+   </body>
+ </html>
+diff --git a/app/templates/bootstrap_wtf.html b/app/templates/bootstrap_wtf.html
+new file mode 100644
+index 00000000..65c0db6b
+--- /dev/null
++++ b/app/templates/bootstrap_wtf.html
+@@ -0,0 +1,70 @@
++{% macro form_field(field, autofocus) %}
++  {%- if field.type == 'BooleanField' %}
++  <div class="form-check mb-3">
++    {{ field(class='form-check-input') }}
++    {{ field.label(class='form-check-label') }}
++  </div>
++  {%- elif field.type == 'RadioField' %}
++    {{ field.label(class='form-label') }}
++    {%- for item in field %}
++    <div class="form-check{% if loop.last %} mb-3{% endif %}">
++      {{ item(class='form-check-input') }}
++      {{ item.label(class='form-check-label') }}
++    </div>
++    {%- endfor %}
++  {%- elif field.type == 'SelectField' %}
++    {{ field.label(class='form-label') }}
++    {{ field(class='form-select mb-3') }}
++  {%- elif field.type == 'TextAreaField' %}
++  <div class="mb-3">
++    {{ field.label(class='form-label') }}
++    {% if autofocus %}
++      {{ field(class='form-control' + (' is-invalid' if field.errors else ''), autofocus=True) }}
++    {% else %}
++      {{ field(class='form-control' + (' is-invalid' if field.errors else '')) }}
++    {% endif %}
++    {%- for error in field.errors %}
++    <div class="invalid-feedback">{{ error }}</div>
++    {%- endfor %}
++  </div>
++  {%- elif field.type == 'SubmitField' %}
++  {{ field(class='btn btn-primary mb-3') }}
++  {%- else %}
++  <div class="mb-3">
++    {{ field.label(class='form-label') }}
++    {% if autofocus %}
++      {{ field(class='form-control' + (' is-invalid' if field.errors else ''), autofocus=True) }}
++    {% else %}
++      {{ field(class='form-control' + (' is-invalid' if field.errors else '')) }}
++    {% endif %}
++    {%- for error in field.errors %}
++    <div class="invalid-feedback">{{ error }}</div>
++    {%- endfor %}
++  </div>
++  {%- endif %}
++{% endmacro %}
++
++{% macro quick_form(form, action="", method="post", id="", novalidate=False) %}
++<form
++  {%- if action != None %} action="{{ action }}"{% endif -%}
++  {%- if method %} method="{{ method }}"{% endif %}
++  {%- if id %} id="{{ id }}"{% endif -%}
++  {%- if novalidate %} novalidate{% endif -%}>
++  {{ form.hidden_tag() }}
++  {%- for field, errors in form.errors.items() %}
++    {%- if form[field].widget.input_type == 'hidden' %}
++      {%- for error in errors %}
++      <div class="invalid-feedback">{{ error }}</div>
++      {%- endfor %}
++    {%- endif %}
++  {%- endfor %}
++
++  {% set ns = namespace(first_field=true) %}
++  {%- for field in form %}
++    {% if field.widget.input_type != 'hidden' -%}
++      {{ form_field(field, ns.first_field) }}
++      {% set ns.first_field = false %}
++    {%- endif %}
++  {%- endfor %}  
++</form>
++{% endmacro %}
+diff --git a/app/templates/edit_profile.html b/app/templates/edit_profile.html
+index e2471acb..ef7ca753 100644
+--- a/app/templates/edit_profile.html
++++ b/app/templates/edit_profile.html
+@@ -1,23 +1,7 @@
+ {% extends "base.html" %}
++{% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+     <h1>Edit Profile</h1>
+-    <form action="" method="post">
+-        {{ form.hidden_tag() }}
+-        <p>
+-            {{ form.username.label }}<br>
+-            {{ form.username(size=32) }}<br>
+-            {% for error in form.username.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>
+-            {{ form.about_me.label }}<br>
+-            {{ form.about_me(cols=50, rows=4) }}<br>
+-            {% for error in form.about_me.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>{{ form.submit() }}</p>
+-    </form>
++    {{ wtf.quick_form(form) }}
+ {% endblock %}
+diff --git a/app/templates/index.html b/app/templates/index.html
+index eb3f876a..b5b560ee 100644
+--- a/app/templates/index.html
++++ b/app/templates/index.html
+@@ -1,27 +1,26 @@
+ {% extends "base.html" %}
++{% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+     <h1>Hi, {{ current_user.username }}!</h1>
+     {% if form %}
+-    <form action="" method="post">
+-        {{ form.hidden_tag() }}
+-        <p>
+-            {{ form.post.label }}<br>
+-            {{ form.post(cols=32, rows=4) }}<br>
+-            {% for error in form.post.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>{{ form.submit() }}</p>
+-    </form>
++    {{ wtf.quick_form(form) }}
+     {% endif %}
+     {% for post in posts %}
+         {% include '_post.html' %}
+     {% endfor %}
+-    {% if prev_url %}
+-    <a href="{{ prev_url }}">Newer posts</a>
+-    {% endif %}
+-    {% if next_url %}
+-    <a href="{{ next_url }}">Older posts</a>
+-    {% endif %}
++    <nav aria-label="Post navigation">
++        <ul class="pagination">
++            <li class="page-item{% if not prev_url %} disabled{% endif %}">
++                <a class="page-link" href="{{ prev_url }}">
++                    <span aria-hidden="true">&larr;</span> Newer posts
++                </a>
++            </li>
++            <li class="page-item{% if not next_url %} disabled{% endif %}">
++                <a class="page-link" href="{{ next_url }}">
++                    Older posts <span aria-hidden="true">&rarr;</span>
++                </a>
++            </li>
++        </ul>
++    </nav>
+ {% endblock %}
+diff --git a/app/templates/login.html b/app/templates/login.html
+index 2a54187c..63439b55 100644
+--- a/app/templates/login.html
++++ b/app/templates/login.html
+@@ -1,26 +1,9 @@
+-{% extends "base.html" %}
++{% extends 'base.html' %}
++{% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+     <h1>Sign In</h1>
+-    <form action="" method="post" novalidate>
+-        {{ form.hidden_tag() }}
+-        <p>
+-            {{ form.username.label }}<br>
+-            {{ form.username(size=32) }}<br>
+-            {% for error in form.username.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>
+-            {{ form.password.label }}<br>
+-            {{ form.password(size=32) }}<br>
+-            {% for error in form.password.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+-        <p>{{ form.submit() }}</p>
+-    </form>
++    {{ wtf.quick_form(form) }}
+     <p>New User? <a href="{{ url_for('register') }}">Click to Register!</a></p>
+     <p>
+         Forgot Your Password?
+diff --git a/app/templates/register.html b/app/templates/register.html
+index 37b7ac58..26db8647 100644
+--- a/app/templates/register.html
++++ b/app/templates/register.html
+@@ -1,37 +1,7 @@
+ {% extends "base.html" %}
++{% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+     <h1>Register</h1>
+-    <form action="" method="post">
+-        {{ form.hidden_tag() }}
+-        <p>
+-            {{ form.username.label }}<br>
+-            {{ form.username(size=32) }}<br>
+-            {% for error in form.username.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>
+-            {{ form.email.label }}<br>
+-            {{ form.email(size=64) }}<br>
+-            {% for error in form.email.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>
+-            {{ form.password.label }}<br>
+-            {{ form.password(size=32) }}<br>
+-            {% for error in form.password.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>
+-            {{ form.password2.label }}<br>
+-            {{ form.password2(size=32) }}<br>
+-            {% for error in form.password2.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>{{ form.submit() }}</p>
+-    </form>
++    {{ wtf.quick_form(form) }}
+ {% endblock %}
+diff --git a/app/templates/reset_password.html b/app/templates/reset_password.html
+index 92f0c8ef..bd5ccc24 100644
+--- a/app/templates/reset_password.html
++++ b/app/templates/reset_password.html
+@@ -1,23 +1,7 @@
+ {% extends "base.html" %}
++{% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+     <h1>Reset Your Password</h1>
+-    <form action="" method="post">
+-        {{ form.hidden_tag() }}
+-        <p>
+-            {{ form.password.label }}<br>
+-            {{ form.password(size=32) }}<br>
+-            {% for error in form.password.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>
+-            {{ form.password2.label }}<br>
+-            {{ form.password2(size=32) }}<br>
+-            {% for error in form.password2.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>{{ form.submit() }}</p>
+-    </form>
++    {{ wtf.quick_form(form) }}
+ {% endblock %}
+diff --git a/app/templates/reset_password_request.html b/app/templates/reset_password_request.html
+index 18bb0ae5..d60b1b53 100644
+--- a/app/templates/reset_password_request.html
++++ b/app/templates/reset_password_request.html
+@@ -1,16 +1,7 @@
+ {% extends "base.html" %}
++{% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+     <h1>Reset Password</h1>
+-    <form action="" method="post">
+-        {{ form.hidden_tag() }}
+-        <p>
+-            {{ form.email.label }}<br>
+-            {{ form.email(size=64) }}<br>
+-            {% for error in form.email.errors %}
+-            <span style="color: red;">[{{ error }}]</span>
+-            {% endfor %}
+-        </p>
+-        <p>{{ form.submit() }}</p>
+-    </form>
++    {{ wtf.quick_form(form) }}
+ {% endblock %}
+diff --git a/app/templates/user.html b/app/templates/user.html
+index 80e46ab1..5482076a 100644
+--- a/app/templates/user.html
++++ b/app/templates/user.html
+@@ -1,9 +1,9 @@
+ {% extends "base.html" %}
+ 
+ {% block content %}
+-    <table>
+-        <tr valign="top">
+-            <td><img src="{{ user.avatar(128) }}"></td>
++    <table class="table table-hover">
++        <tr>
++            <td width="256px"><img src="{{ user.avatar(256) }}"></td>
+             <td>
+                 <h1>User: {{ user.username }}</h1>
+                 {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+@@ -15,28 +15,35 @@ <h1>User: {{ user.username }}</h1>
+                 <p>
+                     <form action="{{ url_for('follow', username=user.username) }}" method="post">
+                         {{ form.hidden_tag() }}
+-                        {{ form.submit(value='Follow') }}
++                        {{ form.submit(value='Follow', class_='btn btn-primary') }}
+                     </form>
+                 </p>
+                 {% else %}
+                 <p>
+                     <form action="{{ url_for('unfollow', username=user.username) }}" method="post">
+                         {{ form.hidden_tag() }}
+-                        {{ form.submit(value='Unfollow') }}
++                        {{ form.submit(value='Unfollow', class_='btn btn-primary') }}
+                     </form>
+                 </p>
+                 {% endif %}
+             </td>
+         </tr>
+     </table>
+-    <hr>
+     {% for post in posts %}
+         {% include '_post.html' %}
+     {% endfor %}
+-    {% if prev_url %}
+-    <a href="{{ prev_url }}">Newer posts</a>
+-    {% endif %}
+-    {% if next_url %}
+-    <a href="{{ next_url }}">Older posts</a>
+-    {% endif %}
++    <nav aria-label="Post navigation">
++        <ul class="pagination">
++            <li class="page-item{% if not prev_url %} disabled{% endif %}">
++                <a class="page-link" href="{{ prev_url }}">
++                    <span aria-hidden="true">&larr;</span> Newer posts
++                </a>
++            </li>
++            <li class="page-item{% if not next_url %} disabled{% endif %}">
++                <a class="page-link" href="{{ next_url }}">
++                    Older posts <span aria-hidden="true">&rarr;</span>
++                </a>
++            </li>
++        </ul>
++    </nav>
+ {% endblock %}

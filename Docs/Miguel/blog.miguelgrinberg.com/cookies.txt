@@ -4,5 +4,5 @@ github.com	TRUE	/	FALSE	1999999999	_gh_sess	olDEejdBP%2BH%2FZkcb1drW72wg38Z021pe
 github.com	TRUE	/	FALSE	1999999999	_octo	GH1.1.227031616.1729578368
 github.com	TRUE	/	FALSE	1999999999	logged_in	no
 github.com	TRUE	/	FALSE	1999999999	SameSite	Lax
-blog.miguelgrinberg.com	TRUE	/	FALSE	1999999999	session	eyJfZnJlc2giOmZhbHNlLCJjc3JmX3Rva2VuIjoiNDJiNjljNmU1NzJiMWQxNWVkZGQ5YmNiMDdmYWVhYWI1ODdiZTk4OSJ9.Zxdnyw.Ba3Gf4hv0j0PpSll7f1Y0G954JM
+blog.miguelgrinberg.com	TRUE	/	FALSE	1999999999	session	eyJfZnJlc2giOmZhbHNlLCJjc3JmX3Rva2VuIjoiNDJiNjljNmU1NzJiMWQxNWVkZGQ5YmNiMDdmYWVhYWI1ODdiZTk4OSJ9.Zxd0lg.4nSJEXfkvvn6QcD_S6IyhVabD1c
 

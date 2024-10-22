@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure-2018 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:11 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure-2018 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:36:50 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -206,7 +206,7 @@
 </ul>
 <p>Microblog is already an application of a decent size, so I thought this is a good opportunity to discuss how a Flask application can grow without becoming messy or too difficult to manage. Flask is a framework that is designed to give you the option to organize your project in any way you want, and as part of that philosophy, it makes it possible to change or adapt the structure of the application as it becomes larger, or as your needs or level of experience change.</p>
 <p>In this chapter I'm going to discuss some patterns that apply to large applications, and to demonstrate them I'm going to make some changes to the way my Microblog project is structured, with the goal of making the code more maintainable and better organized. But of course, in true Flask spirit, I encourage you to take these changes just as a recommendation when trying to decide on a way to organize your own projects.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.15">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.15.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.14...v0.15">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.15">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.15.zip">Zip</a>, <a href="../../github.com/miguelgrinberg/microblog/compare/v0.14...v0.html">Diff</a>.</em></p>
 <h2>Current Limitations</h2>
 <p>There are two basic problems with the application in its current state. If you look at how the application is structured, you are going to notice that there are a few different subsystems that can be identified, but the code that supports them is all intermixed, without any clear boundaries. Let's review what those subsystems are:</p>
 <ul>
@@ -1008,7 +1008,7 @@ from app import current_app</p>
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdlqA.j8ILcaGNrUFA5ZCSrezw7LWjWs8">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdyBQ.SlwMnz6iZwuGGpt6E8JebObYeeY">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -1071,15 +1071,27 @@ from app import current_app</p>
 <div class="card">
   
   
-  <div class="card-header">Flask Web Development, 2nd Edition</div>
-  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
-    <img src="../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  
+  
+  <div class="card-header">
+    <div class="row">
+      <div class="col">The Flask Mega-Tutorial</div>
+      <div class="col text-end">
+        <a href="announcing-the-flask-mega-tutorial-2024-edition.html">
+          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <a class="card-book-cover" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">
+    <img src="../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
   </a>
   <div class="card-body">
-    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+    <p class="card-text">If you would you like to support my work on my <a href="the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
   </div>
   <div class="card-body">
-    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
   </div>
 
   
@@ -1469,5 +1481,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure-2018 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:12 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure-2018 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:36:50 GMT -->
 </html>

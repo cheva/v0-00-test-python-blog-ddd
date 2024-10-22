@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxi-user-notifications-2018/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:50:20 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxi-user-notifications-2018/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:45:12 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -210,7 +210,7 @@
 </ul>
 <p>In this chapter I want to continue working on improving the user experience of my Microblog application. One aspect that applies to a lot of applications is the presentation of alerts or notifications to the user. Social applications show these notifications to let you know you've got new mentions or private messages, usually by showing a little badge with a number in the top navigation bar. While this is the most obvious usage, the notification pattern can be applied to a lot of other types of applications to inform the user that something requires their attention.</p>
 <p>But to show you the techniques involved in building user notifications, I needed to extend Microblog with a feature that can benefit from them, so in the first part of this chapter I'm going to build a user messaging system that allows any user to send a private message to another user. This is actually simpler than it sounds, and it will be a good refresher on core Flask practices and a reminder of how lean, efficient and fun programming with Flask can be. And once the messaging system is in place, I'm going to discuss some options to implement a notification badge that shows a count of unread messages.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.21">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.21.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.20...v0.21">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.21">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.21.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.20...v0.html">Diff</a>.</em></p>
 <h2>Private Messages</h2>
 <p>The private messaging feature that I'm going to implement is going to be very simple. When you visit the profile page of a user, there will be a link to send that user a private message. The link will take you to a new page in which a web form takes the message. To read messages sent to you, the navigation bar at the top of the page will have a new "Messages" link, that will take you to a page that is similar in structure to the index or explore pages, but instead of showing blog posts it will show messages other users sent you.</p>
 <p>The following sections describe the steps I took to implement this feature.</p>
@@ -743,7 +743,7 @@ My question is, what was the purpose of setting the default value in the route i
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdm8g.-1LiAfl-SKDpmSYDVpw9e9SBPeI">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdzmA.cMitsk0J21Dh0hGsGAb_GZuf4og">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -806,27 +806,15 @@ My question is, what was the purpose of setting the default value in the route i
 <div class="card">
   
   
-  
-  
-  <div class="card-header">
-    <div class="row">
-      <div class="col">The Flask Mega-Tutorial</div>
-      <div class="col text-end">
-        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
-          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
-        </a>
-      </div>
-    </div>
-  </div>
-  <a class="card-book-cover" href="https://amzn.to/3MQffrm">
-    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
   </a>
   <div class="card-body">
-    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
   </div>
   <div class="card-body">
-    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
-    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
   </div>
 
   
@@ -1216,5 +1204,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxi-user-notifications-2018/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:50:20 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxi-user-notifications-2018/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:45:12 GMT -->
 </html>

@@ -1,0 +1,54 @@
+From 23b3fc85d407f8c68c95efd8a29dd053467708c5 Mon Sep 17 00:00:00 2001
+From: Miguel Grinberg <miguel.grinberg@gmail.com>
+Date: Mon, 4 Sep 2017 23:23:07 -0700
+Subject: [PATCH] Chapter 1: Hello, World! (v0.1)
+
+---
+ .flaskenv       | 1 +
+ app/__init__.py | 5 +++++
+ app/routes.py   | 7 +++++++
+ microblog.py    | 1 +
+ 4 files changed, 14 insertions(+)
+ create mode 100644 .flaskenv
+ create mode 100644 app/__init__.py
+ create mode 100644 app/routes.py
+ create mode 100644 microblog.py
+
+diff --git a/.flaskenv b/.flaskenv
+new file mode 100644
+index 00000000..6006c26d
+--- /dev/null
++++ b/.flaskenv
+@@ -0,0 +1 @@
++FLASK_APP=microblog.py
+diff --git a/app/__init__.py b/app/__init__.py
+new file mode 100644
+index 00000000..96c8ef5d
+--- /dev/null
++++ b/app/__init__.py
+@@ -0,0 +1,5 @@
++from flask import Flask
++
++app = Flask(__name__)
++
++from app import routes
+diff --git a/app/routes.py b/app/routes.py
+new file mode 100644
+index 00000000..69701e32
+--- /dev/null
++++ b/app/routes.py
+@@ -0,0 +1,7 @@
++from app import app
++
++
++@app.route('/')
++@app.route('/index')
++def index():
++    return "Hello, World!"
+diff --git a/microblog.py b/microblog.py
+new file mode 100644
+index 00000000..d099b92d
+--- /dev/null
++++ b/microblog.py
+@@ -0,0 +1 @@
++from app import app

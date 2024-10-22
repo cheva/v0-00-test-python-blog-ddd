@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search-2018/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:50:17 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search-2018/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:45:09 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -209,7 +209,7 @@
 <li><a href="../../the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis-2018.html">Chapter 23: Application Programming Interfaces (APIs)</a></li>
 </ul>
 <p>The goal of this chapter is to implement a search feature for Microblog, so that users can find interesting posts using natural language. For many types of web sites, it is possible to just let Google, Bing, etc. index all the content and provide search results through their search APIs. This works well for sites that have mostly static pages, like a forum. But in my application the basic unit of content is a user post, which is a small portion of the entire web page. The type of search results that I want are for these individual blog posts and not entire pages. For example, if I search for the word "dog" I want to see blog posts from any users that include that word. Obviously a page that shows all blog posts that have the word "dog" (or any other possible search term) does not really exist as a page that the big search engines can find and index, so clearly I have no choice other than to roll my own search feature.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.16">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.16.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.15...v0.16">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.16">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.16.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.15...v0.html">Diff</a>.</em></p>
 <h2>Introduction to Full-Text Search Engines</h2>
 <p>Support for full-text search is not standardized like relational databases are. There are several open-source full-text engines: <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a>, <a href="http://lucene.apache.org/solr/">Apache Solr</a>, <a href="http://whoosh.readthedocs.io/">Whoosh</a>, <a href="https://xapian.org/">Xapian</a>, <a href="http://sphinxsearch.com/">Sphinx</a>, etc. As if this isn't enough choice, there are several databases that also provide searching capabilities that are comparable to dedicated search engines like the ones I enumerated above. <a href="https://www.sqlite.org/">SQLite</a>, <a href="https://www.mysql.com/">MySQL</a> and <a href="https://www.postgresql.org/">PostgreSQL</a> all offer some support for searching text, and NoSQL databases such as <a href="https://www.mongodb.com/">MongoDB</a> and <a href="http://couchdb.apache.org/">CouchDB</a> do too.</p>
 <p>If you are wondering which of these can work within a Flask application, the answer is all of them! That is one of the strengths of Flask, it does its job while not being opinionated. So what's the best choice?</p>
@@ -1239,7 +1239,7 @@ Chris</p>
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdm7A.YBo-PPwyZo_2F0QFjfBJU8kMDcY">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdzkg.RDJNGzUrz2Isw5MN2Zl9ND8azIc">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -1302,15 +1302,27 @@ Chris</p>
 <div class="card">
   
   
-  <div class="card-header">Flask Web Development, 2nd Edition</div>
-  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
-    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  
+  
+  <div class="card-header">
+    <div class="row">
+      <div class="col">The Flask Mega-Tutorial</div>
+      <div class="col text-end">
+        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
+          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <a class="card-book-cover" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">
+    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
   </a>
   <div class="card-body">
-    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
   </div>
   <div class="card-body">
-    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
   </div>
 
   
@@ -1700,5 +1712,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search-2018/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:50:17 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search-2018/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:45:09 GMT -->
 </html>

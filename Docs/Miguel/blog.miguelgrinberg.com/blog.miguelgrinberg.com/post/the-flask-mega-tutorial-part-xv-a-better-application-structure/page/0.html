@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:49 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:37:37 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -207,7 +207,7 @@
 </ul>
 <p>Microblog is already an application of a decent size, so I thought this is a good opportunity to discuss how a Flask application can grow without becoming messy or too difficult to manage. Flask is a framework that is designed to give you the option to organize your project in any way you want, and as part of that philosophy, it makes it possible to change or adapt the structure of the application as it becomes larger, or as your needs or level of experience change.</p>
 <p>In this chapter I'm going to discuss some patterns that apply to large applications, and to demonstrate them I'm going to make some changes to the way my Microblog project is structured, with the goal of making the code more maintainable and better organized. But of course, in true Flask spirit, I encourage you to take these changes just as a recommendation when trying to decide on a way to organize your own projects.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.15">Browse</a>, <a href="https://codeload.github.com/miguelgrinberg/microblog/zip/refs/tags/v0.15">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.14...v0.15">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.15">Browse</a>, <a href="../../../../codeload.github.com/miguelgrinberg/microblog/zip/refs/tags/microblog-0.15.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.14...v0.html">Diff</a>.</em></p>
 <h2>Current Limitations</h2>
 <p>There are two basic problems with the application in its current state. If you look at how the application is structured, you are going to notice that there are a few different subsystems that can be identified, but the code that supports them is all intermixed, without any clear boundaries. Let's review what those subsystems are:</p>
 <ul>
@@ -220,7 +220,7 @@
 <p>There is a second problem that is not that evident. The Flask application instance is created as a global variable in <em>app/__init__.py</em>, and then imported by a lot of application modules. While this in itself is not a problem, having the application as a global variable can complicate certain scenarios, in particular those related to testing. Imagine you want to test this application under different configurations. Because the application is defined as a global variable, there is really no way to instantiate two applications that use different configuration variables. Another situation that is not ideal is that all the tests use the same application, so a test could be making changes to the application that affect another test that runs later. Ideally you want all tests to run on a pristine application instance.</p>
 <p>You can actually see in the <em>tests.py</em> module that I'm resorting to the trick of overwriting the <code>DATABASE_URL</code> environment variable before the application is imported, so that the tests use an in-memory database instead of the default SQLite database based on disk.</p>
 <p>A better solution would be to not use a global variable for the application, and instead use an <em>application factory</em> function to create the function at runtime. This would be a function that accepts a configuration object as an argument, and returns a Flask application instance, configured with those settings. If I could modify the application to work with an application factory function, then writing tests that require special configuration would become easy, because each test can create its own application.</p>
-<p>In this chapter I'm going to refactor the application to introduce blueprints for the three subsystems I have identified above, and an application factory function. Showing you the detailed list of changes is going to be impractical, because there are little changes in pretty much every file that is part of the application, so I'm going to discuss the steps that I took to do the refactoring, and you can then <a href="https://codeload.github.com/miguelgrinberg/microblog/zip/refs/tags/v0.15">download</a> the application with these changes made.</p>
+<p>In this chapter I'm going to refactor the application to introduce blueprints for the three subsystems I have identified above, and an application factory function. Showing you the detailed list of changes is going to be impractical, because there are little changes in pretty much every file that is part of the application, so I'm going to discuss the steps that I took to do the refactoring, and you can then <a href="../../../../codeload.github.com/miguelgrinberg/microblog/zip/refs/tags/microblog-0.15.zip">download</a> the application with these changes made.</p>
 <h2>Blueprints</h2>
 <p>In Flask, a blueprint is a logical structure that represents a subset of the application. A blueprint can include elements such as routes, view functions, forms, templates and static files. If you write your blueprint in a separate Python package, then you have a component that encapsulates the elements related to specific feature of the application.</p>
 <p>The contents of a blueprint are initially in a dormant state. To activate these elements, the blueprint needs to be registered with the application. During the registration, all the elements that were added to the blueprint are passed on to the application. So you can think of a blueprint as a temporary storage for application functionality that helps in organizing your code.</p>
@@ -859,7 +859,7 @@ with app.app_context(). See the documentation for more information.
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdlzw.1eKUHRHuI4raZo-qxGIq0zZcLWY">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdyHA.Oefry_I6wkJxOWqwf1NFKXmIFnI">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -922,27 +922,15 @@ with app.app_context(). See the documentation for more information.
 <div class="card">
   
   
-  
-  
-  <div class="card-header">
-    <div class="row">
-      <div class="col">The Flask Mega-Tutorial</div>
-      <div class="col text-end">
-        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
-          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
-        </a>
-      </div>
-    </div>
-  </div>
-  <a class="card-book-cover" href="https://amzn.to/3MQffrm">
-    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
   </a>
   <div class="card-body">
-    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
   </div>
   <div class="card-body">
-    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
-    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
   </div>
 
   
@@ -1332,5 +1320,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:49 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xv-a-better-application-structure/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:37:37 GMT -->
 </html>

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xix-deployment-on-docker-containers-2018 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:14 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xix-deployment-on-docker-containers-2018 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:36:53 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -211,7 +211,7 @@
 <p>In <a href="the-flask-mega-tutorial-part-xvii-deployment-on-linux-2018.html">Chapter 17</a> you learned about traditional deployments, in which you have to take care of every little aspect of the server configuration. Then in <a href="the-flask-mega-tutorial-part-xviii-deployment-on-heroku-2018.html">Chapter 18</a> I took you to the other extreme when I introduced you to Heroku, a service that takes complete control of the configuration and deployment tasks, allowing you to fully concentrate on your application. In this chapter you are going to learn about a third application deployment strategy based on <em>containers</em>, more particularly on the <a href="https://www.docker.com/">Docker</a> container platform. This third option sits somewhere in between the other two in terms of the amount of deployment work needed on your part.</p>
 <p>Containers are built on a lightweight virtualization technology that allows an application, along with its dependencies and configuration to run in complete isolation, but without the need to use a full blown virtualization solution such as virtual machines, which need a lot more resources and can sometimes have a significant performance degradation in comparison to the host. A system configured as a container host can execute many containers, all of them sharing the host's kernel and direct access to the host's hardware. This is in contrast to virtual machines, which have to emulate a complete system, including CPU, disk, other hardware, kernel, etc.</p>
 <p>In spite of having to share the kernel, the level of isolation in a container is pretty high. A container has its own file system, and can be based on an operating system that is different than the one used by the container host. For example, you can run containers based on Ubuntu Linux on a Fedora host, or vice versa. While containers are a technology that is native to the Linux operating system, thanks to virtualization it is also possible to run Linux containers on Windows and Mac OS X hosts. This allows you to test your deployments on your development system, and also incorporate containers in your development workflow if you wish to do so.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.19">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.19.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.18...v0.19">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.19">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.19.zip">Zip</a>, <a href="../../github.com/miguelgrinberg/microblog/compare/v0.18...v0.html">Diff</a>.</em></p>
 <h2>Installing Docker</h2>
 <p>While Docker isn't the only container platform, it is by far the most popular, so that's going to be my choice. </p>
 <p>To work with Docker, you first have to install it on your system. There are installers for Windows, Mac OS X and several Linux distributions available at the <a href="https://docs.docker.com/get-docker/">Docker website</a>. If you are working on a Microsoft Windows system, it is important to note that Docker requires Hyper-V. The installer will enable this for you if necessary, but keep in mind that enabling Hyper-V prevents other virtualization technologies such as VirtualBox from working.</p>
@@ -984,7 +984,7 @@ The command '/bin/sh -c venv/bin/pip install gunicorn pymysql' returned a non-ze
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdlqQ.sONWf5RLB6dNkGiIJn7jum6ndEo">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdyBg.yDHf8R9t4rj-8yhlvY9UGsDRJcI">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -1059,7 +1059,7 @@ The command '/bin/sh -c venv/bin/pip install gunicorn pymysql' returned a non-ze
       </div>
     </div>
   </div>
-  <a class="card-book-cover" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">
+  <a class="card-book-cover" href="https://amzn.to/3MQffrm">
     <img src="../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
   </a>
   <div class="card-body">
@@ -1457,5 +1457,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xix-deployment-on-docker-containers-2018 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:14 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xix-deployment-on-docker-containers-2018 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:36:54 GMT -->
 </html>

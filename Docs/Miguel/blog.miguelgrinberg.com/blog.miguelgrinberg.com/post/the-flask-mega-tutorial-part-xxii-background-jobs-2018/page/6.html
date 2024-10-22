@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxii-background-jobs-2018/page/6 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:32 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxii-background-jobs-2018/page/6 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:46:16 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -210,7 +210,7 @@
 </ul>
 <p>This chapter is dedicated to the implementation of long or complex processes that need to run as part of the application. These processes cannot be executed synchronously in the context of a request because that would block the response to the client for the duration of the task. I briefly touched on this topic in <a href="../../the-flask-mega-tutorial-part-x-email-support-2018.html">Chapter 10</a>, when I moved the sending of emails to background threads to prevent the client from having to wait during those 3-4 seconds that it takes to send an email. While using threads for emails is acceptable, this solution does not scale well when the processes in question are much longer. The accepted practice is to offload long tasks to a worker process, or more likely to a pool of them.</p>
 <p>To justify the need for having long running tasks, I'm going to introduce an export feature to Microblog through which users will be able to request a data file with all their blog posts. When a user makes use of this option, the application is going to start an export task that will generate a JSON file with all the user's posts, and then send it to the user by email. All this activity is going to happen in a worker process, and while it happens the user will see a notification showing the percentage of completion.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.22">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.22.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.21...v0.22">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.22">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.22.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.21...v0.html">Diff</a>.</em></p>
 <h2>Introduction to Task Queues</h2>
 <p>Task queues provide a convenient solution for the application to request the execution of a task by a <em>worker process</em>. Worker processes run independently of the application and can even be located on a different system. The communication between the application and the workers is done through a <em>message queue</em>. The application submits a job, and then monitors its progress by interacting with the queue. The following diagram shows a typical implementation:</p>
 <p><img alt="Task Queue Diagram" src="../../../static/images/mega-tutorial/ch22-queue-diagram.png" /></p>
@@ -1358,7 +1358,7 @@ Michael</p>
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdniw.zrSwW6jeAO6j1ylTQ0aqBNTJPLY">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxd0YQ.6MZDI0rrf2kIs0-sVo5lc84-GkM">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -1819,5 +1819,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxii-background-jobs-2018/page/6 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:33 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxii-background-jobs-2018/page/6 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:46:16 GMT -->
 </html>

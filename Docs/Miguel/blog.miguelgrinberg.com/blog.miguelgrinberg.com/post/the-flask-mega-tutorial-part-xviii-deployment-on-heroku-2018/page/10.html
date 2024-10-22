@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xviii-deployment-on-heroku-2018/page/10 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:50:18 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xviii-deployment-on-heroku-2018/page/10 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:45:10 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -213,7 +213,7 @@
 <p>Many cloud hosting providers offer a managed platform on which applications can run. All you need to provide to have your application deployed on these platforms is the actual application, because the hardware, operating system, scripting language interpreters, database, etc. are all managed by the service. This type of service is called <a href="https://en.wikipedia.org/wiki/Platform_as_a_service">Platform as a Service</a>, or PaaS.</p>
 <p>Sounds too good to be true, right?</p>
 <p>I will look at deploying Microblog to <a href="http://heroku.com/">Heroku</a>, a popular cloud hosting service that is very friendly for Python applications. I picked Heroku not only because it is popular, but also because it has a free service tier that will allow you to follow me and do a complete deployment without spending any money.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.18">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.18.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.17...v0.18">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.18">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.18.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.17...v0.html">Diff</a>.</em></p>
 <h2>Hosting on Heroku</h2>
 <p>Heroku was one of the first platform as a service providers. It started as a hosting option for Ruby based applications, but then grew to support many other languages like Java, Node.js and of course Python.</p>
 <p>Deploying a web application to Heroku is done through the <code>git</code> version control tool, so you must have your application in a git repository. Heroku looks for a file called <em>Procfile</em> in the application's root directory for instructions on how to start the application. For Python projects, Heroku also expects a <em>requirements.txt</em> file that lists all the module dependencies that need to be installed. After the application is uploaded to Heroku's servers through a git push operation, you are essentially done and just need to wait a few seconds until the application is online. It's really that simple.</p>
@@ -588,7 +588,7 @@ To https://git.heroku.com/flask-microblog.git
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdm7g.2sVbVgWh0kQnz18TdAKqq01T-EA">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdzlQ.XOo-7qxNJm07tRACTBbaINik3e4">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -651,15 +651,27 @@ To https://git.heroku.com/flask-microblog.git
 <div class="card">
   
   
-  <div class="card-header">Flask Web Development, 2nd Edition</div>
-  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
-    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  
+  
+  <div class="card-header">
+    <div class="row">
+      <div class="col">The Flask Mega-Tutorial</div>
+      <div class="col text-end">
+        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
+          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <a class="card-book-cover" href="https://amzn.to/3MQffrm">
+    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
   </a>
   <div class="card-body">
-    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
   </div>
   <div class="card-body">
-    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
   </div>
 
   
@@ -1049,5 +1061,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xviii-deployment-on-heroku-2018/page/10 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:50:18 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xviii-deployment-on-heroku-2018/page/10 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:45:10 GMT -->
 </html>

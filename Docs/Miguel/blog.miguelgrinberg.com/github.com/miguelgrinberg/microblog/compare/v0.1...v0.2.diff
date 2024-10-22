@@ -1,0 +1,60 @@
+diff --git a/app/routes.py b/app/routes.py
+index 69701e32..d486cc3d 100644
+--- a/app/routes.py
++++ b/app/routes.py
+@@ -1,7 +1,19 @@
++from flask import render_template
+ from app import app
+ 
+ 
+ @app.route('/')
+ @app.route('/index')
+ def index():
+-    return "Hello, World!"
++    user = {'username': 'Miguel'}
++    posts = [
++        {
++            'author': {'username': 'John'},
++            'body': 'Beautiful day in Portland!'
++        },
++        {
++            'author': {'username': 'Susan'},
++            'body': 'The Avengers movie was so cool!'
++        }
++    ]
++    return render_template('index.html', title='Home', user=user, posts=posts)
+diff --git a/app/templates/base.html b/app/templates/base.html
+new file mode 100644
+index 00000000..56e87bef
+--- /dev/null
++++ b/app/templates/base.html
+@@ -0,0 +1,15 @@
++<!doctype html>
++<html>
++    <head>
++        {% if title %}
++        <title>{{ title }} - Microblog</title>
++        {% else %}
++        <title>Welcome to Microblog</title>
++        {% endif %}
++    </head>
++    <body>
++        <div>Microblog: <a href="/index">Home</a></div>
++        <hr>
++        {% block content %}{% endblock %}
++    </body>
++</html>
+diff --git a/app/templates/index.html b/app/templates/index.html
+new file mode 100644
+index 00000000..b580e8c6
+--- /dev/null
++++ b/app/templates/index.html
+@@ -0,0 +1,8 @@
++{% extends "base.html" %}
++
++{% block content %}
++    <h1>Hi, {{ user.username }}!</h1>
++    {% for post in posts %}
++    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
++    {% endfor %}
++{% endblock %}

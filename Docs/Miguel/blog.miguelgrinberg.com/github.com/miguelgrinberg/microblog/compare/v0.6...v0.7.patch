@@ -1,0 +1,161 @@
+From bba4b01d3b4118bfce6aac3ff858688ea6c9bbda Mon Sep 17 00:00:00 2001
+From: Miguel Grinberg <miguel.grinberg@gmail.com>
+Date: Fri, 15 Sep 2017 00:03:20 -0700
+Subject: [PATCH] Chapter 7: Error Handling (v0.7)
+
+---
+ .flaskenv              |  1 +
+ app/__init__.py        | 33 ++++++++++++++++++++++++++++++++-
+ app/errors.py          | 13 +++++++++++++
+ app/forms.py           | 11 +++++++++++
+ app/routes.py          |  2 +-
+ app/templates/404.html |  6 ++++++
+ app/templates/500.html |  7 +++++++
+ config.py              |  6 ++++++
+ 8 files changed, 77 insertions(+), 2 deletions(-)
+ create mode 100644 app/errors.py
+ create mode 100644 app/templates/404.html
+ create mode 100644 app/templates/500.html
+
+diff --git a/.flaskenv b/.flaskenv
+index 6006c26dc..c3fbfe877 100644
+--- a/.flaskenv
++++ b/.flaskenv
+@@ -1 +1,2 @@
+ FLASK_APP=microblog.py
++FLASK_DEBUG=1
+diff --git a/app/__init__.py b/app/__init__.py
+index 7366fefb5..c71797262 100644
+--- a/app/__init__.py
++++ b/app/__init__.py
+@@ -1,3 +1,6 @@
++import logging
++from logging.handlers import SMTPHandler, RotatingFileHandler
++import os
+ from flask import Flask
+ from flask_sqlalchemy import SQLAlchemy
+ from flask_migrate import Migrate
+@@ -11,4 +14,32 @@
+ login = LoginManager(app)
+ login.login_view = 'login'
+ 
+-from app import routes, models
++if not app.debug:
++    if app.config['MAIL_SERVER']:
++        auth = None
++        if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
++            auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
++        secure = None
++        if app.config['MAIL_USE_TLS']:
++            secure = ()
++        mail_handler = SMTPHandler(
++            mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
++            fromaddr='no-reply@' + app.config['MAIL_SERVER'],
++            toaddrs=app.config['ADMINS'], subject='Microblog Failure',
++            credentials=auth, secure=secure)
++        mail_handler.setLevel(logging.ERROR)
++        app.logger.addHandler(mail_handler)
++
++    if not os.path.exists('logs'):
++        os.mkdir('logs')
++    file_handler = RotatingFileHandler('logs/microblog.log', maxBytes=10240,
++                                       backupCount=10)
++    file_handler.setFormatter(logging.Formatter(
++        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
++    file_handler.setLevel(logging.INFO)
++    app.logger.addHandler(file_handler)
++
++    app.logger.setLevel(logging.INFO)
++    app.logger.info('Microblog startup')
++
++from app import routes, models, errors
+diff --git a/app/errors.py b/app/errors.py
+new file mode 100644
+index 000000000..ed214c473
+--- /dev/null
++++ b/app/errors.py
+@@ -0,0 +1,13 @@
++from flask import render_template
++from app import app, db
++
++
++@app.errorhandler(404)
++def not_found_error(error):
++    return render_template('404.html'), 404
++
++
++@app.errorhandler(500)
++def internal_error(error):
++    db.session.rollback()
++    return render_template('500.html'), 500
+diff --git a/app/forms.py b/app/forms.py
+index 977fce779..f2e47fb91 100644
+--- a/app/forms.py
++++ b/app/forms.py
+@@ -40,3 +40,14 @@ class EditProfileForm(FlaskForm):
+     username = StringField('Username', validators=[DataRequired()])
+     about_me = TextAreaField('About me', validators=[Length(min=0, max=140)])
+     submit = SubmitField('Submit')
++
++    def __init__(self, original_username, *args, **kwargs):
++        super().__init__(*args, **kwargs)
++        self.original_username = original_username
++
++    def validate_username(self, username):
++        if username.data != self.original_username:
++            user = db.session.scalar(sa.select(User).where(
++                User.username == username.data))
++            if user is not None:
++                raise ValidationError('Please use a different username.')
+diff --git a/app/routes.py b/app/routes.py
+index 0f2d3906b..06d3caa3c 100644
+--- a/app/routes.py
++++ b/app/routes.py
+@@ -86,7 +86,7 @@ def user(username):
+ @app.route('/edit_profile', methods=['GET', 'POST'])
+ @login_required
+ def edit_profile():
+-    form = EditProfileForm()
++    form = EditProfileForm(current_user.username)
+     if form.validate_on_submit():
+         current_user.username = form.username.data
+         current_user.about_me = form.about_me.data
+diff --git a/app/templates/404.html b/app/templates/404.html
+new file mode 100644
+index 000000000..230882056
+--- /dev/null
++++ b/app/templates/404.html
+@@ -0,0 +1,6 @@
++{% extends "base.html" %}
++
++{% block content %}
++    <h1>Not Found</h1>
++    <p><a href="{{ url_for('index') }}">Back</a></p>
++{% endblock %}
+diff --git a/app/templates/500.html b/app/templates/500.html
+new file mode 100644
+index 000000000..660c3a198
+--- /dev/null
++++ b/app/templates/500.html
+@@ -0,0 +1,7 @@
++{% extends "base.html" %}
++
++{% block content %}
++    <h1>An unexpected error has occurred</h1>
++    <p>The administrator has been notified. Sorry for the inconvenience!</p>
++    <p><a href="{{ url_for('index') }}">Back</a></p>
++{% endblock %}
+diff --git a/config.py b/config.py
+index 7f265d175..60950ce89 100644
+--- a/config.py
++++ b/config.py
+@@ -6,3 +6,9 @@ class Config:
+     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+         'sqlite:///' + os.path.join(basedir, 'app.db')
++    MAIL_SERVER = os.environ.get('MAIL_SERVER')
++    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
++    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
++    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
++    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
++    ADMINS = ['your-email@example.com']

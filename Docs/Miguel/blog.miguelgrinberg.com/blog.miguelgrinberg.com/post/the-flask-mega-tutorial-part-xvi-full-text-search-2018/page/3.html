@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search-2018/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:48:33 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search-2018/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:42:31 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -209,7 +209,7 @@
 <li><a href="../../the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis-2018.html">Chapter 23: Application Programming Interfaces (APIs)</a></li>
 </ul>
 <p>The goal of this chapter is to implement a search feature for Microblog, so that users can find interesting posts using natural language. For many types of web sites, it is possible to just let Google, Bing, etc. index all the content and provide search results through their search APIs. This works well for sites that have mostly static pages, like a forum. But in my application the basic unit of content is a user post, which is a small portion of the entire web page. The type of search results that I want are for these individual blog posts and not entire pages. For example, if I search for the word "dog" I want to see blog posts from any users that include that word. Obviously a page that shows all blog posts that have the word "dog" (or any other possible search term) does not really exist as a page that the big search engines can find and index, so clearly I have no choice other than to roll my own search feature.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.16">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.16.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.15...v0.16">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.16">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.16.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.15...v0.html">Diff</a>.</em></p>
 <h2>Introduction to Full-Text Search Engines</h2>
 <p>Support for full-text search is not standardized like relational databases are. There are several open-source full-text engines: <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a>, <a href="http://lucene.apache.org/solr/">Apache Solr</a>, <a href="http://whoosh.readthedocs.io/">Whoosh</a>, <a href="https://xapian.org/">Xapian</a>, <a href="http://sphinxsearch.com/">Sphinx</a>, etc. As if this isn't enough choice, there are several databases that also provide searching capabilities that are comparable to dedicated search engines like the ones I enumerated above. <a href="https://www.sqlite.org/">SQLite</a>, <a href="https://www.mysql.com/">MySQL</a> and <a href="https://www.postgresql.org/">PostgreSQL</a> all offer some support for searching text, and NoSQL databases such as <a href="https://www.mongodb.com/">MongoDB</a> and <a href="http://couchdb.apache.org/">CouchDB</a> do too.</p>
 <p>If you are wondering which of these can work within a Flask application, the answer is all of them! That is one of the strengths of Flask, it does its job while not being opinionated. So what's the best choice?</p>
@@ -1122,7 +1122,7 @@ For some reason this has magically worked before but the error seems to return.<
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdmgQ.wBjCg3_cZDNRTfGUD0SLC2EuiXg">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdzAA.mNGmIcG4kkNcq7UUh68LZyAJmDU">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -1583,5 +1583,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search-2018/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:48:33 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search-2018/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:42:31 GMT -->
 </html>

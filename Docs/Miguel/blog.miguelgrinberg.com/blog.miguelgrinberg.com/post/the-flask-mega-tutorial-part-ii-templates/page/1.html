@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates/page/1 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:25 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates/page/1 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:37:08 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -215,7 +215,7 @@
 </code></pre>
 <p>To run the application you set the <code>FLASK_APP=microblog.py</code> in your terminal session (or better yet, add a <em>.flaskenv</em> file with this variable), and then execute <code>flask run</code>. This starts a web server with the application, which you can open by typing the <em>http://localhost:5000/</em> URL in your web browser's address bar.</p>
 <p>In this chapter you will continue working on the same application, and in particular, you are going to learn how to generate more elaborate web pages that have a complex structure and many dynamic components. If anything about the application or the development workflow so far isn't clear, please review <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Chapter 1</a> again before continuing.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.2">Browse</a>, <a href="https://codeload.github.com/miguelgrinberg/microblog/zip/refs/tags/v0.2">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.1...v0.2">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.2">Browse</a>, <a href="../../../../codeload.github.com/miguelgrinberg/microblog/zip/refs/tags/microblog-0.2.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.1...v0.html">Diff</a>.</em></p>
 <h2>What Are Templates?</h2>
 <p>I want the home page of my microblogging application to have a heading that welcomes the user. For the moment, I'm going to ignore the fact that the application does not yet have the concept of users, as this is going to come later. Instead, I'm going to use a <em>mock</em> user, which I'm going to implement as a Python dictionary, as follows:</p>
 <pre><code class="language-python">user = {'username': 'Miguel'}
@@ -928,7 +928,7 @@ Luka</p>
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdlrA.3G3y5pduW8P54wmQXECK-ChnBPQ">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdyCQ.q_t7v8r_eYL2kIIzqfmSDjS6Lmw">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -991,15 +991,27 @@ Luka</p>
 <div class="card">
   
   
-  <div class="card-header">Flask Web Development, 2nd Edition</div>
-  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
-    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  
+  
+  <div class="card-header">
+    <div class="row">
+      <div class="col">The Flask Mega-Tutorial</div>
+      <div class="col text-end">
+        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
+          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <a class="card-book-cover" href="https://amzn.to/3MQffrm">
+    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
   </a>
   <div class="card-body">
-    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
   </div>
   <div class="card-body">
-    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
   </div>
 
   
@@ -1389,5 +1401,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates/page/1 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:25 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates/page/1 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:37:08 GMT -->
 </html>

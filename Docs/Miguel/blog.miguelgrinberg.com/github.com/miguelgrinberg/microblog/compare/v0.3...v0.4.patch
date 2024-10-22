@@ -1,0 +1,389 @@
+From d86cf37713471ea29853d4210a5fd5808fbfee78 Mon Sep 17 00:00:00 2001
+From: Miguel Grinberg <miguel.grinberg@gmail.com>
+Date: Mon, 11 Sep 2017 14:30:21 -0700
+Subject: [PATCH] Chapter 4: Database (v0.4)
+
+---
+ app/__init__.py                               |  6 +-
+ app/models.py                                 | 34 ++++++++
+ config.py                                     |  4 +
+ microblog.py                                  | 10 ++-
+ migrations/README                             |  1 +
+ migrations/alembic.ini                        | 45 ++++++++++
+ migrations/env.py                             | 87 +++++++++++++++++++
+ migrations/script.py.mako                     | 24 +++++
+ .../versions/780739b227a7_posts_table.py      | 43 +++++++++
+ .../versions/e517276bb1c2_users_table.py      | 42 +++++++++
+ 10 files changed, 294 insertions(+), 2 deletions(-)
+ create mode 100644 app/models.py
+ create mode 100755 migrations/README
+ create mode 100644 migrations/alembic.ini
+ create mode 100755 migrations/env.py
+ create mode 100755 migrations/script.py.mako
+ create mode 100644 migrations/versions/780739b227a7_posts_table.py
+ create mode 100644 migrations/versions/e517276bb1c2_users_table.py
+
+diff --git a/app/__init__.py b/app/__init__.py
+index f5b34f45b..612a97254 100644
+--- a/app/__init__.py
++++ b/app/__init__.py
+@@ -1,7 +1,11 @@
+ from flask import Flask
++from flask_sqlalchemy import SQLAlchemy
++from flask_migrate import Migrate
+ from config import Config
+ 
+ app = Flask(__name__)
+ app.config.from_object(Config)
++db = SQLAlchemy(app)
++migrate = Migrate(app, db)
+ 
+-from app import routes
++from app import routes, models
+diff --git a/app/models.py b/app/models.py
+new file mode 100644
+index 000000000..710c61992
+--- /dev/null
++++ b/app/models.py
+@@ -0,0 +1,34 @@
++from datetime import datetime, timezone
++from typing import Optional
++import sqlalchemy as sa
++import sqlalchemy.orm as so
++from app import db
++
++
++class User(db.Model):
++    id: so.Mapped[int] = so.mapped_column(primary_key=True)
++    username: so.Mapped[str] = so.mapped_column(sa.String(64), index=True,
++                                                unique=True)
++    email: so.Mapped[str] = so.mapped_column(sa.String(120), index=True,
++                                             unique=True)
++    password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
++
++    posts: so.WriteOnlyMapped['Post'] = so.relationship(
++        back_populates='author')
++
++    def __repr__(self):
++        return '<User {}>'.format(self.username)
++
++
++class Post(db.Model):
++    id: so.Mapped[int] = so.mapped_column(primary_key=True)
++    body: so.Mapped[str] = so.mapped_column(sa.String(140))
++    timestamp: so.Mapped[datetime] = so.mapped_column(
++        index=True, default=lambda: datetime.now(timezone.utc))
++    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
++                                               index=True)
++
++    author: so.Mapped[User] = so.relationship(back_populates='posts')
++
++    def __repr__(self):
++        return '<Post {}>'.format(self.body)
+diff --git a/config.py b/config.py
+index 3f9f12138..7f265d175 100644
+--- a/config.py
++++ b/config.py
+@@ -1,4 +1,8 @@
+ import os
++basedir = os.path.abspath(os.path.dirname(__file__))
++
+ 
+ class Config:
+     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
++    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
++        'sqlite:///' + os.path.join(basedir, 'app.db')
+diff --git a/microblog.py b/microblog.py
+index d099b92db..34798e5ba 100644
+--- a/microblog.py
++++ b/microblog.py
+@@ -1 +1,9 @@
+-from app import app
++import sqlalchemy as sa
++import sqlalchemy.orm as so
++from app import app, db
++from app.models import User, Post
++
++
++@app.shell_context_processor
++def make_shell_context():
++    return {'sa': sa, 'so': so, 'db': db, 'User': User, 'Post': Post}
+diff --git a/migrations/README b/migrations/README
+new file mode 100755
+index 000000000..98e4f9c44
+--- /dev/null
++++ b/migrations/README
+@@ -0,0 +1 @@
++Generic single-database configuration.
+\ No newline at end of file
+diff --git a/migrations/alembic.ini b/migrations/alembic.ini
+new file mode 100644
+index 000000000..f8ed4801f
+--- /dev/null
++++ b/migrations/alembic.ini
+@@ -0,0 +1,45 @@
++# A generic, single database configuration.
++
++[alembic]
++# template used to generate migration files
++# file_template = %%(rev)s_%%(slug)s
++
++# set to 'true' to run the environment during
++# the 'revision' command, regardless of autogenerate
++# revision_environment = false
++
++
++# Logging configuration
++[loggers]
++keys = root,sqlalchemy,alembic
++
++[handlers]
++keys = console
++
++[formatters]
++keys = generic
++
++[logger_root]
++level = WARN
++handlers = console
++qualname =
++
++[logger_sqlalchemy]
++level = WARN
++handlers =
++qualname = sqlalchemy.engine
++
++[logger_alembic]
++level = INFO
++handlers =
++qualname = alembic
++
++[handler_console]
++class = StreamHandler
++args = (sys.stderr,)
++level = NOTSET
++formatter = generic
++
++[formatter_generic]
++format = %(levelname)-5.5s [%(name)s] %(message)s
++datefmt = %H:%M:%S
+diff --git a/migrations/env.py b/migrations/env.py
+new file mode 100755
+index 000000000..23663ff2f
+--- /dev/null
++++ b/migrations/env.py
+@@ -0,0 +1,87 @@
++from __future__ import with_statement
++from alembic import context
++from sqlalchemy import engine_from_config, pool
++from logging.config import fileConfig
++import logging
++
++# this is the Alembic Config object, which provides
++# access to the values within the .ini file in use.
++config = context.config
++
++# Interpret the config file for Python logging.
++# This line sets up loggers basically.
++fileConfig(config.config_file_name)
++logger = logging.getLogger('alembic.env')
++
++# add your model's MetaData object here
++# for 'autogenerate' support
++# from myapp import mymodel
++# target_metadata = mymodel.Base.metadata
++from flask import current_app
++config.set_main_option('sqlalchemy.url',
++                       current_app.config.get('SQLALCHEMY_DATABASE_URI'))
++target_metadata = current_app.extensions['migrate'].db.metadata
++
++# other values from the config, defined by the needs of env.py,
++# can be acquired:
++# my_important_option = config.get_main_option("my_important_option")
++# ... etc.
++
++
++def run_migrations_offline():
++    """Run migrations in 'offline' mode.
++
++    This configures the context with just a URL
++    and not an Engine, though an Engine is acceptable
++    here as well.  By skipping the Engine creation
++    we don't even need a DBAPI to be available.
++
++    Calls to context.execute() here emit the given string to the
++    script output.
++
++    """
++    url = config.get_main_option("sqlalchemy.url")
++    context.configure(url=url)
++
++    with context.begin_transaction():
++        context.run_migrations()
++
++
++def run_migrations_online():
++    """Run migrations in 'online' mode.
++
++    In this scenario we need to create an Engine
++    and associate a connection with the context.
++
++    """
++
++    # this callback is used to prevent an auto-migration from being generated
++    # when there are no changes to the schema
++    # reference: http://alembic.zzzcomputing.com/en/latest/cookbook.html
++    def process_revision_directives(context, revision, directives):
++        if getattr(config.cmd_opts, 'autogenerate', False):
++            script = directives[0]
++            if script.upgrade_ops.is_empty():
++                directives[:] = []
++                logger.info('No changes in schema detected.')
++
++    engine = engine_from_config(config.get_section(config.config_ini_section),
++                                prefix='sqlalchemy.',
++                                poolclass=pool.NullPool)
++
++    connection = engine.connect()
++    context.configure(connection=connection,
++                      target_metadata=target_metadata,
++                      process_revision_directives=process_revision_directives,
++                      **current_app.extensions['migrate'].configure_args)
++
++    try:
++        with context.begin_transaction():
++            context.run_migrations()
++    finally:
++        connection.close()
++
++if context.is_offline_mode():
++    run_migrations_offline()
++else:
++    run_migrations_online()
+diff --git a/migrations/script.py.mako b/migrations/script.py.mako
+new file mode 100755
+index 000000000..2c0156303
+--- /dev/null
++++ b/migrations/script.py.mako
+@@ -0,0 +1,24 @@
++"""${message}
++
++Revision ID: ${up_revision}
++Revises: ${down_revision | comma,n}
++Create Date: ${create_date}
++
++"""
++from alembic import op
++import sqlalchemy as sa
++${imports if imports else ""}
++
++# revision identifiers, used by Alembic.
++revision = ${repr(up_revision)}
++down_revision = ${repr(down_revision)}
++branch_labels = ${repr(branch_labels)}
++depends_on = ${repr(depends_on)}
++
++
++def upgrade():
++    ${upgrades if upgrades else "pass"}
++
++
++def downgrade():
++    ${downgrades if downgrades else "pass"}
+diff --git a/migrations/versions/780739b227a7_posts_table.py b/migrations/versions/780739b227a7_posts_table.py
+new file mode 100644
+index 000000000..219178ad8
+--- /dev/null
++++ b/migrations/versions/780739b227a7_posts_table.py
+@@ -0,0 +1,43 @@
++"""posts table
++
++Revision ID: 780739b227a7
++Revises: e517276bb1c2
++Create Date: 2017-09-11 12:23:25.496587
++
++"""
++from alembic import op
++import sqlalchemy as sa
++
++
++# revision identifiers, used by Alembic.
++revision = '780739b227a7'
++down_revision = 'e517276bb1c2'
++branch_labels = None
++depends_on = None
++
++
++def upgrade():
++    # ### commands auto generated by Alembic - please adjust! ###
++    op.create_table('post',
++    sa.Column('id', sa.Integer(), nullable=False),
++    sa.Column('body', sa.String(length=140), nullable=False),
++    sa.Column('timestamp', sa.DateTime(), nullable=False),
++    sa.Column('user_id', sa.Integer(), nullable=False),
++    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
++    sa.PrimaryKeyConstraint('id')
++    )
++    with op.batch_alter_table('post', schema=None) as batch_op:
++        batch_op.create_index(batch_op.f('ix_post_timestamp'), ['timestamp'], unique=False)
++        batch_op.create_index(batch_op.f('ix_post_user_id'), ['user_id'], unique=False)
++
++    # ### end Alembic commands ###
++
++
++def downgrade():
++    # ### commands auto generated by Alembic - please adjust! ###
++    with op.batch_alter_table('post', schema=None) as batch_op:
++        batch_op.drop_index(batch_op.f('ix_post_user_id'))
++        batch_op.drop_index(batch_op.f('ix_post_timestamp'))
++
++    op.drop_table('post')
++    # ### end Alembic commands ###
+diff --git a/migrations/versions/e517276bb1c2_users_table.py b/migrations/versions/e517276bb1c2_users_table.py
+new file mode 100644
+index 000000000..bfd12ed77
+--- /dev/null
++++ b/migrations/versions/e517276bb1c2_users_table.py
+@@ -0,0 +1,42 @@
++"""users table
++
++Revision ID: e517276bb1c2
++Revises: 
++Create Date: 2017-09-11 11:23:05.566844
++
++"""
++from alembic import op
++import sqlalchemy as sa
++
++
++# revision identifiers, used by Alembic.
++revision = 'e517276bb1c2'
++down_revision = None
++branch_labels = None
++depends_on = None
++
++
++def upgrade():
++    # ### commands auto generated by Alembic - please adjust! ###
++    op.create_table('user',
++    sa.Column('id', sa.Integer(), nullable=False),
++    sa.Column('username', sa.String(length=64), nullable=False),
++    sa.Column('email', sa.String(length=120), nullable=False),
++    sa.Column('password_hash', sa.String(length=256), nullable=True),
++    sa.PrimaryKeyConstraint('id')
++    )
++    with op.batch_alter_table('user', schema=None) as batch_op:
++        batch_op.create_index(batch_op.f('ix_user_email'), ['email'], unique=True)
++        batch_op.create_index(batch_op.f('ix_user_username'), ['username'], unique=True)
++
++    # ### end Alembic commands ###
++
++
++def downgrade():
++    # ### commands auto generated by Alembic - please adjust! ###
++    with op.batch_alter_table('user', schema=None) as batch_op:
++        batch_op.drop_index(batch_op.f('ix_user_username'))
++        batch_op.drop_index(batch_op.f('ix_user_email'))
++
++    op.drop_table('user')
++    # ### end Alembic commands ###

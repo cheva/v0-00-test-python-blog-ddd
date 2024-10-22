@@ -1,0 +1,904 @@
+diff --git a/app/__init__.py b/app/__init__.py
+index c52bcaa97..3e278236d 100644
+--- a/app/__init__.py
++++ b/app/__init__.py
+@@ -1,22 +1,30 @@
+ import logging
+ from logging.handlers import SMTPHandler, RotatingFileHandler
+ import os
+-from flask import Flask
++from flask import Flask, request
+ from flask_sqlalchemy import SQLAlchemy
+ from flask_migrate import Migrate
+ from flask_login import LoginManager
+ from flask_mail import Mail
+ from flask_moment import Moment
++from flask_babel import Babel, lazy_gettext as _l
+ from config import Config
+ 
++
++def get_locale():
++    return request.accept_languages.best_match(app.config['LANGUAGES'])
++
++
+ app = Flask(__name__)
+ app.config.from_object(Config)
+ db = SQLAlchemy(app)
+ migrate = Migrate(app, db)
+ login = LoginManager(app)
+ login.login_view = 'login'
++login.login_message = _l('Please log in to access this page.')
+ mail = Mail(app)
+ moment = Moment(app)
++babel = Babel(app, locale_selector=get_locale)
+ 
+ if not app.debug:
+     if app.config['MAIL_SERVER']:
+@@ -46,4 +54,5 @@
+     app.logger.setLevel(logging.INFO)
+     app.logger.info('Microblog startup')
+ 
++
+ from app import routes, models, errors
+diff --git a/app/cli.py b/app/cli.py
+new file mode 100644
+index 000000000..8c6697ad0
+--- /dev/null
++++ b/app/cli.py
+@@ -0,0 +1,38 @@
++import os
++import click
++from app import app
++
++
++@app.cli.group()
++def translate():
++    """Translation and localization commands."""
++    pass
++
++
++@translate.command()
++@click.argument('lang')
++def init(lang):
++    """Initialize a new language."""
++    if os.system('pybabel extract -F babel.cfg -k _l -o messages.pot .'):
++        raise RuntimeError('extract command failed')
++    if os.system(
++            'pybabel init -i messages.pot -d app/translations -l ' + lang):
++        raise RuntimeError('init command failed')
++    os.remove('messages.pot')
++
++
++@translate.command()
++def update():
++    """Update all languages."""
++    if os.system('pybabel extract -F babel.cfg -k _l -o messages.pot .'):
++        raise RuntimeError('extract command failed')
++    if os.system('pybabel update -i messages.pot -d app/translations'):
++        raise RuntimeError('update command failed')
++    os.remove('messages.pot')
++
++
++@translate.command()
++def compile():
++    """Compile all languages."""
++    if os.system('pybabel compile -d app/translations'):
++        raise RuntimeError('compile command failed')
+diff --git a/app/email.py b/app/email.py
+index fc7f92968..1f4d46f75 100644
+--- a/app/email.py
++++ b/app/email.py
+@@ -1,6 +1,7 @@
+ from threading import Thread
+ from flask import render_template
+ from flask_mail import Message
++from flask_babel import _
+ from app import app, mail
+ 
+ 
+@@ -18,7 +19,7 @@ def send_email(subject, sender, recipients, text_body, html_body):
+ 
+ def send_password_reset_email(user):
+     token = user.get_reset_password_token()
+-    send_email('[Microblog] Reset Your Password',
++    send_email(_('[Microblog] Reset Your Password'),
+                sender=app.config['ADMINS'][0],
+                recipients=[user.email],
+                text_body=render_template('email/reset_password.txt',
+diff --git a/app/forms.py b/app/forms.py
+index 141de7edf..25c4fc5de 100644
+--- a/app/forms.py
++++ b/app/forms.py
+@@ -1,4 +1,5 @@
+ from flask_wtf import FlaskForm
++from flask_babel import _, lazy_gettext as _l
+ from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
+     TextAreaField
+ from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, \
+@@ -9,49 +10,52 @@
+ 
+ 
+ class LoginForm(FlaskForm):
+-    username = StringField('Username', validators=[DataRequired()])
+-    password = PasswordField('Password', validators=[DataRequired()])
+-    remember_me = BooleanField('Remember Me')
+-    submit = SubmitField('Sign In')
++    username = StringField(_l('Username'), validators=[DataRequired()])
++    password = PasswordField(_l('Password'), validators=[DataRequired()])
++    remember_me = BooleanField(_l('Remember Me'))
++    submit = SubmitField(_l('Sign In'))
+ 
+ 
+ class RegistrationForm(FlaskForm):
+-    username = StringField('Username', validators=[DataRequired()])
+-    email = StringField('Email', validators=[DataRequired(), Email()])
+-    password = PasswordField('Password', validators=[DataRequired()])
++    username = StringField(_l('Username'), validators=[DataRequired()])
++    email = StringField(_l('Email'), validators=[DataRequired(), Email()])
++    password = PasswordField(_l('Password'), validators=[DataRequired()])
+     password2 = PasswordField(
+-        'Repeat Password', validators=[DataRequired(), EqualTo('password')])
+-    submit = SubmitField('Register')
++        _l('Repeat Password'), validators=[DataRequired(),
++                                           EqualTo('password')])
++    submit = SubmitField(_l('Register'))
+ 
+     def validate_username(self, username):
+         user = db.session.scalar(sa.select(User).where(
+             User.username == username.data))
+         if user is not None:
+-            raise ValidationError('Please use a different username.')
++            raise ValidationError(_('Please use a different username.'))
+ 
+     def validate_email(self, email):
+         user = db.session.scalar(sa.select(User).where(
+             User.email == email.data))
+         if user is not None:
+-            raise ValidationError('Please use a different email address.')
++            raise ValidationError(_('Please use a different email address.'))
+ 
+ 
+ class ResetPasswordRequestForm(FlaskForm):
+-    email = StringField('Email', validators=[DataRequired(), Email()])
+-    submit = SubmitField('Request Password Reset')
++    email = StringField(_l('Email'), validators=[DataRequired(), Email()])
++    submit = SubmitField(_l('Request Password Reset'))
+ 
+ 
+ class ResetPasswordForm(FlaskForm):
+-    password = PasswordField('Password', validators=[DataRequired()])
++    password = PasswordField(_l('Password'), validators=[DataRequired()])
+     password2 = PasswordField(
+-        'Repeat Password', validators=[DataRequired(), EqualTo('password')])
+-    submit = SubmitField('Request Password Reset')
++        _l('Repeat Password'), validators=[DataRequired(),
++                                           EqualTo('password')])
++    submit = SubmitField(_l('Request Password Reset'))
+ 
+ 
+ class EditProfileForm(FlaskForm):
+-    username = StringField('Username', validators=[DataRequired()])
+-    about_me = TextAreaField('About me', validators=[Length(min=0, max=140)])
+-    submit = SubmitField('Submit')
++    username = StringField(_l('Username'), validators=[DataRequired()])
++    about_me = TextAreaField(_l('About me'),
++                             validators=[Length(min=0, max=140)])
++    submit = SubmitField(_l('Submit'))
+ 
+     def __init__(self, original_username, *args, **kwargs):
+         super().__init__(*args, **kwargs)
+@@ -62,7 +66,7 @@ def validate_username(self, username):
+             user = db.session.scalar(sa.select(User).where(
+                 User.username == username.data))
+             if user is not None:
+-                raise ValidationError('Please use a different username.')
++                raise ValidationError(_('Please use a different username.'))
+ 
+ 
+ class EmptyForm(FlaskForm):
+@@ -70,6 +74,6 @@ class EmptyForm(FlaskForm):
+ 
+ 
+ class PostForm(FlaskForm):
+-    post = TextAreaField('Say something', validators=[
++    post = TextAreaField(_l('Say something'), validators=[
+         DataRequired(), Length(min=1, max=140)])
+-    submit = SubmitField('Submit')
++    submit = SubmitField(_l('Submit'))
+diff --git a/app/routes.py b/app/routes.py
+index 6e97e98e0..fe87a6387 100644
+--- a/app/routes.py
++++ b/app/routes.py
+@@ -1,7 +1,8 @@
+ from datetime import datetime, timezone
+ from urllib.parse import urlsplit
+-from flask import render_template, flash, redirect, url_for, request
++from flask import render_template, flash, redirect, url_for, request, g
+ from flask_login import login_user, logout_user, current_user, login_required
++from flask_babel import _, get_locale
+ import sqlalchemy as sa
+ from app import app, db
+ from app.forms import LoginForm, RegistrationForm, EditProfileForm, \
+@@ -15,6 +16,7 @@ def before_request():
+     if current_user.is_authenticated:
+         current_user.last_seen = datetime.now(timezone.utc)
+         db.session.commit()
++    g.locale = str(get_locale())
+ 
+ 
+ @app.route('/', methods=['GET', 'POST'])
+@@ -26,7 +28,7 @@ def index():
+         post = Post(body=form.post.data, author=current_user)
+         db.session.add(post)
+         db.session.commit()
+-        flash('Your post is now live!')
++        flash(_('Your post is now live!'))
+         return redirect(url_for('index'))
+     page = request.args.get('page', 1, type=int)
+     posts = db.paginate(current_user.following_posts(), page=page,
+@@ -35,7 +37,7 @@ def index():
+         if posts.has_next else None
+     prev_url = url_for('index', page=posts.prev_num) \
+         if posts.has_prev else None
+-    return render_template('index.html', title='Home', form=form,
++    return render_template('index.html', title=_('Home'), form=form,
+                            posts=posts.items, next_url=next_url,
+                            prev_url=prev_url)
+ 
+@@ -51,8 +53,9 @@ def explore():
+         if posts.has_next else None
+     prev_url = url_for('explore', page=posts.prev_num) \
+         if posts.has_prev else None
+-    return render_template('index.html', title='Explore', posts=posts.items,
+-                           next_url=next_url, prev_url=prev_url)
++    return render_template('index.html', title=_('Explore'),
++                           posts=posts.items, next_url=next_url,
++                           prev_url=prev_url)
+ 
+ 
+ @app.route('/login', methods=['GET', 'POST'])
+@@ -64,14 +67,14 @@ def login():
+         user = db.session.scalar(
+             sa.select(User).where(User.username == form.username.data))
+         if user is None or not user.check_password(form.password.data):
+-            flash('Invalid username or password')
++            flash(_('Invalid username or password'))
+             return redirect(url_for('login'))
+         login_user(user, remember=form.remember_me.data)
+         next_page = request.args.get('next')
+         if not next_page or urlsplit(next_page).netloc != '':
+             next_page = url_for('index')
+         return redirect(next_page)
+-    return render_template('login.html', title='Sign In', form=form)
++    return render_template('login.html', title=_('Sign In'), form=form)
+ 
+ 
+ @app.route('/logout')
+@@ -90,9 +93,9 @@ def register():
+         user.set_password(form.password.data)
+         db.session.add(user)
+         db.session.commit()
+-        flash('Congratulations, you are now a registered user!')
++        flash(_('Congratulations, you are now a registered user!'))
+         return redirect(url_for('login'))
+-    return render_template('register.html', title='Register', form=form)
++    return render_template('register.html', title=_('Register'), form=form)
+ 
+ 
+ @app.route('/reset_password_request', methods=['GET', 'POST'])
+@@ -105,10 +108,11 @@ def reset_password_request():
+             sa.select(User).where(User.email == form.email.data))
+         if user:
+             send_password_reset_email(user)
+-        flash('Check your email for the instructions to reset your password')
++        flash(
++            _('Check your email for the instructions to reset your password'))
+         return redirect(url_for('login'))
+     return render_template('reset_password_request.html',
+-                           title='Reset Password', form=form)
++                           title=_('Reset Password'), form=form)
+ 
+ 
+ @app.route('/reset_password/<token>', methods=['GET', 'POST'])
+@@ -122,7 +126,7 @@ def reset_password(token):
+     if form.validate_on_submit():
+         user.set_password(form.password.data)
+         db.session.commit()
+-        flash('Your password has been reset.')
++        flash(_('Your password has been reset.'))
+         return redirect(url_for('login'))
+     return render_template('reset_password.html', form=form)
+ 
+@@ -153,12 +157,12 @@ def edit_profile():
+         current_user.username = form.username.data
+         current_user.about_me = form.about_me.data
+         db.session.commit()
+-        flash('Your changes have been saved.')
++        flash(_('Your changes have been saved.'))
+         return redirect(url_for('edit_profile'))
+     elif request.method == 'GET':
+         form.username.data = current_user.username
+         form.about_me.data = current_user.about_me
+-    return render_template('edit_profile.html', title='Edit Profile',
++    return render_template('edit_profile.html', title=_('Edit Profile'),
+                            form=form)
+ 
+ 
+@@ -170,14 +174,14 @@ def follow(username):
+         user = db.session.scalar(
+             sa.select(User).where(User.username == username))
+         if user is None:
+-            flash(f'User {username} not found.')
++            flash(_('User %(username)s not found.', username=username))
+             return redirect(url_for('index'))
+         if user == current_user:
+-            flash('You cannot follow yourself!')
++            flash(_('You cannot follow yourself!'))
+             return redirect(url_for('user', username=username))
+         current_user.follow(user)
+         db.session.commit()
+-        flash(f'You are following {username}!')
++        flash(_('You are following %(username)s!', username=username))
+         return redirect(url_for('user', username=username))
+     else:
+         return redirect(url_for('index'))
+@@ -191,14 +195,14 @@ def unfollow(username):
+         user = db.session.scalar(
+             sa.select(User).where(User.username == username))
+         if user is None:
+-            flash(f'User {username} not found.')
++            flash(_('User %(username)s not found.', username=username))
+             return redirect(url_for('index'))
+         if user == current_user:
+-            flash('You cannot unfollow yourself!')
++            flash(_('You cannot unfollow yourself!'))
+             return redirect(url_for('user', username=username))
+         current_user.unfollow(user)
+         db.session.commit()
+-        flash(f'You are not following {username}.')
++        flash(_('You are not following %(username)s.', username=username))
+         return redirect(url_for('user', username=username))
+     else:
+         return redirect(url_for('index'))
+diff --git a/app/templates/404.html b/app/templates/404.html
+index 230882056..b68891e5e 100644
+--- a/app/templates/404.html
++++ b/app/templates/404.html
+@@ -1,6 +1,6 @@
+ {% extends "base.html" %}
+ 
+ {% block content %}
+-    <h1>Not Found</h1>
+-    <p><a href="{{ url_for('index') }}">Back</a></p>
++    <h1>{{ _('Not Found') }}</h1>
++    <p><a href="{{ url_for('index') }}">{{ _('Back') }}</a></p>
+ {% endblock %}
+diff --git a/app/templates/500.html b/app/templates/500.html
+index 660c3a198..8d9ffd5f7 100644
+--- a/app/templates/500.html
++++ b/app/templates/500.html
+@@ -1,7 +1,7 @@
+ {% extends "base.html" %}
+ 
+ {% block content %}
+-    <h1>An unexpected error has occurred</h1>
+-    <p>The administrator has been notified. Sorry for the inconvenience!</p>
+-    <p><a href="{{ url_for('index') }}">Back</a></p>
++    <h1>{{ _('An unexpected error has occurred') }}</h1>
++    <p>{{ _('The administrator has been notified. Sorry for the inconvenience!') }}</p>
++    <p><a href="{{ url_for('index') }}">{{ _('Back') }}</a></p>
+ {% endblock %}
+diff --git a/app/templates/_post.html b/app/templates/_post.html
+index b5b60220e..7e05990e3 100644
+--- a/app/templates/_post.html
++++ b/app/templates/_post.html
+@@ -6,10 +6,13 @@
+                 </a>
+             </td>
+             <td>
+-                <a href="{{ url_for('user', username=post.author.username) }}">
+-                    {{ post.author.username }}
+-                </a>
+-                said {{ moment(post.timestamp).fromNow() }}:
++                {% set user_link %}
++                    <a href="{{ url_for('user', username=post.author.username) }}">
++                        {{ post.author.username }}
++                    </a>
++                {% endset %}
++                {{ _('%(username)s said %(when)s',
++                    username=user_link, when=moment(post.timestamp).fromNow()) }}
+                 <br>
+                 {{ post.body }}
+             </td>
+diff --git a/app/templates/base.html b/app/templates/base.html
+index bf7523e93..d27b49be4 100644
+--- a/app/templates/base.html
++++ b/app/templates/base.html
+@@ -6,7 +6,7 @@
+     {% if title %}
+     <title>{{ title }} - Microblog</title>
+     {% else %}
+-    <title>Welcome to Microblog</title>
++    <title>{{ _('Welcome to Microblog') }}</title>
+     {% endif %}
+     <link
+         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+@@ -24,23 +24,23 @@
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+             <li class="nav-item">
+-              <a class="nav-link" aria-current="page" href="{{ url_for('index') }}">Home</a>
++              <a class="nav-link" aria-current="page" href="{{ url_for('index') }}">{{ _('Home') }}</a>
+             </li>
+             <li class="nav-item">
+-              <a class="nav-link" aria-current="page" href="{{ url_for('explore') }}">Explore</a>
++              <a class="nav-link" aria-current="page" href="{{ url_for('explore') }}">{{ _('Explore') }}</a>
+             </li>
+           </ul>
+           <ul class="navbar-nav mb-2 mb-lg-0">
+             {% if current_user.is_anonymous %}
+             <li class="nav-item">
+-              <a class="nav-link" aria-current="page" href="{{ url_for('login') }}">Login</a>
++              <a class="nav-link" aria-current="page" href="{{ url_for('login') }}">{{ _('Login') }}</a>
+             </li>
+             {% else %}
+             <li class="nav-item">
+-              <a class="nav-link" aria-current="page" href="{{ url_for('user', username=current_user.username) }}">Profile</a>
++              <a class="nav-link" aria-current="page" href="{{ url_for('user', username=current_user.username) }}">{{ _('Profile') }}</a>
+             </li>
+             <li class="nav-item">
+-              <a class="nav-link" aria-current="page" href="{{ url_for('logout') }}">Logout</a>
++              <a class="nav-link" aria-current="page" href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
+             </li>
+             {% endif %}
+           </ul>
+@@ -63,5 +63,6 @@
+         crossorigin="anonymous">
+     </script>
+     {{ moment.include_moment() }}
++    {{ moment.lang(g.locale) }}
+   </body>
+ </html>
+diff --git a/app/templates/edit_profile.html b/app/templates/edit_profile.html
+index ef7ca7532..f067d8f3e 100644
+--- a/app/templates/edit_profile.html
++++ b/app/templates/edit_profile.html
+@@ -2,6 +2,6 @@
+ {% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+-    <h1>Edit Profile</h1>
++    <h1>{{ _('Edit Profile') }}</h1>
+     {{ wtf.quick_form(form) }}
+ {% endblock %}
+diff --git a/app/templates/index.html b/app/templates/index.html
+index b5b560eed..3dec86c35 100644
+--- a/app/templates/index.html
++++ b/app/templates/index.html
+@@ -2,7 +2,7 @@
+ {% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+-    <h1>Hi, {{ current_user.username }}!</h1>
++    <h1>{{ _('Hi, %(username)s!', username=current_user.username) }}</h1>
+     {% if form %}
+     {{ wtf.quick_form(form) }}
+     {% endif %}
+@@ -13,12 +13,12 @@ <h1>Hi, {{ current_user.username }}!</h1>
+         <ul class="pagination">
+             <li class="page-item{% if not prev_url %} disabled{% endif %}">
+                 <a class="page-link" href="{{ prev_url }}">
+-                    <span aria-hidden="true">&larr;</span> Newer posts
++                    <span aria-hidden="true">&larr;</span> {{ _('Newer posts') }}
+                 </a>
+             </li>
+             <li class="page-item{% if not next_url %} disabled{% endif %}">
+                 <a class="page-link" href="{{ next_url }}">
+-                    Older posts <span aria-hidden="true">&rarr;</span>
++                    {{ _('Older posts') }} <span aria-hidden="true">&rarr;</span>
+                 </a>
+             </li>
+         </ul>
+diff --git a/app/templates/login.html b/app/templates/login.html
+index 63439b553..bd16ffdcf 100644
+--- a/app/templates/login.html
++++ b/app/templates/login.html
+@@ -2,11 +2,11 @@
+ {% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+-    <h1>Sign In</h1>
++    <h1>{{ _('Sign In') }}</h1>
+     {{ wtf.quick_form(form) }}
+-    <p>New User? <a href="{{ url_for('register') }}">Click to Register!</a></p>
++    <p>{{ _('New User?') }} <a href="{{ url_for('register') }}">{{ _('Click to Register!') }}</a></p>
+     <p>
+-        Forgot Your Password?
+-        <a href="{{ url_for('reset_password_request') }}">Click to Reset It</a>
++        {{ _('Forgot Your Password?') }}
++        <a href="{{ url_for('reset_password_request') }}">{{ _('Click to Reset It') }}</a>
+     </p>
+ {% endblock %}
+diff --git a/app/templates/register.html b/app/templates/register.html
+index 26db86475..d93124d3e 100644
+--- a/app/templates/register.html
++++ b/app/templates/register.html
+@@ -2,6 +2,6 @@
+ {% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+-    <h1>Register</h1>
++    <h1>{{ _('Register') }}</h1>
+     {{ wtf.quick_form(form) }}
+ {% endblock %}
+diff --git a/app/templates/reset_password.html b/app/templates/reset_password.html
+index bd5ccc245..15123f9c7 100644
+--- a/app/templates/reset_password.html
++++ b/app/templates/reset_password.html
+@@ -2,6 +2,6 @@
+ {% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+-    <h1>Reset Your Password</h1>
++    <h1>{{ _('Reset Your Password') }}</h1>
+     {{ wtf.quick_form(form) }}
+ {% endblock %}
+diff --git a/app/templates/reset_password_request.html b/app/templates/reset_password_request.html
+index d60b1b531..a0f066d99 100644
+--- a/app/templates/reset_password_request.html
++++ b/app/templates/reset_password_request.html
+@@ -2,6 +2,6 @@
+ {% import "bootstrap_wtf.html" as wtf %}
+ 
+ {% block content %}
+-    <h1>Reset Password</h1>
++    <h1>{{ _('Reset Password') }}</h1>
+     {{ wtf.quick_form(form) }}
+ {% endblock %}
+diff --git a/app/templates/user.html b/app/templates/user.html
+index 78120610d..44a239f22 100644
+--- a/app/templates/user.html
++++ b/app/templates/user.html
+@@ -5,26 +5,26 @@
+         <tr>
+             <td width="256px"><img src="{{ user.avatar(256) }}"></td>
+             <td>
+-                <h1>User: {{ user.username }}</h1>
++                <h1>{{ _('User') }}: {{ user.username }}</h1>
+                 {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+                 {% if user.last_seen %}
+-                <p>Last seen on: {{ moment(user.last_seen).format('LLL') }}</p>
++                <p>{{ _('Last seen on') }}: {{ moment(user.last_seen).format('LLL') }}</p>
+                 {% endif %}
+-                <p>{{ user.followers_count() }} followers, {{ user.following_count() }} following.</p>
++                <p>{{ _('%(count)d followers', count=user.followers_count()) }}, {{ _('%(count)d following', count=user.following_count()) }}</p>
+                 {% if user == current_user %}
+-                <p><a href="{{ url_for('edit_profile') }}">Edit your profile</a></p>
++                <p><a href="{{ url_for('edit_profile') }}">{{ _('Edit your profile') }}</a></p>
+                 {% elif not current_user.is_following(user) %}
+                 <p>
+                     <form action="{{ url_for('follow', username=user.username) }}" method="post">
+                         {{ form.hidden_tag() }}
+-                        {{ form.submit(value='Follow', class_='btn btn-primary') }}
++                        {{ form.submit(value=_('Follow'), class_='btn btn-primary') }}
+                     </form>
+                 </p>
+                 {% else %}
+                 <p>
+                     <form action="{{ url_for('unfollow', username=user.username) }}" method="post">
+                         {{ form.hidden_tag() }}
+-                        {{ form.submit(value='Unfollow', class_='btn btn-primary') }}
++                        {{ form.submit(value=_('Unfollow'), class_='btn btn-primary') }}
+                     </form>
+                 </p>
+                 {% endif %}
+@@ -38,12 +38,12 @@ <h1>User: {{ user.username }}</h1>
+         <ul class="pagination">
+             <li class="page-item{% if not prev_url %} disabled{% endif %}">
+                 <a class="page-link" href="{{ prev_url }}">
+-                    <span aria-hidden="true">&larr;</span> Newer posts
++                    <span aria-hidden="true">&larr;</span> {{ _('Newer posts') }}
+                 </a>
+             </li>
+             <li class="page-item{% if not next_url %} disabled{% endif %}">
+                 <a class="page-link" href="{{ next_url }}">
+-                    Older posts <span aria-hidden="true">&rarr;</span>
++                    {{ _('Older posts') }} <span aria-hidden="true">&rarr;</span>
+                 </a>
+             </li>
+         </ul>
+diff --git a/app/translations/es/LC_MESSAGES/messages.po b/app/translations/es/LC_MESSAGES/messages.po
+new file mode 100644
+index 000000000..2e7a00f97
+--- /dev/null
++++ b/app/translations/es/LC_MESSAGES/messages.po
+@@ -0,0 +1,259 @@
++# Spanish translations for PROJECT.
++# Copyright (C) 2017 ORGANIZATION
++# This file is distributed under the same license as the PROJECT project.
++# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: PROJECT VERSION\n"
++"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
++"POT-Creation-Date: 2017-10-03 15:49-0700\n"
++"PO-Revision-Date: 2017-09-29 23:25-0700\n"
++"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
++"Language: es\n"
++"Language-Team: es <LL@li.org>\n"
++"Plural-Forms: nplurals=2; plural=(n != 1)\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=utf-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Generated-By: Babel 2.5.1\n"
++
++#: app/__init__.py:20
++msgid "Please log in to access this page."
++msgstr "Por favor ingrese para acceder a esta página."
++
++#: app/email.py:21
++msgid "[Microblog] Reset Your Password"
++msgstr "[Microblog] Nueva Contraseña"
++
++#: app/forms.py:12 app/forms.py:19 app/forms.py:50
++msgid "Username"
++msgstr "Nombre de usuario"
++
++#: app/forms.py:13 app/forms.py:21 app/forms.py:43
++msgid "Password"
++msgstr "Contraseña"
++
++#: app/forms.py:14
++msgid "Remember Me"
++msgstr "Recordarme"
++
++#: app/forms.py:15 app/templates/login.html:5
++msgid "Sign In"
++msgstr "Ingresar"
++
++#: app/forms.py:20 app/forms.py:38
++msgid "Email"
++msgstr "Email"
++
++#: app/forms.py:23 app/forms.py:45
++msgid "Repeat Password"
++msgstr "Repetir Contraseña"
++
++#: app/forms.py:24 app/templates/register.html:5
++msgid "Register"
++msgstr "Registrarse"
++
++#: app/forms.py:29 app/forms.py:62
++msgid "Please use a different username."
++msgstr "Por favor use un nombre de usuario diferente."
++
++#: app/forms.py:34
++msgid "Please use a different email address."
++msgstr "Por favor use una dirección de email diferente."
++
++#: app/forms.py:39 app/forms.py:46
++msgid "Request Password Reset"
++msgstr "Pedir una nueva contraseña"
++
++#: app/forms.py:51
++msgid "About me"
++msgstr "Acerca de mí"
++
++#: app/forms.py:52 app/forms.py:67
++msgid "Submit"
++msgstr "Enviar"
++
++#: app/forms.py:66
++msgid "Say something"
++msgstr "Dí algo"
++
++#: app/forms.py:71
++msgid "Search"
++msgstr "Buscar"
++
++#: app/routes.py:30
++msgid "Your post is now live!"
++msgstr "¡Tu artículo ha sido publicado!"
++
++#: app/routes.py:66
++msgid "Invalid username or password"
++msgstr "Nombre de usuario o contraseña inválidos"
++
++#: app/routes.py:92
++msgid "Congratulations, you are now a registered user!"
++msgstr "¡Felicitaciones, ya eres un usuario registrado!"
++
++#: app/routes.py:107
++msgid "Check your email for the instructions to reset your password"
++msgstr "Busca en tu email las instrucciones para crear una nueva contraseña"
++
++#: app/routes.py:124
++msgid "Your password has been reset."
++msgstr "Tu contraseña ha sido cambiada."
++
++#: app/routes.py:152
++msgid "Your changes have been saved."
++msgstr "Tus cambios han sido salvados."
++
++#: app/routes.py:157 app/templates/edit_profile.html:5
++msgid "Edit Profile"
++msgstr "Editar Perfil"
++
++#: app/routes.py:166 app/routes.py:182
++#, python-format
++msgid "User %(username)s not found."
++msgstr "El usuario %(username)s no ha sido encontrado."
++
++#: app/routes.py:169
++msgid "You cannot follow yourself!"
++msgstr "¡No te puedes seguir a tí mismo!"
++
++#: app/routes.py:173
++#, python-format
++msgid "You are following %(username)s!"
++msgstr "¡Ahora estás siguiendo a %(username)s!"
++
++#: app/routes.py:185
++msgid "You cannot unfollow yourself!"
++msgstr "¡No te puedes dejar de seguir a tí mismo!"
++
++#: app/routes.py:189
++#, python-format
++msgid "You are not following %(username)s."
++msgstr "No estás siguiendo a %(username)s."
++
++#: app/templates/404.html:4
++msgid "Not Found"
++msgstr "Página No Encontrada"
++
++#: app/templates/404.html:5 app/templates/500.html:6
++msgid "Back"
++msgstr "Atrás"
++
++#: app/templates/500.html:4
++msgid "An unexpected error has occurred"
++msgstr "Ha ocurrido un error inesperado"
++
++#: app/templates/500.html:5
++msgid "The administrator has been notified. Sorry for the inconvenience!"
++msgstr "El administrador ha sido notificado. ¡Lamentamos la inconveniencia!"
++
++#: app/templates/_post.html:9
++#, python-format
++msgid "%(username)s said %(when)s"
++msgstr "%(username)s dijo %(when)s"
++
++#: app/templates/base.html:4
++msgid "Welcome to Microblog"
++msgstr "Bienvenido a Microblog"
++
++#: app/templates/base.html:21
++msgid "Home"
++msgstr "Inicio"
++
++#: app/templates/base.html:22
++msgid "Explore"
++msgstr "Explorar"
++
++#: app/templates/base.html:33
++msgid "Login"
++msgstr "Ingresar"
++
++#: app/templates/base.html:35
++msgid "Profile"
++msgstr "Perfil"
++
++#: app/templates/base.html:36
++msgid "Logout"
++msgstr "Salir"
++
++#: app/templates/index.html:5
++#, python-format
++msgid "Hi, %(username)s!"
++msgstr "¡Hola, %(username)s!"
++
++#: app/templates/index.html:17 app/templates/user.html:31
++msgid "Newer posts"
++msgstr "Artículos siguientes"
++
++#: app/templates/index.html:22 app/templates/user.html:36
++msgid "Older posts"
++msgstr "Artículos previos"
++
++#: app/templates/login.html:12
++msgid "New User?"
++msgstr "¿Usuario Nuevo?"
++
++#: app/templates/login.html:12
++msgid "Click to Register!"
++msgstr "¡Haz click aquí para registrarte!"
++
++#: app/templates/login.html:14
++msgid "Forgot Your Password?"
++msgstr "¿Te olvidaste tu contraseña?"
++
++#: app/templates/login.html:15
++msgid "Click to Reset It"
++msgstr "Haz click aquí para pedir una nueva"
++
++#: app/templates/reset_password.html:5
++msgid "Reset Your Password"
++msgstr "Nueva Contraseña"
++
++#: app/templates/reset_password_request.html:5
++msgid "Reset Password"
++msgstr "Nueva Contraseña"
++
++#: app/templates/search.html:4
++msgid "Search Results"
++msgstr "Resultados de Búsqueda"
++
++#: app/templates/search.html:12
++msgid "Previous results"
++msgstr "Resultados previos"
++
++#: app/templates/search.html:17
++msgid "Next results"
++msgstr "Resultados próximos"
++
++#: app/templates/user.html:8
++msgid "User"
++msgstr "Usuario"
++
++#: app/templates/user.html:11
++msgid "Last seen on"
++msgstr "Última visita"
++
++#: app/templates/user.html:13
++#, python-format
++msgid "%(count)d followers"
++msgstr "%(count)d seguidores"
++
++#: app/templates/user.html:13
++#, python-format
++msgid "%(count)d following"
++msgstr "siguiendo a %(count)d"
++
++#: app/templates/user.html:15
++msgid "Edit your profile"
++msgstr "Editar tu perfil"
++
++#: app/templates/user.html:17
++msgid "Follow"
++msgstr "Seguir"
++
++#: app/templates/user.html:19
++msgid "Unfollow"
++msgstr "Dejar de seguir"
++
+diff --git a/babel.cfg b/babel.cfg
+new file mode 100644
+index 000000000..b42c3d577
+--- /dev/null
++++ b/babel.cfg
+@@ -0,0 +1,2 @@
++[python: app/**.py]
++[jinja2: app/templates/**.html]
+diff --git a/config.py b/config.py
+index c330da370..b43f74f88 100644
+--- a/config.py
++++ b/config.py
+@@ -12,4 +12,5 @@ class Config:
+     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+     ADMINS = ['your-email@example.com']
++    LANGUAGES = ['en', 'es']
+     POSTS_PER_PAGE = 25
+diff --git a/microblog.py b/microblog.py
+index 34798e5ba..1b4e20fd8 100644
+--- a/microblog.py
++++ b/microblog.py
+@@ -1,6 +1,6 @@
+ import sqlalchemy as sa
+ import sqlalchemy.orm as so
+-from app import app, db
++from app import app, db, cli
+ from app.models import User, Post
+ 
+ 

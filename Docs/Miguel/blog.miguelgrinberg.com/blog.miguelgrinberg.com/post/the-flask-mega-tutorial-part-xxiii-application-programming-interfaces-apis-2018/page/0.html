@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis-2018/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:46:53 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis-2018/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:40:13 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -216,7 +216,7 @@
 <p>This is the problem area where Application Programming Interfaces (or APIs) can help. An API is a collection of HTTP routes that are designed as low-level entry points into the application. Instead of defining routes and view functions that return HTML to be consumed by web browsers, APIs allow the client to work directly with the application's <em>resources</em>, leaving the decision of how to present the information to the user entirely to the client. For example, an API in Microblog could provide user and blog post information to the client, and it could also allow the user to edit an existing blog post, but only at the data level, without mixing this logic with HTML.</p>
 <p>If you study all the routes currently defined in the application, you will notice that there are a few that could fit the definition of API I used above. Did you find them? I'm talking about the few routes that return JSON, such as the <em>/translate</em> route defined in <a href="../../the-flask-mega-tutorial-part-xiv-ajax-2018.html">Chapter 14</a>. This is a route that takes a text, source and destination languages, all given in JSON format in a <code>POST</code> request. The response to this request is the translation of that text, also in JSON format. The server only returns the requested information, leaving the client with the responsibility to present this information to the user.</p>
 <p>While the JSON routes in the application have an API "feel" to them, they were designed to support the web application running in the browser. Consider that if a smartphone app wanted to use these routes, it would not be able to because they require a logged in user, and the log in can only happen through an HTML form. In this chapter I'm going to show how to build APIs that do not rely on the web browser and make no assumptions about what kind of client connects to them.</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.23">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.23.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.22...v0.23">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.23">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.23.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.22...v0.html">Diff</a>.</em></p>
 <h2>REST as a Foundation of API Design</h2>
 <p>Some people may strongly disagree with my statement above that <em>/translate</em> and the other JSON routes are API routes. Others may agree, with the disclaimer that they consider them a badly designed API. So what are the characteristics of a well designed API, and why aren't the JSON routes in that category?</p>
 <p>You may have heard the term <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">REST API</a>. REST, which stands for Representational State Transfer, is an architecture proposed by Dr. Roy Fielding in his <a href="http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm">doctoral dissertation</a>. In his work, Dr. Fielding presents the six defining characteristics of REST in a fairly abstract and generic way.</p>
@@ -1171,7 +1171,7 @@ P.S. I cannot speak enough of how much I appreciate your book and all your hard 
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdmAQ.bkR9uB0_MPtyHFXU1dCvGy3epRQ">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdyTw._-Cqk6SdsfAw_IguWcT8QZJVmg0">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -1234,27 +1234,15 @@ P.S. I cannot speak enough of how much I appreciate your book and all your hard 
 <div class="card">
   
   
-  
-  
-  <div class="card-header">
-    <div class="row">
-      <div class="col">The Flask Mega-Tutorial</div>
-      <div class="col text-end">
-        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
-          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
-        </a>
-      </div>
-    </div>
-  </div>
-  <a class="card-book-cover" href="https://amzn.to/3MQffrm">
-    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
   </a>
   <div class="card-body">
-    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
   </div>
   <div class="card-body">
-    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
-    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
   </div>
 
   
@@ -1644,5 +1632,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis-2018/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:46:53 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis-2018/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:40:13 GMT -->
 </html>

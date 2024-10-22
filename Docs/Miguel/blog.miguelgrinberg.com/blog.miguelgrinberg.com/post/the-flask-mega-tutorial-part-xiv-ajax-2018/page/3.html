@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xiv-ajax-2018/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:48:30 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xiv-ajax-2018/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:42:26 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
     
@@ -209,7 +209,7 @@
 <li><a href="../../the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis-2018.html">Chapter 23: Application Programming Interfaces (APIs)</a></li>
 </ul>
 <p>In this article I'm going to take a departure from the "safe zone" of server-side development to work on a feature that has equally important server and client-side components. Have you seen the "Translate" links that some sites show next to user generated content? These are links that trigger a real time automated translation of content that is not in the user's native language. The translated content is typically inserted below the original version. Google shows it for search results in foreign languages. Facebook does it for posts. Twitter does it for tweets. Today I'm going to show you how to add the very same feature to Microblog!</p>
-<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.14">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.14.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.13...v0.14">Diff</a>.</em></p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.14">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.14.zip">Zip</a>, <a href="../../../../github.com/miguelgrinberg/microblog/compare/v0.13...v0.html">Diff</a>.</em></p>
 <h2>Server-side vs. Client-side</h2>
 <p>In the traditional server-side model that I've followed so far there is a client (a web browser commanded by a user) making HTTP requests to the application server. A request can simply ask for an HTML page, like when you click the "Profile" link, or it can trigger an action, like when you click the Submit button after editing your profile information. In both types of requests the server completes the request by sending a new web page to the client, either directly or by issuing a redirect. The client then replaces the current page with the new one. This cycle repeats for as long as the user stays on the application's web site. In this model the server does all the work, while the client just displays the web pages and accepts user input.</p>
 <p>There is a different model in which the client takes a more active role. In this model, the client issues a request to the server and the server responds with a web page, but unlike the previous case, not all the page data is HTML, there is also sections of the page with code, typically written in Javascript. Once the client receives the page it displays the HTML portions, and executes the code. From then on you have an active client that can do work on its own without little or no contact with the server. In a strict client-side application the entire application is downloaded to the client with the initial page request, and then the application runs entirely on the client, only contacting the server to retrieve or store data and making dynamic changes to the appearance of that first and only web page. This type of applications are called <a href="http://en.wikipedia.org/wiki/Single-page_application">Single Page Applications</a> or SPAs.</p>
@@ -1029,7 +1029,7 @@ Mario B.</p>
   
 <form action="#comment-form" method="post">
   <input id="url" name="url" type="hidden" value="">
-<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdmgA.JF3Ek4EB0MUPdOcijiC972VA3PY">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdy_w.Ov_GOMmcdwEDElFVQxLbvETvzgM">
     
   <div class="mb-3">
     <label class="form-label" for="name">Name</label>
@@ -1092,27 +1092,15 @@ Mario B.</p>
 <div class="card">
   
   
-  
-  
-  <div class="card-header">
-    <div class="row">
-      <div class="col">The Flask Mega-Tutorial</div>
-      <div class="col text-end">
-        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
-          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
-        </a>
-      </div>
-    </div>
-  </div>
-  <a class="card-book-cover" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">
-    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
   </a>
   <div class="card-body">
-    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
   </div>
   <div class="card-body">
-    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
-    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
   </div>
 
   
@@ -1502,5 +1490,5 @@ document.addEventListener("DOMContentLoaded", flask_moment_render_all);
 
   </body>
 
-<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xiv-ajax-2018/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:48:31 GMT -->
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xiv-ajax-2018/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 09:42:29 GMT -->
 </html>
