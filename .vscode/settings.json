@@ -3,6 +3,7 @@
         "microblog",
         "mycroblog",
         "SQLALCHEMY",
+        "werkzeug",
         "wtforms"
     ]
 }
