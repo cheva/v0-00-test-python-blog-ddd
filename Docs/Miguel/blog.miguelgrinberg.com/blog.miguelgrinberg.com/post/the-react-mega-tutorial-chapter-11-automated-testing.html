@@ -1,0 +1,1263 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:47:52 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The React Mega-Tutorial, Chapter 11: Automated Testing - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="javascript, react, jsx, testing, jest, unit tests, mocks">
+  
+  
+  <link rel="canonical" href="the-react-mega-tutorial-chapter-11-automated-testing.html">
+  
+
+  
+    <link href="../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The React Mega-Tutorial, Chapter 11: Automated Testing">
+    <meta property="og:description" content="Up to now, all the testing done on the application you&#39;ve built was manual. Manual testing as you develop your application is useful, but as the application grows the required testing effort grows as…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-react-mega-tutorial-chapter-11-automated-testing.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing">
+    <meta name="twitter:title" content="The React Mega-Tutorial, Chapter 11: Automated Testing">
+    <meta name="twitter:description" content="Up to now, all the testing done on the application you&#39;ve built was manual. Manual testing as you develop your application is useful, but as the application grows the required testing effort grows as…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-react-mega-tutorial-chapter-11-automated-testing.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="the-react-mega-tutorial-chapter-11-automated-testing.html">The React Mega-Tutorial, Chapter 11: Automated Testing</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2022-11-02T12:03:09Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2022-11-02T12:03:09Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>Up to now, all the testing done on the application you've built was manual. Manual testing as you develop your application is useful, but as the application grows the required testing effort grows as well, until it becomes so time-consuming that the only way to keep up is to test less, or to find a way to automate some testing work. In this chapter you are going to learn some techniques to create automated tests for your React application.</p>
+<p>The complete course, including videos for every chapter is available to order from my <a href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">courses site</a>. Ebook and paperback versions of this course are also available from <a href="https://www.amazon.com/dp/B09YPBXMMY/ref=nosim?tag=thirdwish-20">Amazon</a>. Thank you for your support!</p>
+<p>For your reference, here is the complete list of articles in this series:</p>
+<ul>
+<li><a href="introducing-the-react-mega-tutorial.html">Introducing the React Mega-Tutorial</a></li>
+<li><a href="the-react-mega-tutorial-chapter-1-modern-javascript.html">Chapter 1: Modern JavaScript</a></li>
+<li><a href="the-react-mega-tutorial-chapter-2-hello-react.html">Chapter 2: Hello, React!</a></li>
+<li><a href="the-react-mega-tutorial-chapter-3-working-with-components.html">Chapter 3: Working with Components</a></li>
+<li><a href="the-react-mega-tutorial-chapter-4-routing-and-page-navigation.html">Chapter 4: Routing and Page Navigation</a></li>
+<li><a href="the-react-mega-tutorial-chapter-5-connecting-to-a-back-end.html">Chapter 5: Connecting to a Back End</a></li>
+<li><a href="the-react-mega-tutorial-chapter-6-building-an-api-client.html">Chapter 6: Building an API Client</a></li>
+<li><a href="the-react-mega-tutorial-chapter-7-forms-and-validation.html">Chapter 7: Forms and Validation</a></li>
+<li><a href="the-react-mega-tutorial-chapter-8-authentication.html">Chapter 8: Authentication</a></li>
+<li><a href="the-react-mega-tutorial-chapter-9-application-features.html">Chapter 9: Application Features</a></li>
+<li><a href="the-react-mega-tutorial-chapter-10-memoization.html">Chapter 10: Memoization</a></li>
+<li><a href="the-react-mega-tutorial-chapter-11-automated-testing.html">Chapter 11: Automated Testing</a> (this article)</li>
+<li><a href="the-react-mega-tutorial-chapter-12-production-builds.html">Chapter 12: Production Builds</a></li>
+</ul>
+<h2>The Purpose of Automated Testing</h2>
+<p>When asked about the purpose of automated testing, most people say that it is the same as testing manually, which is to find bugs. This is, in general terms, correct, but what many don't know is that automated testing is far superior to manual testing at finding a specific type of bugs called <em>regressions</em>.</p>
+<p>Regressions are bugs that occur in code that previously worked correctly. They are usually caused by additions or modifications that affect existing code in ways that the developer fails to recognize. The larger the codebase, the easier it is for regressions to be introduced, as the relationships and dependencies between different parts of the application become more complex difficult to track.</p>
+<p>In short, when you develop a new feature of your application, you are going to test it manually and ensure that it works correctly. This is the best time for you to spend a little more time creating automated tests that can ensure that this feature continues to work as designed in the future, as more changes and features are added.</p>
+<h2>Testing React Applications with Jest</h2>
+<p>Applications created with Create React App come with testing support built it, using the <a href="https://jestjs.io/">Jest</a> testing framework.</p>
+<p>A common naming convention for test files is to use a <em>.test.js</em> suffix. For example, tests that apply to code in <em>src/App.js</em> are written in a <em>src/App.test.js</em> file. In fact, the project already has a <em>src/App.test.js</em> file with an example test that was added by Create React App.</p>
+<p>The example test in <em>src/App.test.js</em> was designed to work with the starter application. With all the changes that went into the application this test is now failing.</p>
+<p>To start the test suite, you can run the following command from a terminal:</p>
+<pre><code class="language-bash">npm test
+</code></pre>
+<p>As with <code>npm start</code>, the test command runs in the background and watches your code changes. As files change, related tests execute.</p>
+<p>When the test suite is started, Jest is going to try to determine what were the most recent changes that were made to the application, and then run the tests for the affected files. Jest may decide that <em>App.js</em> needs to be tested, and then you will see a long description of this test's failure, followed by a summary such as the following:</p>
+<pre><code class="language-text">Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        1.996 s, estimated 2 s
+Ran all test suites.
+
+Watch Usage: Press w to show more.
+</code></pre>
+<p>Jest may also decide that none of the changes you made recently to the project affect <em>App.js</em>, and in that case it will not run any tests and just start to watch for changes with the following message:</p>
+<pre><code class="language-text">No tests found related to files changed since last commit.
+Press `a` to run all tests, or run Jest with `--watchAll`.
+
+Watch Usage
+ › Press a to run all tests.
+ › Press f to run only failed tests.
+ › Press q to quit watch mode.
+ › Press p to filter by a filename regex pattern.
+ › Press t to filter by a test name regex pattern.
+ › Press Enter to trigger a test run.
+</code></pre>
+<p>If you get this output, you press "a" to instruct Jest to run the test suite. I recommend that you do this, so that you become familiar with how Jest shows test failures.</p>
+<h2>Renders, Queries and Assertions</h2>
+<p>The first task is to make adjustments to the test in <em>src/App.test.js</em> so that it is correct for the application in its current state. Open this file to have a look at the test code:</p>
+<pre><code class="language-jsx">import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () =&gt; {
+  render(&lt;App /&gt;);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+</code></pre>
+<p>To write a test, you called the <code>test()</code> function, which is globally installed by the Jest framework. The first argument to this function is a written description of the purpose of the test, and the second argument is a function that contains the test logic.</p>
+<p>There are several libraries and tools that make it possible to write tests. The test above shows three of them:</p>
+<ul>
+<li>The <code>render()</code> function from the <a href="https://testing-library.com/docs/react-testing-library/intro/">React Testing Library</a> allows the test to render a component. Rendering in this case does not happen in the browser, but in an emulated environment that is similar to it.</li>
+<li>The <code>screen</code> object, also exposed by the same library, allows the test to query the contents of the page that was rendered by <code>render()</code>.</li>
+<li>The <code>expect()</code> function, another global from Jest, allows the test to create <em>assertions</em>, which are the checks that determine if the test passed of failed.</li>
+</ul>
+<p>In the test, the <code>render()</code> function is used to render the <code>App</code> component. Then <code>screen.getByText()</code> is used to find an element in the render page that has the given text. Finally, <code>expect()</code> is used to ensure that this element exists in the page.</p>
+<p>Let's rewrite this test so that it checks that the "Microblog" heading in the top-left corner of the page is rendered. Here is the updated version of <em>src/App.test.js</em> with this test:</p>
+<p class="code_title"><em>src/App.test.js</em>: First application test</p>
+
+<pre><code class="language-jsx">import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders brand element', () =&gt; {
+  render(&lt;App /&gt;);
+
+  const element = screen.getByText(/Microblog/);
+
+  expect(element).toBeInTheDocument();
+  expect(element).toHaveClass('navbar-brand');
+});
+</code></pre>
+<p>If you have the <code>npm test</code> command running, as soon as you save the new version of <em>src/App.test.js</em> the test will run again, and this time it will pass.</p>
+<p>The new version of the test still renders <code>App</code>, but then it runs a query to locate an element in the page with the text "Microblog", which should return the title element in the heading.</p>
+<p>In this test there are two assertions. First the test ensures that the element was found in the page. As an additional check, it makes sure that the element has the class <code>navbar-brand</code>, which comes from Bootstrap.</p>
+<p>The majority of tests in a React application are going to have this same structure. First, a component will be rendered, then one or more queries will retrieve elements of interest from the rendered contents, and finally, one or more assertions will ensure that these elements have the expected attributes.</p>
+<h3>Using Queries</h3>
+<p>The React Testing Library provides the <code>screen</code> object to perform queries on content previously rendered with the <code>render()</code> function.</p>
+<p>When looking for an element, there are three groups of queries:</p>
+<ul>
+<li><code>getBy...()</code> returns the matching element, or raises an error if there are no matching elements, or more than one matching element.</li>
+<li><code>queryBy...()</code> returns the matching element, returns <code>null</code> if there are no matching elements, or raises an error if there are more than one matching elements.</li>
+<li><code>findBy...()</code> waits for up to one second (by default) for a matching element to appear in the rendered page. An error is raised if no matching element or multiple elements appear during the waiting period. This method is asynchronous and returns a promise.</li>
+</ul>
+<p>Sometimes it is useful to look for multiple matching elements. There is a similar set of query functions that support this:</p>
+<ul>
+<li><code>getAllBy...()</code> returns an array with the matching elements, or raises an error if there are no matches.</li>
+<li><code>queryAllBy...()</code> returns an array with the matching elements, or an empty array if there are no matches.</li>
+<li><code>FindAllBy...()</code> waits for one or more matching elements to appear and returns them as an array. An error is raised if no matching elements appear. This method is asynchronous and returns a promise.</li>
+</ul>
+<p>For each of these six query options, you can choose from a selection of query options. Above you've seen how to locate an element by its text with <code>getByText()</code>. Other options are <code>getByTitle()</code>, <code>getByAltText()</code>, <code>getByRole()</code> and more that you can see in the <a href="https://testing-library.com/docs/queries/about#priority">documentation</a>.</p>
+<h3>Using Assertions</h3>
+<p>Once you have an element of interest, you have to create assertions that ensure that this element has the expected structure. This is done with the <a href="https://jestjs.io/docs/expect">expect()</a> function from Jest, which is combined with a matcher function. Below is a straightforward assertion that checks that a variable <code>result</code> is <code>null</code>:</p>
+<pre><code class="language-javascript">expect(result).toBeNull();
+</code></pre>
+<p>The structure of an assertion is always the same. The value or expression that is the target of the check is passed as an argument to the <code>expect()</code> function. Then a matcher method such as <code>toBeNull()</code> above is called on the result.</p>
+<p>Jest provides an extensive <a href="https://jestjs.io/docs/expect#methods">list of matcher methods</a>, but none of this are specific to React or web development. The <a href="https://github.com/testing-library/jest-dom">jest-dom</a> package, which is also installed by Create React App, extends Jest with a range of <a href="https://github.com/testing-library/jest-dom#custom-matchers">custom matcher methods</a> that apply to DOM elements, such as the <code>toBeInTheDocument()</code> and <code>toHaveClass()</code> methods used in the test above.</p>
+<h2>Testing Individual Components</h2>
+<p>The test above rendered the complete application, starting from the <code>App</code> component. In many cases it is preferable to render a single component or a small subset.</p>
+<p>Below you can see a test for the <code>Post</code> component.</p>
+<p class="code_title"><em>src/components/Post.test.js</em>: Test <code>Post</code> component</p>
+
+<pre><code class="language-jsx">import { render, screen } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import Post from './Post';
+
+test('it renders all the components of the post', () =&gt; {
+  const timestampUTC = '2020-01-01T00:00:00.000Z';
+  const post = {
+    text: 'hello',
+    author: {username: 'susan', avatar_url: 'https://example.com/avatar/susan'},
+    timestamp: timestampUTC,
+  };
+
+  render(
+    &lt;BrowserRouter&gt;
+      &lt;Post post={post} /&gt;
+    &lt;/BrowserRouter&gt;
+  );
+
+  const message = screen.getByText('hello');
+  const authorLink = screen.getByText('susan');
+  const avatar = screen.getByAltText('susan');
+  const timestamp = screen.getByText(/.* ago$/);
+
+  expect(message).toBeInTheDocument();
+  expect(authorLink).toBeInTheDocument();
+  expect(authorLink).toHaveAttribute('href', '/user/susan');
+  expect(avatar).toBeInTheDocument();
+  expect(avatar).toHaveAttribute('src', 'https://example.com/avatar/susan&amp;s=48');
+  expect(timestamp).toBeInTheDocument();
+  expect(timestamp).toHaveAttribute(
+    'title', new Date(Date.parse(timestampUTC)).toString());
+});
+</code></pre>
+<p>This test starts by creating a fake blog post, with a similar structure as the posts that are returned by Microblog API.</p>
+<p>In the render section, an instance of the <code>Post</code> component receiving the fake blog post is rendered. Because the <code>Post</code> component renders a link that navigates to the author's page, it is necessary to have the support of React Router, so instead of rendering the <code>Post</code> component alone, it is wrapped in a <code>BrowserRouter</code> component.</p>
+<p>When rendering isolated components, it is often necessary to create a minimal environment that is similar to that of the real application. In this case, the component needed routing support, so a router component was added. In other cases a component might need to have access to a specific context, to the corresponding provider component must be included in the render. A good approach to render the smallest possible tree is to start by rendering the target component and look at the errors the render produces to determine what wrapper components are needed.</p>
+<p>In the query section of the test, several elements of the rendered post are retrieved. Sometimes it may not be clear what is the best method to query for an element. A good approach is to look at the HTML code that the component renders in the real application from your browser's developer console to find if there is a particular text, alt text or maybe title that can be used to query for the element. If you can't find anything that you can use, you can add a <a href="https://testing-library.com/docs/queries/bytestid/">data-testid</a> attribute to query for in the test.</p>
+<p>The assertions of this test ensure that the four elements queried appear in the document. For the author link, the <code>href</code> attribute is also checked to be correct. Likewise, for the avatar image, the <code>src</code> attribute is checked. The timestamps rendered by the <code>TimeAgo</code> component have a <code>title</code> attribute that can be included in assertions as well. When trying to decide what assertions to write for a component, it is a good idea to look at the rendered HTML code of the target component in your browser's developer console.</p>
+<h2>Using Fake Timers</h2>
+<p>Are you ready for something more advanced? In the next test, a small <code>Test</code> component is created, with the only purpose of flashing a message. The test then verifies that the alert component appears on the rendered page.</p>
+<p class="code_title"><em>src/contexts/FlashProvider.test.js</em>: Test message flashing</p>
+
+<pre><code class="language-jsx">import { render, screen } from '@testing-library/react';
+import { useEffect } from 'react';
+import FlashProvider from './FlashProvider';
+import { useFlash } from './FlashProvider';
+import FlashMessage from '../components/FlashMessage';
+
+beforeEach(() =&gt; {
+  jest.useFakeTimers();
+});
+
+afterEach(() =&gt; {
+  jest.useRealTimers()
+});
+
+test('flashes a message', async () =&gt; {
+  const Test = () =&gt; {
+    const flash = useFlash();
+    useEffect(() =&gt; {
+      flash('foo', 'danger');
+    }, []);
+    return null;
+  };
+
+  render(
+    &lt;FlashProvider&gt;
+      &lt;FlashMessage /&gt;
+      &lt;Test /&gt;
+    &lt;/FlashProvider&gt;
+  );
+
+  const alert = screen.getByRole('alert');
+
+  expect(alert).toHaveTextContent('foo');
+  expect(alert).toHaveClass('alert-danger');
+});
+</code></pre>
+<p>There are a number of new concepts in this test. First, since the flashing mechanisms in the application use timers, it is a good idea to use mocked timers that can run time faster. The <code>beforeEach()</code> and <code>afterEach()</code> functions from Jest take functions that are executed before and after each test in the file. The before function calls <code>jest.useFakeTimers()</code> to switch to simulated timers, and the after function resets the default timers from JavaScript.</p>
+<p>The test begins by creating the <code>Test</code> component, which launches a side effect function and then returns <code>null</code> to render itself as an empty component. The side effect function calls the <code>flash()</code> function, returned by the <code>useFlash()</code> hook.</p>
+<p>The <code>render()</code> call in this test creates a small application with the <code>FlashProvider</code> component at the root. This is necessary so that the <code>FlashContext</code> is available. This component has two children: the <code>FlashMessage</code> component, which renders the alerts, and the <code>Test</code> component create specifically for this test.</p>
+<p>An important implementation detail of the <code>render()</code> function is that it not only renders the component tree, but also waits for side effects functions to run and update the application state until the application settles and there is nothing else to update. When <code>render()</code> returns, the alert should already be visible.</p>
+<p>The <code>Alert</code> component from React-Bootstrap can be obtained by its role. The assertions ensure that the text and the alert class are correct.</p>
+<h3>Testing for Follow-Up State Changes</h3>
+<p>The test above ensures that alerts are displayed, but the flash message system in this application has some complexity that the test isn't reaching. In particular, alerts are supposed to close on their own after 10 seconds. How can that be tested, ideally without having to wait those 10 seconds?</p>
+<p>The complication with testing the automatic closing of the alert is that the alert isn't ever removed or hidden. The <code>FlashMessage</code> component wraps the alert with a <code>Collapse</code> component from React-Bootstrap. This component uses CSS transitions to shrink the alert until it reaches a height of 0 pixels instead of hiding it.</p>
+<p>There are several options to work around this problem, but most would require the test to have knowledge of the inner workings of the <code>Collapse</code> component, which is not ideal because the test could break if React-Bootstrap is upgraded to a new version. A surprisingly simple solution is to add a custom data attribute to the <code>Alert</code> component indicating the visible state of the alert. This adds a tiny amount of overhead, but gives the test something to assert on.</p>
+<p>In the listing below, the alert rendered by the <code>FlashMessage</code> component includes a <code>data-visible</code> attribute that exposes the <code>visible</code> state variable from the <code>FlashContext</code>.</p>
+<p class="code_title"><em>src/components/FlashMessage.js</em>: Add testing helper</p>
+
+<pre><code class="language-jsx">... // &lt;-- no changes to imports
+
+export default function FlashMessage() {
+  const { flashMessage, visible, hideFlash } = useContext(FlashContext);
+
+  return (
+    &lt;Collapse in={visible}&gt;
+      &lt;div&gt;
+        &lt;Alert variant={flashMessage.type || 'info'} dismissible
+          onClose={hideFlash} data-visible={visible}&gt;
+          {flashMessage.message}
+        &lt;/Alert&gt;
+      &lt;/div&gt;
+    &lt;/Collapse&gt;
+  );
+}
+</code></pre>
+<p>With the <code>data-visible</code> element in place, the flash message test can be expanded to check the message visibility.</p>
+<p class="code_title"><em>src/contexts/FlashProvider.test.js</em>: Test alert visibility</p>
+
+<pre><code class="language-jsx">import { render, screen, act } from '@testing-library/react';
+... // &lt;-- no other changes to imports
+
+... // &lt;-- no changes to beforeEach() and afterEach()
+
+test('flashes a message', () =&gt; {
+  ... // &lt;-- no changes to Test component or render() call
+
+  const alert = screen.getByRole('alert');
+
+  expect(alert).toHaveTextContent('foo');
+  expect(alert).toHaveClass('alert-danger');
+  expect(alert).toHaveAttribute('data-visible', 'true');
+
+  act(() =&gt; jest.runAllTimers());
+  expect(alert).toHaveAttribute('data-visible', 'false');
+});
+</code></pre>
+<p>The <code>data-visible</code> attribute is checked to be <code>true</code> when the alert is rendered. After that, the test needs to wait 10 seconds for the timer to go off and collapse the alert, but having the test really wait that long is impractical. When working with Jest's fake timers, the <code>jest.runAllTimers()</code> function advances the time until the next timer, without having to wait for the actual time to pass.</p>
+<p>As a result of the timer firing, some state variables in React will change, and that will require some re-renders, which in turn might launch new side effect functions that might require even more renders. The <code>render()</code> function is designed to wait for this asynchronous activity until all state variables, side effects and renders settle, but calling <code>jest.runAllTimers()</code> on its own would not provide the same kind of safety wait.</p>
+<p>The React Testing Library provides the <code>act()</code> function to perform this type of waiting. Instead of calling <code>jest.runAllTimers()</code> directly, <code>act()</code> is called with a function that performs this action. The <code>act()</code> function will call the function passed as an argument, and then wait for the React application to settle down.</p>
+<p>Once the timer has been advanced, a final assertion ensures that the <code>data-visible</code> attribute is now <code>false</code>, which confirms that the alert has been collapsed.</p>
+<h2>Mocking API Calls</h2>
+<p>Your tests should run in complete isolation, without requiring the availability of external services such as databases or API back ends. When a component that makes calls to a back end needs to be tested, any API calls that it makes should be <em>mocked</em>.</p>
+<p>You have seen an example of mocking in the previous section, where a JavaScript timer was replaced with a fake version that runs much faster. In addition to providing fake timers, Jest provides an extensive set of functions for mocking functions or entire modules.</p>
+<p>Ready to learn how to mock? The authentication subsystem is a core piece of the application that can benefit from automated testing. This is an excellent use case to learn how to work with mocks.</p>
+<p>Since the authentication logic is mostly located in the <code>UserProvider</code> component, the tests will be in <em>src/contexts/UserProvider.test.js</em>. Below you can see the includes that will be needed, and a <code>beforeEach()</code> and <code>afterEach()</code> pair of functions that initialize and restore the test environment.</p>
+<p class="code_title"><em>src/contexts/UserProvider.test.js</em>: Create a mock for <code>fetch()</code></p>
+
+<pre><code class="language-javascript">import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event'
+import { useState, useEffect } from 'react';
+import FlashProvider from './FlashProvider';
+import ApiProvider from './ApiProvider';
+import UserProvider from './UserProvider';
+import { useUser } from './UserProvider';
+
+const realFetch = global.fetch;
+
+beforeEach(() =&gt; {
+  global.fetch = jest.fn();
+});
+
+afterEach(() =&gt; {
+  global.fetch = realFetch;
+  localStorage.clear();
+});
+</code></pre>
+<p>The mocking in this case is done in the <code>beforeEach()</code> handler function, so that it applies to all the test in the file. Since the purpose of mocking is to prevent network access from actually reaching a remote server, the <code>fetch()</code> function is the target to mock. Before this function is modified, it is a good idea to save the original in a global variable, so that it can be restored after the tests are done. Accessing the <code>fetch()</code> function as <code>global.fetch</code> is done to make the intention of mocking a global function more clear.</p>
+<p>The <code>jest.fn()</code> function creates a general purpose fake function that can be used to replace any function in the application. Functions created with <code>jest.fn()</code> have the interesting property that they record calls made to them, so these calls can then be checked in the test assertions. Jest mocks can be programmed to return specific values, as needed by each test, as you will see next.</p>
+<p>To keep things tidy, the <code>afterEach()</code> handler reverts the mock back to the original function. Since the <code>MicroblogApiClient</code> class stores access tokens in local storage, it is also a good practice to clear any data the might have been stored during a test when the test is done.</p>
+<h3>Testing a Valid Login</h3>
+<p>The next listing shows the first test, which logs a user in. This code goes right after the <code>afterEach()</code> handler.</p>
+<p class="code_title"><em>src/contexts/UserProvider.test.js</em>: Login test</p>
+
+<pre><code class="language-jsx">test('logs user in', async () =&gt; {
+  const urls = [];
+
+  global.fetch
+    .mockImplementationOnce(url =&gt; {
+      urls.push(url);
+      return {
+        status: 200,
+        ok: true,
+        json: () =&gt; Promise.resolve({access_token: '123'}),
+      };
+    })
+    .mockImplementationOnce(url =&gt; {
+      urls.push(url);
+      return {
+        status: 200,
+        ok: true,
+        json: () =&gt; Promise.resolve({username: 'susan'}),
+      };
+    });
+
+  const Test = () =&gt; {
+    const { login, user } = useUser();
+    useEffect(() =&gt; {
+      (async () =&gt; await login('username', 'password'))();
+    }, []);
+    return user ? &lt;p&gt;{user.username}&lt;/p&gt; : null;
+  };
+
+  render(
+    &lt;FlashProvider&gt;
+      &lt;ApiProvider&gt;
+        &lt;UserProvider&gt;
+          &lt;Test /&gt;
+        &lt;/UserProvider&gt;
+      &lt;/ApiProvider&gt;
+    &lt;/FlashProvider&gt;
+  );
+
+  const element = await screen.findByText('susan');
+  expect(element).toBeInTheDocument();
+  expect(global.fetch).toHaveBeenCalledTimes(2);
+  expect(urls).toHaveLength(2);
+  expect(urls[0]).toMatch(/^http.*\/api\/tokens$/);
+  expect(urls[1]).toMatch(/^http.*\/api\/me$/);
+});
+</code></pre>
+<p>The new and most interesting part of this test is at the start of the function. The <code>urls</code> array is going to be used to collect all the URLs that the application calls <code>fetch()</code> on. These calls are now going to be redirected to the mock function, so the test has full control of what happens in these calls.</p>
+<p>The two <code>mockImplementationOnce()</code> calls that are made on the <code>global.fetch</code> function, which is now a mock function, provide alternative functions that are going to execute each time the application makes a call. The two implementations capture the <code>url</code> parameter that was sent by the application and add it to the <code>urls</code> array, so that they can be asserted later. Then they return a response that is similar to what the real <code>fetch()</code> function returns.</p>
+<p>The first API call that the application makes goes to the <em>/api/tokens</em> endpoint to request an access token. The first fake function registered with the mock returns a success response with status code 200 and a made up <code>123</code> token.</p>
+<p>Once the API client receives an API token, the <code>UserProvider</code> component is going to make a request to the <em>/api/me</em> endpoint to retrieve the information about the user. This call is handled by the second mocked response, which returns a fictitious user "susan".</p>
+<p>Note that <code>mockImplementationOnce()</code> is not the only way to configure mocks, and in fact there is an <a href="https://jestjs.io/docs/mock-function-api">extensive list of methods</a> that can be used to model how the mocked function will behave during the test.</p>
+<p>The mock function is now ready to be used. The <code>Test</code> component created by the test calls the <code>login()</code> function obtained from the <code>useUser()</code> hook in a side effect function, and renders the username of the logged-in user.</p>
+<p>For the render portion of this test, the <code>FlashProvider</code>, <code>ApiProvider</code> and <code>UserProvider</code> components are added as wrappers to <code>Test</code>, so that all the hooks and contexts required during the test are available.</p>
+<p>In the assertions section the <code>screen.findByText()</code> method is used to wait for the username to be rendered after the effect function completes and the fake user is logged in. Note that the <code>findBy...()</code> set of functions are asynchronous, so they need to be awaited. The test function was created as an async function so that <code>await</code> can be used here.</p>
+<p>After ensuring that the username was rendered, the number of calls made to the <code>global.fetch()</code> mock is checked. And then, the <code>urls</code> array is also checked, to make sure the correct URLs were requested by the application. A regular expression is used to check the URLs, to avoid discrepancies in the domain and port portions of the URL, which are irrelevant to this test.</p>
+<h3>Testing an Invalid Login</h3>
+<p>The following test is similar to the previous one, but it models the case of a user providing invalid credentials.</p>
+<p class="code_title"><em>src/contexts/UserProvider.test.js</em>: Invalid login test</p>
+
+<pre><code class="language-jsx">test('logs user in with bad credentials', async () =&gt; {
+  const urls = [];
+
+  global.fetch
+    .mockImplementationOnce(url =&gt; {
+      urls.push(url);
+      return {
+        status: 401,
+        ok: false,
+        json: () =&gt; Promise.resolve({}),
+      };
+    });
+
+  const Test = () =&gt; {
+    const [result, setResult] = useState();
+    const { login, user } = useUser();
+    useEffect(() =&gt; {
+      (async () =&gt; {
+        setResult(await login('username', 'password'));
+      })();
+    }, []);
+    return &lt;&gt;{result}&lt;/&gt;;
+  };
+
+  render(
+    &lt;FlashProvider&gt;
+      &lt;ApiProvider&gt;
+        &lt;UserProvider&gt;
+          &lt;Test /&gt;
+        &lt;/UserProvider&gt;
+      &lt;/ApiProvider&gt;
+    &lt;/FlashProvider&gt;
+  );
+
+  const element = await screen.findByText('fail');
+  expect(element).toBeInTheDocument();
+  expect(global.fetch).toHaveBeenCalledTimes(1);
+  expect(urls).toHaveLength(1);
+  expect(urls[0]).toMatch(/^http.*\/api\/tokens$/);
+});
+</code></pre>
+<p>This test programs the <code>global.fetch()</code> mock to return a 401 response in its first call, which is what would happen if a user entered an invalid username or password in the login form.</p>
+<p>The <code>Test</code> component this time renders the return value of the <code>login()</code> function returned by the <code>useUser()</code> hook. If you recall, this function returns the string <code>'ok'</code> when the login was successful, <code>'fail'</code> when the login was invalid, and <code>'error'</code> when an unexpected error occurred during the request.</p>
+<p>The assertions ensure that "fail" is rendered to the page, in addition to similar checks on the mock and <code>urls</code> array.</p>
+<h3>Testing Logouts</h3>
+<p>The last authentication test ensures that users can log out of the application.</p>
+<p class="code_title"><em>src/contexts/UserProvider.test.js</em>: Invalid login test</p>
+
+<pre><code class="language-jsx">test('logs user out', async () =&gt; {
+  localStorage.setItem('accessToken', '123');
+
+  global.fetch
+    .mockImplementationOnce(url =&gt; {
+      return {
+        status: 200,
+        ok: true,
+        json: () =&gt; Promise.resolve({username: 'susan'}),
+      };
+    })
+    .mockImplementationOnce((url) =&gt; {
+      return {
+        status: 204,
+        ok: true,
+        json: () =&gt; Promise.resolve({}),
+      };
+    });
+
+  const Test = () =&gt; {
+    const { user, logout } = useUser();
+    if (user) {
+      return (
+        &lt;&gt;
+          &lt;p&gt;{user.username}&lt;/p&gt;
+          &lt;button onClick={logout}&gt;logout&lt;/button&gt;
+        &lt;/&gt;
+      );
+    }
+    else if (user === null) {
+      return &lt;p&gt;logged out&lt;/p&gt;;
+    }
+    else {
+      return null;
+    }
+  };
+
+  render(
+    &lt;FlashProvider&gt;
+      &lt;ApiProvider&gt;
+        &lt;UserProvider&gt;
+          &lt;Test /&gt;
+        &lt;/UserProvider&gt;
+      &lt;/ApiProvider&gt;
+    &lt;/FlashProvider&gt;
+  );
+
+  const element = await screen.findByText('susan');
+  const button = await screen.findByRole('button');
+  expect(element).toBeInTheDocument();
+  expect(button).toBeInTheDocument();
+
+  userEvent.click(button);
+  const element2 = await screen.findByText('logged out');
+  expect(element2).toBeInTheDocument();
+  expect(localStorage.getItem('accessToken')).toBeNull();
+});
+</code></pre>
+<p>This test presents a new challenge, because to be able to test that a user can log out, the user must be first logged in. Instead of repeating a login procedure as in previous tests, this time the test installs a fake access token in local storage, which will make the application believe that it is being started on a browser on which the user is logged in already.</p>
+<p>The mocked <code>fetch()</code> function for this test includes two calls. The first mocks the response to the <em>/api/me</em> request issued by the <code>UserProvider</code> component. A second mocked is response is included for the token revocation request issued during logout.</p>
+<p>The <code>Test</code> component used in this test is more complex than before. The component renders a page with the username of the logged-in user and a button to log out. When the button is clicked, the component re-renders with just the text "logged out".</p>
+<p>The first group of assertions ensure that both the username and the button are rendered to the page, after the <code>UserProvider</code> component gets a chance to load the fake user from the mocked <code>fetch()</code> call.</p>
+<p>The next step is to simulate a user clicking the button to log out. The React Testing Library includes <a href="https://testing-library.com/docs/ecosystem-user-event">user-event</a>, a companion library that is specialized in generating fake events. In this case a <code>click</code> event is simulated on the <code>button</code> element.</p>
+<p>Once the click is triggered, a <code>screen.findByText()</code> call is issued to retrieve the element with the "logged out" text. Note that this is issued with the asynchronous <code>findBy...()</code>, to wait for React to run all asynchronous operations and update the page.</p>
+<h2>Chapter Summary</h2>
+<ul>
+<li>The main purpose of writing automated tests is to ensure that new code does not fail in the future.</li>
+<li>Applications bootstrapped with Create React App integrate the Jest testing framework and the React Testing Library.</li>
+<li>Tests have access to a <code>render()</code> function to render the application, a subset, or an individual component.</li>
+<li>Correction functioning is confirmed by querying the results of a render for elements of interest, and asserting that these elements have the expected structure.</li>
+<li>Jest allows the tests to mock timers, remote services and other external entities required by the application, so that the test runs in an isolated, controlled and reproducible environment.</li>
+</ul></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing&amp;t=The%20React%20Mega-Tutorial%2C%20Chapter%2011%3A%20Automated%20Testing" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing&amp;resubmit=true&amp;title=The%20React%20Mega-Tutorial,%20Chapter%2011:%20Automated%20Testing" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20React%20Mega-Tutorial%2C%20Chapter%2011%3A%20Automated%20Testing&amp;url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing&amp;title=The%20React%20Mega-Tutorial%2C%20Chapter%2011%3A%20Automated%20Testing&amp;summary=The%20React%20Mega-Tutorial%2C%20Chapter%2011%3A%20Automated%20Testing&amp;source=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20React%20Mega-Tutorial%2C%20Chapter%2011%3A%20Automated%20Testing&amp;body=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="the-react-mega-tutorial-chapter-11-automated-testing.html#comments">4 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/55c0e7a3c3c6ec61d11ffd132e54ae31?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Jonas</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-06-13T19:30:28Z" data-function="fromNow" data-refresh="0" style="display: none">2023-06-13T19:30:28Z</span>
+  </p>
+  <div>
+    <p>The TimeAgo.js component seems to use the system language to render the text. What would be a clever way to force all unit tests to run in english to make sure the tests are less dependent on the machine which is running them? I tried to use things like:</p>
+<p>```<br>
+Object.defineProperty(window.navigator, 'language', {<br>
+    value: 'en-US',<br>
+    writable: true<br>
+ });<br>
+´´´</p>
+<p>in the setupTests.js or in the Post.test.js but it seems it's not working.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-07-04T12:02:56Z" data-function="fromNow" data-refresh="0" style="display: none">2023-07-04T12:02:56Z</span>
+  </p>
+  <div>
+    <p>@Jonas: the <code>Intl.RelativeTimeFormat()</code> function takes the locale to use as a first argument. When this argument is <code>undefined</code> as I'm using it in the code, the locale is retrieved from the system. For testing, it would be best to pass <code>en</code> here, to force times to be generated in English (or of course, you can also use your favorite language here). This would have to be done with a conditional, so that the value that is passed is still <code>undefined</code> when running normally. One way to do this would be by importing the locale from an environment variable, using <code>undefined</code> when the variable is not provided. Then you can provide the setting in the <code>.env.test</code> file, which is only used when running tests.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/5e347e2e229b2b44561b8877779985a6?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">Sun Yu</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-08-17T13:36:02Z" data-function="fromNow" data-refresh="0" style="display: none">2023-08-17T13:36:02Z</span>
+  </p>
+  <div>
+    <p>Why name the prop data-visible? Shouldn't it be dataVisible following the convention?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-08-17T18:42:57Z" data-function="fromNow" data-refresh="0" style="display: none">2023-08-17T18:42:57Z</span>
+  </p>
+  <div>
+    <p>@Sun: There is a standard for data attributes attached to HTML elements, you can't just name these attributes with any name. See <a href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes" rel="nofollow">https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes</a>.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="the-react-mega-tutorial-chapter-11-automated-testing/page/1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="the-react-mega-tutorial-chapter-11-automated-testing/page/0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="the-react-mega-tutorial-chapter-11-automated-testing/page/0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="the-react-mega-tutorial-chapter-11-automated-testing/page/0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdmFg.bvIICqaGiy3jDGtDwX62GPQKUZ8">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  
+  <div class="card-header">The React Mega-Tutorial</div>
+  <a class="card-book-cover" href="https://amzn.to/3LK7Skg">
+    <img src="../static/react-book-small.png">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you would you like to support my <a href="introducing-the-react-mega-tutorial.html">React Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial in book and/or video formats, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3LK7Skg">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3LK7Skg">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">Click here to get the Video Course!</a>
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../static/prettify.js"></script>
+  <script src="../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-11-automated-testing by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:47:52 GMT -->
+</html>

@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:48:03 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    MicroPython and the Internet of Things, Part V: Temperature and Humidity - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="python, micropython, iot, internet of things, breadboard, microcontroller, dht22">
+  
+  
+  <link rel="canonical" href="../../micropython-and-the-internet-of-things-part-v-temperature-and-humidity.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="MicroPython and the Internet of Things, Part V: Temperature and Humidity">
+    <meta property="og:description" content="In this chapter I&#39;m going to show you how to work with a temperature and humidity sensor.If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the video…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/micropython-and-the-internet-of-things-part-v-temperature-and-humidity.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity">
+    <meta name="twitter:title" content="MicroPython and the Internet of Things, Part V: Temperature and Humidity">
+    <meta name="twitter:description" content="In this chapter I&#39;m going to show you how to work with a temperature and humidity sensor.If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the video…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/micropython-and-the-internet-of-things-part-v-temperature-and-humidity.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../micropython-and-the-internet-of-things-part-v-temperature-and-humidity.html">MicroPython and the Internet of Things, Part V: Temperature and Humidity</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2019-08-24T18:15:27Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2019-08-24T18:15:27Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>In this chapter I'm going to show you how to work with a temperature and humidity sensor.</p>
+<p>If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the video version from my <a href="https://courses.miguelgrinberg.com/courses/micropython">Courses site</a>. Not only it will make for a better learning experience, but you'll also be supporting my effort in keeping my blog updated with relevant content. Thank you!</p>
+<p>For your reference, here is the complete list of chapters in this tutorial:</p>
+<ul>
+<li><a href="../../micropython-and-the-internet-of-things-part-i-welcome.html">Chapter 1: Welcome</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-ii-hello-micropython.html">Chapter 2: Hello, MicroPython!</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.html">Chapter 3: Building a MicroPython Application</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.html">Chapter 4: Wi-Fi and the Cloud</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-v-temperature-and-humidity.html">Chapter 5: Temperature and Humidity</a> (this article)</li>
+<li><a href="../../micropython-and-the-internet-of-things-part-vi-working-with-a-screen.html">Chapter 6: Working with a Screen</a></li>
+</ul>
+<h2>The DHT22 Temperature and Humidity Sensor</h2>
+<p>The DHT22 sensor is a low cost device that can obtain temperature and humidity readings. It uses a custom data transmission protocol that is very friendly to microcontrollers such as the Arduino and of course, the ESP8266. There are versions of this sensor with three and four pins, but in the four pin variant only three pins are used. The pins are connected to voltage, ground, and an available GPIO pin. One limitation these devices have is that to get more accurate results, you have to wait at least two seconds between readings.</p>
+<p>In the three-pin versions of this device the pins are <code>VCC</code>, <code>OUT</code> and <code>GND</code> from left to right and looking at it from the front. The <code>OUT</code> pin is the data output pin. You should verify this is the order for your own device before you connect it. You may see the voltage pin labeled as <code>VCC</code> or maybe <code>+</code>. The <code>GND</code> pin is sometimes labeled <code>-</code>. If you have a four-pin version, then the order is the same, but you have to skip the third pin which does not have any use.</p>
+<p>Here is a diagram with the wiring of this sensor to the ESP8266 board:</p>
+<p><img alt="DHT22" src="../../../static/images/micropython/ch05/esp8266-dht22.png" /></p>
+<p>To connect this sensor I'm taking advantage of the power strips in the breadboard. The only connection that goes directly into the microcontroller is the one for the data pin or <code>OUT</code>, which I connected to pin <code>D2</code>, also known as <code>GPIO4</code>. I've chosen the <code>D2</code> pin randomly from the available ones. I have used <code>D0</code> and <code>D4</code> as output pins to control the on-board LEDs, which I may want to still have access to. If I were to connect the sensor on one of these pins, I would not be able to use the corresponding LED because the pin is going to be configured as an input pin to receive the data from the sensor, but I could have also picked <code>D1</code>, <code>D3</code>, or any other available <code>D</code> pin. You can see in the diagram that I left the external reset button from the previous chapter connected, since it should not interfere with the sensor in any way.</p>
+<p>Remember that if you have one of the DHT22 models with four pins the third pin is generally the one that is unused.</p>
+<p>It's getting harder to show clear pictures of all the connections on the breadboard, but if you've done everything correctly yours should look more or less like mine shown below:</p>
+<p><img alt="DHT22" src="../../../static/images/micropython/ch05/dht22-circuit1.jpg" /></p>
+<p><img alt="DHT22" src="../../../static/images/micropython/ch05/dht22-circuit2.jpg" /></p>
+<h2>Obtaining Sensor Readings</h2>
+<p>Do you want to know what's the temperature right there where you are? Now that the temperature sensor is hooked up to your microcontroller you are ready to find out!</p>
+<p>Start a MicroPython REPL on your board, and enter the following statements to read the temperature and humidity using the sensor:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import dht
+&gt;&gt;&gt; import machine
+&gt;&gt;&gt; d = dht.DHT22(machine.Pin(4))
+&gt;&gt;&gt; d.measure()
+&gt;&gt;&gt; d.temperature()
+18.4
+&gt;&gt;&gt; d.humidity()
+47.3
+</code></pre>
+<p>MicroPython comes with a few drivers for commonly used devices. The DHT22 sensor is luckily supported, so all I needed to do is import the corresponding class and use it. The <code>dht</code> package contains two temperature sensor drivers, one for the DHT11 and another for the DHT22. The only argument that needs to be provided to the <code>DHT22()</code> class is a <code>machine.Pin()</code> instance for the GPIO pin connected to the data pin of the sensor. In my case I have it connected to <code>D2</code>, which is <code>GPIO4</code>.</p>
+<p>Once you have the object created, a call to <code>measure()</code> activates the sensor and performs a reading of both temperature and humidity. This method sends a "start" signal to the sensor through the data pin, and this wakes the sensor from its standard dormant state. The sensor then takes measurements of temperature and humidity and returns them, also through the data pin. As soon as this process completes the sensor goes back to sleep. If you are curious about the communication protocol used in the exchanges between the microcontroller and the sensor, you can read about it <a href="https://lastminuteengineers.com/dht11-dht22-arduino-tutorial/">here</a>.</p>
+<p>After a measurement has been taken, you can use the <code>temperature()</code> and <code>humidity()</code> methods to retrieve the results. The temperature is returned in the <a href="https://en.wikipedia.org/wiki/Celsius">Celsius scale</a>, and the humidity is returned as a percentage, what is usually known as <a href="https://en.wikipedia.org/wiki/Relative_humidity">relative humidity</a>.</p>
+<p>If you live in the United States or one of the few other countries in the world where the <a href="https://en.wikipedia.org/wiki/Fahrenheit">Fahrenheit scale</a> is used for temperatures, then the Celsius results are not going to mean much to you. In that case you can take the Celsius measurement and convert it to Fahrenheit with the following formula:</p>
+<pre><code class="language-python">&gt;&gt;&gt; d.temperature() * 9 / 5 + 32
+65.12
+</code></pre>
+<p>The above calculation takes the celsius temperature and multiplies it by 1.8 (or by the fraction 9/5, which is the same thing) and then adds 32. The result is the same temperature, but expressed in the Fahrenheit scale.</p>
+<p>I should note once again that the DHT22 sensor has what I consider a minor limitation. You can't call the <code>measure()</code> method more than once every two seconds, as the sensor needs that time to reset itself and get ready to take another measurement. If you force the sensor to measure at a higher rate than that, then the results are not going to be accurate. When the sensor is used correctly the accuracy is reported as +/-0.5 degrees celsius, which is very good for such a cheap sensor.</p>
+<p>The <code>temperature()</code> and <code>humidity()</code> methods do not have a calling rate limitation because they just return the data that was obtained by the last call to <code>measure()</code>.</p>
+<h2>Weather Station Application</h2>
+<p>Now that you know how to work with the sensor, I can show you how this can be incorporated into an application. The final goal is to have an application that reads the temperature and humidity at regular intervals and uploads all those values to the cloud.</p>
+<p>As I've done in previous chapters, I'm going to create a sub-directory inside the <code>micropython-tutorial</code> directory where I'm going to save the application files for this example:</p>
+<pre><code>(venv) $ mkdir chapter5
+(venv) $ cd chapter5
+</code></pre>
+<p>I'm going to split this task in three parts. In this section I'll show you how to read the temperature and humidity in the context of an application. Then in the following sections I'll add the cloud upload part, and finally the scheduling portion, where I'm going to configure the microcontroller to go to sleep and wake up on its own.</p>
+<p>To begin, let's encapsulate the whole sensor operation logic in a function in <code>main.py</code>. This function will obtain the data pin for the sensor from the configuration. To make this function more flexible, I can also add a setting to control which units are desired for temperature:</p>
+<pre><code class="language-python">import dht
+import machine
+import config
+
+def get_temperature_and_humidity():
+    dht22 = dht.DHT22(machine.Pin(config.DHT22_PIN))
+    dht22.measure()
+    temperature = dht22.temperature()
+    if config.FAHRENHEIT:
+        temperature = temperature * 9 / 5 + 32
+    return temperature, dht22.humidity()
+</code></pre>
+<p>You should be familiar with most of what I've done above, except maybe the last line, which returns the data. This function needs to return temperature and humidity, so I've chosen to return them as a <em>tuple</em>. The caller of this function has two options to deal with the return values. If it assigns the return of this function to a single variable, then the temperature and humidity values need to be extracted from the tuple:</p>
+<pre><code class="language-python">&gt;&gt;&gt; result = get_temperature_and_humidity()
+&gt;&gt;&gt; result[0]
+18.4
+&gt;&gt;&gt; result[1]
+47.3
+</code></pre>
+<p>This may seem a little odd, because when you see <code>result[0]</code> in the code it isn't immediately clear that this refers to the temperature. A clearer alternative that I prefer when working with tuple return values is to break the tuple directly in the assignment:</p>
+<pre><code class="language-python">&gt;&gt;&gt; temperature, humidity = get_temperature_and_humidity()
+&gt;&gt;&gt; temperature
+18.4
+&gt;&gt;&gt; humidity
+47.3
+</code></pre>
+<p>As you seen above, you need to create a <code>config.py</code> file with the following variables:</p>
+<pre><code class="language-python">DHT22_PIN = 4  # D2
+FAHRENHEIT = False
+</code></pre>
+<p>Of course you are free to set the value of the <code>FAHRENHEIT</code> variable according to your preferences. If you want to test this so far, upload <code>main.py</code> and <code>config.py</code> to your microcontroller and then run the following from the REPL:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import main
+&gt;&gt;&gt; temperature, humidity = main.get_temperature_and_humidity()
+&gt;&gt;&gt; temperature
+19.3
+&gt;&gt;&gt; humidity
+51.8
+</code></pre>
+<h2>Logging to the Cloud</h2>
+<p>The next task I'm going to ask you do is set up an account at <a href="https://thingspeak.com/">thingspeak.com</a>. This is a cloud service that stores data series, specifically designed for Internet of Things devices. The free tier offered by this service is more than enough for the needs of this tutorial.</p>
+<p><img alt="ThingSpeak" src="../../../static/images/micropython/ch05/thingspeak1.jpg" /></p>
+<p>As part of the account creation you will be asked to create a second account at mathworks.com, and for this you can use the same email address. Once you complete the account set up and verify your email address, click the "Channels" dropdown in the top navigation bar, and then select "My Channels".</p>
+<p>At this point you don't have any channels, so this page is going to be mostly empty, with just a "New Channel" button. Click this button to create a channel where you'll upload your sensor data. In ThingSpeak, a channel is a data structure that can hold timed series. Each channel can have up to eight fields, but for this exercise you need just two to hold the temperature and humidity series. See below how I configured my channel:</p>
+<p><img alt="ThingSpeak" src="../../../static/images/micropython/ch05/thingspeak2.jpg" /></p>
+<p>The remaining options in the New Channel screen can be left alone. Once you added the two fields, click the "Save Channel" button at the bottom.</p>
+<p>Now you should be in the new channel's page. The channel has its own navigation bar, and you are seeing the "Private View" page, where there are still empty charts for the two fields that you created in this channel. Click on "API Keys" on this navigation bar to access the page that has the information on how to upload data to the channel.</p>
+<p>The API Keys page shows the two keys that were assigned to your channel, one for writing data to it and another for reading. On the right sidebar there is a section titled "API Requests", which shows a few example HTTP requests that you can send for different tasks. The one that is interesting at this point is the "Upload a Channel Feed", which shows the <code>GET</code> request that needs to be sent to write some data into the channel. It should be similar to this, but with a different API key:</p>
+<pre><code>GET https://api.thingspeak.com/update?api_key=IQBL4LHQIQ84YH57&amp;field1=0
+</code></pre>
+<p>Even though this is a webhook URL in many ways similar to that of the IFTTT service you used in the previous chapter, there are two differences. First, ThingSpeak uses a <code>GET</code> request for data submission, which is not very conventional because requests of this type cannot carry a payload. In general a <code>POST</code> request is used when submitting data to a web service, as you saw with IFTTT, where a JSON payload was attached to the request. Some services bend the rules a little bit and use a <code>GET</code> request for data submission, because in general it is easier to send a <code>GET</code> request than a <code>POST</code> request.</p>
+<p>But if <code>GET</code> requests cannot carry data with them, how is the data submitted? Look at the above URL, in particular to the part that follows after the <code>?</code> sign. Let me repeat that part here with spaces added for clarity:</p>
+<pre><code>? api_key=IQBL4LHQIQ84YH57 &amp; field1=0
+</code></pre>
+<p>The HTTP protocol calls this the <a href="https://en.wikipedia.org/wiki/Query_string">query string</a> part of the URL. It starts with a question mark, and is followed by one or more parameter assignments. If multiple parameters are included, they are separated with an ampersand sign. The thingspeak URL uses a parameter called <code>api_key</code> for the write API key, which is what identifies your channel. Then a second parameter called <code>field1</code> passes a value for the first field in the channel. So as you see, uploading data to ThingSpeak implies generating this URL that includes parameters and then sending a <code>GET</code> request with it. Since your channel has two fields, the URL is going to have one more parameter in it:</p>
+<pre><code>    GET https://api.thingspeak.com/update?api_key=IQBL4LHQIQ84YH57&amp;field1={t}&amp;field2={h}
+</code></pre>
+<p>In this URL, I used <code>{t}</code> and <code>{h}</code> to represent the values of temperature and humidity read from the sensor. These will have to be incorporated into the URL before the request is made.</p>
+<p>In the previous chapter I used a <code>WEBHOOK_URL</code> configuration variable to define the webhook URL. For this application I'm going to do the same, but this time I'm going to need to insert the two variable parameters in it. To do this, select the upload URL shown in the API Keys page of your channel and paste it on your <code>config.py</code> file. Then edit it so that it matches the following format:</p>
+<pre><code>DHT22_PIN = 4  # D2
+FAHRENHEIT = False
+WEBHOOK_URL = 'https://api.thingspeak.com/update?api_key=IQBL4LHQIQ84YH57&amp;field1={temperature}&amp;field2={humidity}'
+</code></pre>
+<p>When you do this, make sure that the value of the <code>api_key</code> parameter is your channel's write key, not mine. Also make sure you write the values for the temperature and humidity exactly as <code>{temperature}</code> and <code>{humidity}</code>, as these will be replaced with the actual values before the request is sent to ThingSpeak.</p>
+<p>The function that calls the webhook is surprisingly similar to the one from the previous chapter:</p>
+<pre><code class="language-python">import urequests
+import config
+
+def log_data(temperature, humidity):
+    print('Invoking log webhook')
+    url = config.WEBHOOK_URL.format(temperature=temperature,
+                                    humidity=humidity)
+    response = urequests.get(url)
+    if response.status_code &lt; 400:
+        print('Webhook invoked')
+    else:
+        print('Webhook failed')
+        raise RuntimeError('Webhook failed')
+</code></pre>
+<p>The <code>url</code> is generated with the <code>format()</code> method of the Python strings. It basically replaces any occurrences of <code>{variable}</code> with the value of a keyword argument of the same name. It's a very convenient function to quickly render templates for URLs. You may also be familiar with the newer <a href="https://www.python.org/dev/peps/pep-0498/">f-strings</a> introduced in the Python language in version 3.6.<br />
+ Unfortunately MicroPython does not have f-strings, so the <code>format()</code> method is the best option at this time.</p>
+<p>After the URL is generated, the function is identical to that of the previous chapter. The <code>RuntimeError()</code> is raised if the webhook returns any 400 or above status code, which are all indicative of a problem. If you recall, in the previous chapter any raised exception were handled in the <code>run()</code> function by blinking the LEDs three times.</p>
+<p>So far your <code>main.py</code> file has the <code>get_temperature_and_humidity()</code> and <code>log_data()</code> functions. Since this application is in many ways similar to the one from the previous chapter, some of the code can be copied over. This includes the <code>connect_wifi()</code>, <code>show_error()</code>, <code>is_debug()</code> and <code>run()</code> functions. The only function that needs to be adapted is <code>run()</code>, the others work for this new application exactly as they are.</p>
+<p>Here you have a complete first version of <code>main.py</code> for the temperature and humidity cloud uploader application:</p>
+<pre><code class="language-python">import dht
+import machine
+import network
+import sys
+import time
+import urequests
+
+import config
+
+def connect_wifi():
+    ap_if = network.WLAN(network.AP_IF)
+    ap_if.active(False)
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+        print('Connecting to WiFi...')
+        sta_if.active(True)
+        sta_if.connect(config.WIFI_SSID, config.WIFI_PASSWORD)
+        while not sta_if.isconnected():
+            time.sleep(1)
+    print('Network config:', sta_if.ifconfig())
+
+def show_error():
+    led = machine.Pin(config.LED_PIN, machine.Pin.OUT)
+    led2 = machine.Pin(config.LED2_PIN, machine.Pin.OUT)
+    for i in range(3):
+        led.on()
+        led2.off()
+        time.sleep(0.5)
+        led.off()
+        led2.on()
+        time.sleep(0.5)
+    led.on()
+    led2.on()
+
+def is_debug():
+    debug = machine.Pin(config.DEBUG_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+    if debug.value() == 0:
+        print('Debug mode detected.')
+        return True
+    return False
+
+def get_temperature_and_humidity():
+    dht22 = dht.DHT22(machine.Pin(config.DHT22_PIN))
+    dht22.measure()
+    temperature = dht22.temperature()
+    if config.FAHRENHEIT:
+        temperature = temperature * 9 / 5 + 32
+    return temperature, dht22.humidity()
+
+def log_data(temperature, humidity):
+    print('Invoking log webhook')
+    url = config.WEBHOOK_URL.format(temperature=temperature,
+                                    humidity=humidity)
+    response = urequests.get(url)
+    if response.status_code &lt; 400:
+        print('Webhook invoked')
+    else:
+        print('Webhook failed')
+        raise RuntimeError('Webhook failed')
+
+def run():
+    try:
+        connect_wifi()
+        temperature, humidity = get_temperature_and_humidity()
+        log_data(temperature, humidity)
+    except Exception as exc:
+        sys.print_exception(exc)
+        show_error()
+
+    if not is_debug():
+        machine.deepsleep()
+
+run()
+</code></pre>
+<p>This should be mostly familiar to you because most of the code came from the previous chapter. There is one minor change in the <code>run()</code> function however that I want to point your attention to. The webhook of the previous chapter was only invoked when the device was reset. To distinguish a restart due to a reset from other conditions I used the <code>machine.reset_cause()</code> function. For this application I thought it made more sense to capture and log data for all the different restart conditions, so I removed the check for the restart cause.</p>
+<p>The <code>config.py</code> file that goes with this version of the application is shown below:</p>
+<pre><code class="language-python">WIFI_SSID = 'your SSID'
+WIFI_PASSWORD = 'your Wi-Fi password'
+LED_PIN = 2  # D4
+LED2_PIN = 16  # D0
+DEBUG_PIN = 14  # D5
+DHT22_PIN = 4  # D2
+FAHRENHEIT = False
+WEBHOOK_URL = 'https://api.thingspeak.com/update?api_key=IQBL4LHQIQ84YH57&amp;field1={temperature}&amp;field2={humidity}'
+</code></pre>
+<p>Of course you will need to customize this configuration to your situation, including entering your Wi-Fi details and the correct webhook for your ThingSpeak channel.</p>
+<p>If you upload <code>main.py</code> and <code>config.py</code> to your microcontroller, each time you power it or reset it a record of the current temperature and humidity will be uploaded to your channel on thingspeak.com.</p>
+<h2>Deep Sleep with a Wake Up Alarm</h2>
+<p>There is one last important piece in this application to complete it. The application currently logs temperature and humidity only when the board is powered on or reset. This was a good option for the application that emulated Amazon Dash buttons in the previous chapter, but for a data logger the most convenient implementation is for data to be logged automatically at regular intervals without any intervention. So basically, the requirement is to schedule the board to reset after a specified interval.</p>
+<p>The ESP8266 microcontroller has a real-time clock or RTC. Besides keeping time, this component provides an alarm that can be programmed to go off after a specified number of milliseconds have passed. Interestingly, the only component that is not powered off when the microcontroller enters deep sleep mode is the RTC, so it is possible to program the alarm to fire after some amount of time has passed and then put the device to sleep to let the alarm bring it back from sleep. The following statements configure the ESP8266 alarm, which is referenced as <code>ALARM0</code> in MicroPython, to wake up the device when it fires:</p>
+<pre><code class="language-python">&gt;&gt;&gt; rtc = machine.RTC()
+&gt;&gt;&gt; rtc.irq(trigger=rtc.ALARM0, wake=machine.DEEPSLEEP)
+</code></pre>
+<p>The next step is to configure when the alarm should go off. For example, to program the alarm to fire after one minute, you have to do this:</p>
+<pre><code class="language-python">&gt;&gt;&gt; rtc.alarm(rtc.ALARM0, 60 * 1000)
+</code></pre>
+<p>In this example the <code>60 * 1000</code> expression calculates the equivalent of one minute in milliseconds, which are the units the alarm needs. I like to use this expression instead of the calculated value to make the code a little bit more readable.</p>
+<p>There is one more detail that is going to seem very strange to you. The method the alarm uses to wake the device is indirect. All the alarm does is keep pin <code>D0</code> high (i.e. with a value of 1) until the alarm fires, at which point it changes it to low (0 in other words). If you go back to the pinout diagram for the microcontroller you will see that another alias for pin <code>D0</code> is <code>WAKE</code>.</p>
+<p>What does pin <code>D0</code> have to do with a reset you may ask? Really nothing, changing pin <code>D0</code> from 1 to 0 does not trigger a reset on its own, and in fact, you already know that all this does is turn one of the on-board LEDs on! The key to force the board to reset is to connect this pin to the <code>RST</code> pin. Recall from last chapter that the <code>RST</code> pin triggers a reset of the board when it is set low. The button that you used to trigger a reset connected <code>RST</code> to <code>GND</code> when it was pressed, which forces a low state. If pin <code>D0</code> is connected to <code>RST</code> while it is pulled high, nothing will happen, but when the alarm triggers, pin <code>D0</code> will change to a low value and that will force <code>RST</code> to also go low and thus reset the board. Ingenious, right?</p>
+<p>Unfortunately pin <code>RST</code> is connected to the external reset button. I did not want to try to force two jumper wire pins into the one available hole that connects to <code>RST</code> in the breadboard, so to avoid complications I disconnected and removed the button, and then made the connection between <code>D0</code> and <code>RST</code> instead. I left the button on the breadboard, and I also left the ground connection for this button, because I'm not giving up on having the reset button working, I'll show you how to add it back in the next section. Here is the current connection diagram:</p>
+<p><img alt="DHT22" src="../../../static/images/micropython/ch05/esp8266-dht22-deepsleep.png" /></p>
+<p>There is another problem that I indirectly mentioned already. I was using pin <code>D0</code> to blink the second on-board LED in error situations. But now pin <code>D0</code> is connected to <code>RST</code>, so turning the LED on by setting the pin to 0 is also going to make <code>RST</code> low and consequently reset the board! To avoid this problem I decided to simplify my error reporting. Instead of blinking the two LEDs, from now on I'm going to blink just the one connected to pin <code>D4</code>.</p>
+<p>Once the alarm is configured to go off at the desired time, and pin <code>D0</code> is connected to pin <code>RST</code>, all that is left to do is to put the board to sleep:</p>
+<pre><code class="language-python">&gt;&gt;&gt; machine.deepsleep()
+</code></pre>
+<p>To incorporate this functionality into the application, I'm going to start by adding one more configuration variable to <code>config.py</code> that will hold the data logging interval, which I'm going to set to one minute. For this I decided to use seconds as units:</p>
+<pre><code class="language-python">LOG_INTERVAL = 60
+</code></pre>
+<p>Now I can consolidate the alarm handling code into a new function in <code>main.py</code>:</p>
+<pre><code class="language-python">def deepsleep():
+    print('Going into deepsleep for {seconds} seconds...'.format(
+        seconds=config.LOG_INTERVAL))
+    rtc = machine.RTC()
+    rtc.irq(trigger=rtc.ALARM0, wake=machine.DEEPSLEEP)
+    rtc.alarm(rtc.ALARM0, config.LOG_INTERVAL * 1000)
+    machine.deepsleep()
+</code></pre>
+<p>And then in <code>run()</code> instead of calling <code>machine.deepsleep()</code>, which sleeps until a manual reset occurs, I call the above function to sleep for the configured time. Once the board wakes up, it will reboot and run the application one more time, just like when the board is reset, so another sample will be logged to ThingSpeak, and then the cycle will repeat.</p>
+<p>Here is the complete version of the application for your reference:</p>
+<pre><code class="language-python">import dht
+import machine
+import network
+import sys
+import time
+import urequests
+
+import config
+
+def connect_wifi():
+    ap_if = network.WLAN(network.AP_IF)
+    ap_if.active(False)
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+        print('Connecting to WiFi...')
+        sta_if.active(True)
+        sta_if.connect(config.WIFI_SSID, config.WIFI_PASSWORD)
+        while not sta_if.isconnected():
+            time.sleep(1)
+    print('Network config:', sta_if.ifconfig())
+
+def show_error():
+    led = machine.Pin(config.LED_PIN, machine.Pin.OUT)
+    for i in range(3):
+        led.on()
+        time.sleep(0.5)
+        led.off()
+        time.sleep(0.5)
+    led.on()
+
+def is_debug():
+    debug = machine.Pin(config.DEBUG_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+    if debug.value() == 0:
+        print('Debug mode detected.')
+        return True
+    return False
+
+def get_temperature_and_humidity():
+    dht22 = dht.DHT22(machine.Pin(config.DHT22_PIN))
+    dht22.measure()
+    temperature = dht22.temperature()
+    if config.FAHRENHEIT:
+        temperature = temperature * 9 / 5 + 32
+    return temperature, dht22.humidity()
+
+def log_data(temperature, humidity):
+    print('Invoking log webhook')
+    url = config.WEBHOOK_URL.format(temperature=temperature,
+                                    humidity=humidity)
+    response = urequests.get(url)
+    if response.status_code &lt; 400:
+        print('Webhook invoked')
+    else:
+        print('Webhook failed')
+        raise RuntimeError('Webhook failed')
+
+def deepsleep():
+    print('Going into deepsleep for {seconds} seconds...'.format(
+        seconds=config.LOG_INTERVAL))
+    rtc = machine.RTC()
+    rtc.irq(trigger=rtc.ALARM0, wake=machine.DEEPSLEEP)
+    rtc.alarm(rtc.ALARM0, config.LOG_INTERVAL * 1000)
+    machine.deepsleep()
+
+def run():
+    try:
+        temperature, humidity = get_temperature_and_humidity()
+        print('Temperature = {temperature}, Humidity = {humidity}'.format(
+            temperature=temperature, humidity=humidity))
+        connect_wifi()
+        temperature, humidity = get_temperature_and_humidity()
+        log_data(temperature, humidity)
+    except Exception as exc:
+        sys.print_exception(exc)
+        show_error()
+
+    if not is_debug():
+        deepsleep()
+
+run()
+</code></pre>
+<p>And here is the <code>config.py</code> that goes with it:</p>
+<pre><code class="language-python">WIFI_SSID = 'your SSID'
+WIFI_PASSWORD = 'your Wi-Fi password'
+LED_PIN = 2  # D4
+DEBUG_PIN = 14  # D5
+DHT22_PIN = 4  # D2
+FAHRENHEIT = False
+WEBHOOK_URL = 'https://api.thingspeak.com/update?api_key=IQBL4LHQIQ84YH57&amp;field1={temperature}&amp;field2={humidity}'
+LOG_INTERVAL = 60
+</code></pre>
+<p>Note how I simplified the <code>show_error()</code> function to use only one LED, and also the removal of <code>LED2_PIN</code> from <code>config.py</code> since it is not going to be used anymore.</p>
+<p>Now you can upload <code>main.py</code> and <code>config.py</code> to your board and then leave it to run for a few hours, logging temperature and humidity data every minute. The channel page on the ThingSpeak website will update the charts as new measurements are uploaded, and without the need for you to refresh the page. Here is what I see on my channel after running my microcontroller for a while:</p>
+<p><img alt="ThingSpeak Example" src="../../../static/images/micropython/ch05/thingspeak-charts.png" /></p>
+<h2>Extending the RST Pin</h2>
+<p>In the previous section I had to disconnect the external reset button to make space to connect the wake up alarm pin on the <code>RST</code> pin of the microcontroller board. In many cases not having an external reset button for this type of application is going to be perfectly fine. This is now an embedded device that is self-sufficient, it knows how to go to sleep and wake up on its own.</p>
+<p>But reconnecting the reset button back is I think a good example to demonstrate how you can do this with a little bit of creativity. The problem is that the size of the microcontroller board with respect to the breadboard leaves a single available hole to make connections to each of the board's pins, and in this case there are two wires that need to connect to <code>RST</code>. If you had a bigger breadboard that had two open holes per ESP8266 pin, then there would be no problem. But how to make it work with this breadboard, and without forcing two pins into a single hole?</p>
+<p>Let's revisit the concept of power strips in the breadboard. The two top and bottom rows function as extensions for the <code>3V3</code> and <code>GND</code> pins. Simply by wiring a pin to any of the holes in a power strip row, all the other holes become extensions of that pin. The solution is, then, to create an extension for the <code>RST</code> pin as well!</p>
+<p>One way to do this would be to use one of the power strips that is currently unused. For example, the bottom row is currently a <code>GND</code> extension, but it isn't used for anything. The wire that connects <code>GND</code> with a hole in this bottom row could be moved to the <code>RST</code> pin and then that row would work as an extension to <code>RST</code>. I think this approach can be confusing, because the power strips by convention are used for power and ground. </p>
+<p>A better approach in my opinion is to build a mini-power strip in an unused part of the breadboard. Recall that the holes in the middle sections of the breadboard are grouped in fives, so I can take any unused column of five holes and build my <code>RST</code> extension there. To do this I picked a column of five holes in the lower half of the breadboard, close to the border of the microcontroller. I connected a jumper wire between <code>RST</code> and one of these five holes, and then used two of the remaining four holes to connect to pin <code>D0</code> and the to right side of the external reset button. Here is the final diagram including this change:</p>
+<p><img alt="DHT22" src="../../../static/images/micropython/ch05/esp8266-dht22-deepsleep-reset.png" /></p>
+<p>And now the board can log sensor data every minute, but you can override the schedule and trigger an update at any time by pushing the reset button.</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity&amp;t=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20V%3A%20Temperature%20and%20Humidity" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity&amp;resubmit=true&amp;title=MicroPython%20and%20the%20Internet%20of%20Things,%20Part%20V:%20Temperature%20and%20Humidity" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20V%3A%20Temperature%20and%20Humidity&amp;url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity&amp;title=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20V%3A%20Temperature%20and%20Humidity&amp;summary=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20V%3A%20Temperature%20and%20Humidity&amp;source=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20V%3A%20Temperature%20and%20Humidity&amp;body=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../micropython-and-the-internet-of-things-part-v-temperature-and-humidity.html#comments">9 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4ebc824bfdf0311067b717965870756e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Janio LIma</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-09-18T01:44:36Z" data-function="fromNow" data-refresh="0" style="display: none">2019-09-18T01:44:36Z</span>
+  </p>
+  <div>
+    <p>Awesome teatching. Thanks so much again.<br>
+I did some adjusts to complete the tasks because my ESP8266 is an old version, larger than yours and without the second led. And my temperature and humidity sensor is the DHT11.</p>
+<p>To use the DTH11 I just change the the code, using dht11 instead of dht22. CODE: dht11 = dht.DHT11(machine.Pin(config.DHT11_PIN)</p>
+<p>To simulate the second led I put an external led on the breadboard, connected on GND row and on a D1 Pin, I use the PULL_UP parameter and the oposite values do turn on and turn off this led and everthing work correctly. CODE: led2 = machine.Pin(config.LED2_PIN, machine.Pin.OUT, machine.Pin.PULL_UP)</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/61f60f3fae1600ec36d40f36bca2293a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-warning">UrbanPro</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-11-28T12:43:12Z" data-function="fromNow" data-refresh="0" style="display: none">2019-11-28T12:43:12Z</span>
+  </p>
+  <div>
+    <p>Thanks for sharing the valuable information about data science…..It was very helpful to me</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/165812444cc67eeefb289c58b2caf48d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">Isabel M</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-11-24T01:58:09Z" data-function="fromNow" data-refresh="0" style="display: none">2021-11-24T01:58:09Z</span>
+  </p>
+  <div>
+    <p>Thank you for sharing this useful project for my students, I'm trying to find the 3 pin DHT22 sensor in Fritzing but I cannot find it, is kind of confusing for my students to use the 4 pin sensor. Do you have by chance the 3 pin DHT22 fritzing part that you can share? Thank you!!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-11-24T14:19:11Z" data-function="fromNow" data-refresh="0" style="display: none">2021-11-24T14:19:11Z</span>
+  </p>
+  <div>
+    <p>@Isabel: As I recall, I photoshopped those pins, as I also did not find a 3-pin version component. What I did is use another component with 3 pins, then pasted the body portion of the temperature sensor on top.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/19ade33440d77026bc215eb8a0d5ff82?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-warning">Manoj K Sharma</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-06-14T20:06:32Z" data-function="fromNow" data-refresh="0" style="display: none">2023-06-14T20:06:32Z</span>
+  </p>
+  <div>
+    <p>Sir i am doing exactly the way you explained here but not getting the same result. I am getting following message :</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>%Run -c $EDITOR_CONTENT<br>
+Traceback (most recent call last):<br>
+  File "&lt;stdin&gt;", line 6, in &lt;module&gt;<br>
+ImportError: no module named 'urequests'<br>
+</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>what should i do to solve it. My esp8266 board have single on board LED as compared to double on board LEDs which are on your board.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-06-14T22:01:56Z" data-function="fromNow" data-refresh="0" style="display: none">2023-06-14T22:01:56Z</span>
+  </p>
+  <div>
+    <p>@Manoj: what version of MicroPython are you running? Where did you get the firmware from? It seems your firmware does not have the <code>urequests</code> module, for some reason.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/19ade33440d77026bc215eb8a0d5ff82?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#7</span> <span class="badge text-bg-warning">Manoj K Sharma</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-08-19T14:08:14Z" data-function="fromNow" data-refresh="0" style="display: none">2023-08-19T14:08:14Z</span>
+  </p>
+  <div>
+    <p>@Miguel Grinberg : Sir you were absolutely correct. My firmware does not had the urequests module. I installed latest firmware and problem solved. <br>
+                                                     Now i want to log the data and at the same time i want to control the Air Conditioner also so that i can control temperature. For this i have attached a relay with ESP8266 board. Using the temperature condition , i am writing 1 or 0 to GPIO5. It Trigger the relay but at the same time my ESP8266 board restarts due to RTC. I want that my board keep running whole time rather than resetting the board after 60 seconds. It will connect to wifi only once. Then it will log the data to thingspeak. Based on the  temperature it trigger the relay module and it  will keep the module in same state till different temperature condition is met.<br>
+                                                                                                                                              Sorry I am really late to respond to your answer. Kindly guide me further. Regards...</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#8</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-08-19T18:31:31Z" data-function="fromNow" data-refresh="0" style="display: none">2023-08-19T18:31:31Z</span>
+  </p>
+  <div>
+    <p>@Manoj: the purpose of my course is that you work on the project step by step, and you learn how to apply the same ideas to other solutions. If you don't want your board to reset, then you are welcome to remove that part of the application and keep the board running at all times.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/19ade33440d77026bc215eb8a0d5ff82?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#9</span> <span class="badge text-bg-warning">Manoj K Sharma</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-08-21T11:59:09Z" data-function="fromNow" data-refresh="0" style="display: none">2023-08-21T11:59:09Z</span>
+  </p>
+  <div>
+    <p>@Miguel Grinberg: Sir i found the solution. After reading little bit of python, i found "while True:" function and it worked well. Now my board is running continuously and switching relay for condition &gt; 25 degree. And when temperature become &lt; 25 degree it switches of relay. Now next improvement which i want to made to my circuit is that Air Conditioner turns on when temperature &gt;25 but it should not turn of immediately when temperature becomes &lt; 25 temperature. if it happens the Air Conditioner will keep on switching between on and off frequently. So my idea is it should turn on when temperature &gt; 25 degree and keep running till temperature &lt; 20 degree. When temperature become &lt;20 degree , Air Conditioner should turn off.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdmbg.1Spk-zE75DF_8R1UnapGvEHTsxY">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  <div class="card-header">MicroPython for the Raspberry Pi Pico W</div>
+  <a class="card-book-cover" href="https://amzn.to/3Ugn6Ca">
+    <img src="../../../static/picow-book-small.png" alt="MicroPython for the Raspberry Pi Pico W">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you like my <a href="../../micropython-and-the-internet-of-things-part-i-welcome.html">MicroPython tutorial series</a> on this blog, you may also like my <a href="https://amzn.to/3Ugn6Ca">MicroPython for the Raspberry Pi Pico W</a> book.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3Ugn6Ca">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-v-temperature-and-humidity/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:48:03 GMT -->
+</html>

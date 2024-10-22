@@ -1,0 +1,1517 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:48:04 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    MicroPython and the Internet of Things, Part VI: Working with a Screen - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="python, micropython, iot, internet of things, breadboard, microcontroller, ssd3306">
+  
+  
+  <link rel="canonical" href="../../micropython-and-the-internet-of-things-part-vi-working-with-a-screen.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="MicroPython and the Internet of Things, Part VI: Working with a Screen">
+    <meta property="og:description" content="In this chapter your microcontroller gets an important upgrade with the addition of a screen!If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/micropython-and-the-internet-of-things-part-vi-working-with-a-screen.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen">
+    <meta name="twitter:title" content="MicroPython and the Internet of Things, Part VI: Working with a Screen">
+    <meta name="twitter:description" content="In this chapter your microcontroller gets an important upgrade with the addition of a screen!If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/micropython-and-the-internet-of-things-part-vi-working-with-a-screen.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../micropython-and-the-internet-of-things-part-vi-working-with-a-screen.html">MicroPython and the Internet of Things, Part VI: Working with a Screen</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2019-09-27T11:24:23Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2019-09-27T11:24:23Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>In this chapter your microcontroller gets an important upgrade with the addition of a screen!</p>
+<p>If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the video version from my <a href="https://courses.miguelgrinberg.com/courses/micropython">Courses site</a>. Not only it will make for a better learning experience, but you'll also be supporting my effort in keeping my blog updated with relevant content. Thank you!</p>
+<p>For your reference, here is the complete list of chapters in this tutorial:</p>
+<ul>
+<li><a href="../../micropython-and-the-internet-of-things-part-i-welcome.html">Chapter 1: Welcome</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-ii-hello-micropython.html">Chapter 2: Hello, MicroPython!</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.html">Chapter 3: Building a MicroPython Application</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.html">Chapter 4: Wi-Fi and the Cloud</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-v-temperature-and-humidity.html">Chapter 5: Temperature and Humidity</a></li>
+<li><a href="../../micropython-and-the-internet-of-things-part-vi-working-with-a-screen.html">Chapter 6: Working with a Screen</a> (this article)</li>
+</ul>
+<h2>The SSD1306 OLED Screen</h2>
+<p>The SSD1306 is a very popular low cost screen that can be easily connected to most microcontrollers. As with most components, there are many variants of these screens including monochrome and color models of different sizes and form factors.</p>
+<p>For this tutorial, I recommended the 128x64 monochrome display, because it is fairly cheap and small enough to fit in a breadboard along with other components.</p>
+<p>In addition to the visible differences among the many models, these screens can be divided in two large groups based on the communication protocol that they implement, which can be either <a href="https://en.wikipedia.org/wiki/Serial_Peripheral_Interface">SPI</a> or <a href="https://en.wikipedia.org/wiki/I2C">I2C</a>. These two protocols are standard ways of communication between devices that are used not only in screens but in a lot of other components. MicroPython includes support classes for both protocols in its standard library.</p>
+<p>If your screen has four connection pins, then it uses the I2C protocol, which needs two data wires plus voltage and ground. If you see more than four pins, then your screen supports the SPI protocol, but very likely also supports I2C as an option. For this tutorial I have decided to use the I2C protocol, simply because it requires less data pins. If you've got one of the SPI models with more than four pins, check the documentation of your screen to learn how to configure it to use I2C, and which four pins you should use.</p>
+<p>Besides the familiar <code>VCC</code> and <code>GND</code> pins, devices that implement the I2C protocol use two data lines called <code>SDA</code> or "Serial Data" and <code>SCL</code> or "Serial Clock". These need to be connected to two data pins on the microcontroller. Below you can see a breadboard diagram showing the wiring of the screen:</p>
+<p><img alt="SSD1306" src="../../../static/images/micropython/ch06/esp8266-ssd1306.png" /></p>
+<p>Here is another diagram that shows the screen integrated with the other components as in the previous chapter:</p>
+<p><img alt="SSD1306" src="../../../static/images/micropython/ch06/esp8266-with-everything.png" /></p>
+<p>The order of the four pins in my screen is <code>GND</code>, <code>VCC</code>, <code>SCL</code> and <code>SDA</code>. Read the labels on your screen to make sure the order is the same and adjust the connections appropriately if it is not. I've seen some screens that have the order of <code>GND</code> and <code>VCC</code> reversed.</p>
+<p>I installed the screen in the bottom-left corner of the breadboard, being very careful that the four pins land on columns that are unused in between the button and the microcontroller board. The button uses the first and third columns of holes on the left side, so I aligned the left-most pin of the screen in the fourth column counting from the left. I connected the screen's <code>GND</code> and <code>VCC</code> pins to holes in the bottom power strips. Then I connected <code>SCL</code> to <code>D3</code>, and <code>SDA</code> to <code>D6</code>. The choice of <code>D</code> pins to use is, as before, somewhat random. I just picked two pins that I haven't used for anything so far.</p>
+<h2>Controlling the Screen from MicroPython</h2>
+<p>Let's give the new screen a try using the MicroPython REPL. The first step is to create an object that represents the I2C connection to the screen:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import machine
+&gt;&gt;&gt; i2c = machine.I2C(scl=machine.Pin(0), sda=machine.Pin(12))
+</code></pre>
+<p>As you see, this is all done with the <code>machine</code> package. The <code>machine.I2C</code> class includes the support to communicate with the screen using the I2C protocol. The two arguments that this object needs are the pins that are connected to the <code>SCL</code> and <code>SDA</code> terminals. As always this is done with GPIO numbers. For my choice of pins, <code>D3</code> is <code>GPIO0</code> and <code>D6</code> is <code>GPIO12</code>, so the pins are instantiated as 0 and 12 respectively.</p>
+<p>The I2C protocol supports multiple devices connected on the same data pins, and there is a mechanism to "discover" connected devices. If your screen is correctly connected, you can now check if it is detected using the <code>scan()</code> function:</p>
+<pre><code class="language-python">&gt;&gt;&gt; i2c.scan()
+[60]
+</code></pre>
+<p>This function returns a list of device IDs that were recognized. This model of screen comes preconfigured with an id of 60, so when you see <code>[60]</code> as output you know your screen is working. If <code>i2c.scan()</code> returns <code>[]</code> (an empty list), then that means that it was not recognized. You need to check your connections and make sure all the wires are nicely seated in the breadboard holes.</p>
+<p>When the screen is recognized, you can instantiate an object to control it. Since these screens are so common, MicroPython also includes a class for them:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import ssd1306
+&gt;&gt;&gt; display = ssd1306.SSD1306_I2C(128, 64, i2c)
+</code></pre>
+<p>The arguments to the <code>ssd1306.SSD1306()</code> class are the screen width and height in pixels, and the <code>i2c</code> instance created previously. This object provides a good number of drawing primitives that you can use. Of particular interest are the <code>fill()</code> method which can be used to clear the screen, the <code>text()</code> method that can be used to write characters, and the <code>show()</code> method which updates the screen after making changes. Here is an example:</p>
+<pre><code class="language-python">&gt;&gt;&gt; display.fill(0)
+&gt;&gt;&gt; display.text('Hello', 0, 0)
+&gt;&gt;&gt; display.text('from', 0, 16)
+&gt;&gt;&gt; display.text('MicroPython!', 0, 32)
+&gt;&gt;&gt; display.show()
+</code></pre>
+<p>The <code>fill()</code> call clears the screen, or more accurately, sets all pixels in the screen to color 0, which is black. The <code>text()</code> calls write some text. The arguments are the text to write, and then the X and Y coordinates where the text should start. The X argument refers to the horizontal position. A value of 0 means the left border, and a value of 127 means the right border. The Y argument is the vertical position and it goes from 0 for the top of the screen to 63 for the bottom.</p>
+<p>When you were entering these statements, you surely noticed that nothing shows on the screen until you issue the <code>display.show()</code> call at the end. The reason is that the <code>SSD1306()</code> driver uses <em>buffering</em>. When you draw or write text to the screen those changes are temporarily written to a memory image of the screen. Once you are done with your changes a call to <code>show()</code> sends the data from the memory buffer to the device over the I2C connection.</p>
+<p>After running the above code, your device should like mine, shown below:</p>
+<p><img alt="SSD1306" src="../../../static/images/micropython/ch06/ssd1306.jpg" /></p>
+<p>Obviously I don't expect you to identify the individual connections anymore, there are too many cables for a picture to be a clear representation, but it should give you an idea of what you'll have if you haven't built your project yet.</p>
+<h2>Displaying Temperature and Humidity on the Screen</h2>
+<p>I hope you agree that the next logical step is to write an application that displays the temperature and the humidity on the screen. But before I forget and to keep things organized, I'm going to create a new subdirectory called <code>chapter6</code> inside <code>micropython-tutorial</code> to hold the project files for this chapter:</p>
+<pre><code>(venv) $ mkdir chapter6
+(venv) $ cd chapter6
+</code></pre>
+<p>After experimenting in the REPL to decide on the best way to format the temperature and humidity values, I wrote this function to encapsulate the control of the screen:</p>
+<pre><code class="language-python">import machine
+import ssd1306
+
+def display_temperature_and_humidity(temperature, humidity):
+    i2c = machine.I2C(scl=machine.Pin(config.DISPLAY_SCL_PIN),
+                      sda=machine.Pin(config.DISPLAY_SDA_PIN))
+    if 60 not in i2c.scan():
+        raise RuntimeError('Cannot find display.')
+
+    display = ssd1306.SSD1306_I2C(128, 64, i2c)
+    display.fill(0)
+
+    display.text('{:^16s}'.format('Temperature:'), 0, 0)
+    display.text('{:^16s}'.format(str(temperature) + \
+        ('F' if config.FAHRENHEIT else 'C')), 0, 16)
+
+    display.text('{:^16s}'.format('Humidity:'), 0, 32)
+    display.text('{:^16s}'.format(str(humidity) + '%'), 0, 48)
+
+    display.show()
+    time.sleep(10)
+    display.poweroff()
+</code></pre>
+<p>A lot of what you see in this function should be familiar to you, but there are a few new things. The screen is initialized as you saw in the previous section. I'm making sure that the ID 60 is present when I scan the I2C bus and if I don't find it then I raise a <code>RuntimeError</code>, since it is obvious that the screen is not going to work. The exception is going to be handled in the <code>run()</code> function I'm yet to write, and I'll just blink the LED as I did in previous applications.</p>
+<p>You may find the syntax inside the the <code>display.text()</code> calls strange. I'm using the <code>format()</code> function of string objects, which has some not very known options to center text. The <code>'{:^16s}'</code> string means that I want to show the string given as an argument centered in a field of 16 characters. I used this formatting for the four lines that I'm displaying.</p>
+<p>Since I have four lines of text and 64 vertical pixels, I'm assigning 16 pixels for each line. This is why you see the Y coordinate on these four lines set to 0, 16, 32, and 48 respectively.</p>
+<p>Since the temperatures can be displayed in the Celsius or Fahrenheit scales, I've also added a little bit of logic to display a <code>C</code> or an <code>F</code> after the number depending on the selected scale. I did this using an inline conditional, which has the format <code>'F' if config.FAHRENHEIT else 'C'</code>. This type of expression is great to express simple decisions in a concise manner.</p>
+<p>After I call <code>show()</code> to make the text visible, I sleep for 10 seconds, and then use <code>display.poweroff()</code> to turn the display off. The idea here is that the temperature and humidity data will be visible during those 10 seconds, and then the device will go back to sleep.</p>
+<p>If you are wondering how this looks, here is a closeup of the screen while showing my temperature and humidity:</p>
+<p><img alt="SSD1306" src="../../../static/images/micropython/ch06/ssd1306-closeup.jpg" /></p>
+<p>The rest of the code can be assembled from parts of the previous chapter's application including the support for reading the temperature and humidity from the sensor, going into deep sleep and using a blinking light to report unexpected errors. Here is the complete code for your reference:</p>
+<pre><code class="language-python">import dht
+import machine
+import ssd1306
+import sys
+import time
+
+import config
+
+def show_error():
+    led = machine.Pin(config.LED_PIN, machine.Pin.OUT)
+    for i in range(3):
+        led.on()
+        time.sleep(0.5)
+        led.off()
+        time.sleep(0.5)
+    led.on()
+
+def is_debug():
+    debug = machine.Pin(config.DEBUG_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+    if debug.value() == 0:
+        print('Debug mode detected.')
+        return True
+    return False
+
+def get_temperature_and_humidity():
+    dht22 = dht.DHT22(machine.Pin(config.DHT22_PIN))
+    dht22.measure()
+    temperature = dht22.temperature()
+    if config.FAHRENHEIT:
+        temperature = temperature * 9 / 5 + 32
+    return temperature, dht22.humidity()
+
+def display_temperature_and_humidity(temperature, humidity):
+    i2c = machine.I2C(scl=machine.Pin(config.DISPLAY_SCL_PIN),
+                      sda=machine.Pin(config.DISPLAY_SDA_PIN))
+    if 60 not in i2c.scan():
+        raise RuntimeError('Cannot find display.')
+
+    display = ssd1306.SSD1306_I2C(128, 64, i2c)
+    display.fill(0)
+
+    display.text('{:^16s}'.format('Temperature:'), 0, 0)
+    display.text('{:^16s}'.format(str(temperature) + \
+        ('F' if config.FAHRENHEIT else 'C')), 0, 16)
+
+    display.text('{:^16s}'.format('Humidity:'), 0, 32)
+    display.text('{:^16s}'.format(str(humidity) + '%'), 0, 48)
+
+    display.show()
+    time.sleep(10)
+    display.poweroff()
+
+def run():
+    try:
+        temperature, humidity = get_temperature_and_humidity()
+        print('Temperature = {temperature}, Humidity = {humidity}'.format(
+            temperature=temperature, humidity=humidity))
+        display_temperature_and_humidity(temperature, humidity)
+    except Exception as exc:
+        sys.print_exception(exc)
+        show_error()
+
+    if not is_debug():
+        machine.deepsleep()
+
+run()
+</code></pre>
+<p>The configuration values needed for this application are in this <code>config.py</code>:</p>
+<pre><code class="language-python">LED_PIN = 2  # D4
+DEBUG_PIN = 14  # D5
+DHT22_PIN = 4  # D2
+DISPLAY_SCL_PIN = 0  # D3
+DISPLAY_SDA_PIN = 12  # D6
+FAHRENHEIT = True
+</code></pre>
+<p>Activating the application when the button is pressed also works as in the previous chapter, with the external reset button wired to connect <code>RST</code> to <code>GND</code> when pressed, triggering a reset of the board, even while it is in a deep sleep state. You can see in the breadboard wiring diagram above that I left the wiring from <code>D0</code> to <code>RST</code> that I used to trigger a wake-up alarm. That is not used by this application, but leaving the wires in place does not affect it at all, and it would only be a problem if I wanted to use pin <code>D0</code> for another purpose, such as bringing back the second LED.</p>
+<p>I also left the <code>is_debug()</code> function, which I have used on several examples to configure the board to optionally not go into deep sleep, so that it is easier to connect to it and open a REPL session. To enable the debug option you need to connect a jumper wire between the <code>D5</code> pin and <code>GND</code>.</p>
+<h2>Using Drawing Primitives</h2>
+<p>While it is nice that MicroPython makes it easy to print text on the SSD1306 screen, I'm sure you agree with me that just showing white text on a black screen is a little boring. In this section I want to show you some of the drawing primitives provided by the SSD1306 driver that can be used to complement text.</p>
+<p>Let's start another REPL session. Remember that you will likely need to add the debugging jumper wire to your circuit to prevent the board from going to sleep. In case you don't remember, here are the instructions to create a screen object and clear the screen:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import machine
+&gt;&gt;&gt; i2c = machine.I2C(scl=machine.Pin(0), sda=machine.Pin(12))
+&gt;&gt;&gt; i2c.scan()
+[60]
+&gt;&gt;&gt; import ssd1306
+&gt;&gt;&gt; display = ssd1306.SSD1306_I2C(128, 64, i2c)
+&gt;&gt;&gt; display.fill(0)
+</code></pre>
+<p>One of the drawing primitives is the <code>rect()</code> function, which as I'm sure you can guess, draws a rectangle:</p>
+<pre><code class="language-python">&gt;&gt;&gt; display.rect(0, 0, 128, 64, 1)
+&gt;&gt;&gt; display.show()
+</code></pre>
+<p>The arguments to <code>display.rect()</code> are the left and top coordinates, the width and height, and the color of the rectangle, using 1 for white and 0 for black. The above example draws a rectangle around the entire surface of the screen. A variant of <code>rect()</code> is <code>fill_rect()</code> which takes the same arguments but draws a solid rectangle instead of the outline.</p>
+<p>Another drawing primitive is <code>line()</code>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; display.line(64, 0, 64, 64, 1)
+&gt;&gt;&gt; display.show()
+</code></pre>
+<p>The arguments to <code>line()</code> are the coordinates of the two ends of the line and the color. Each line end is given as two values, the X and Y coordinates. In the example above I'm drawing a vertical line through the middle of the screen, which is X=64 for a screen of 128 pixels wide. There are two line drawing variants, <code>vline()</code> and <code>hline()</code> which are specialized cases for vertical or horizontal lines.</p>
+<p>While maybe a little less useful, there is also a <code>pixel()</code> method which can be used to set an individual pixel by passing the X and Y location and the color:</p>
+<pre><code class="language-python">&gt;&gt;&gt; display.pixel(5, 10, 1)
+&gt;&gt;&gt; display.show()
+</code></pre>
+<p>This function can be used to remove a pixel from the screen when passing 0 as the color:</p>
+<pre><code class="language-python">&gt;&gt;&gt; display.pixel(5, 10, 0)
+&gt;&gt;&gt; display.show()
+</code></pre>
+<p>If you only pass the X and Y coordinates to the <code>pixel()</code> function without include a pixel color, then the function returns the current color of that pixel:</p>
+<pre><code class="language-python">&gt;&gt;&gt; display.pixel(0, 0)
+1
+&gt;&gt;&gt; display.pixel(5, 10)
+0
+</code></pre>
+<h2>Drawing Images</h2>
+<p>Even though by any standard this is a very limited display, there is always an opportunity to enhance the appearance of your application with images or icons, as little as they will need to be to fit!</p>
+<p>MicroPython doesn't offer any support for loading images from files, but it supports an operation known as <a href="https://en.wikipedia.org/wiki/Bit_blit">bit blit</a>, which is short for bit block transfer. The bit blit operation is a common algorithm to copy an image stored in a memory buffer onto another, possibly larger memory buffer, such as the one used by the SSD1306 driver.</p>
+<p>So the big problem that needs to be solved to be able to display images on the screen is to figure out a way to load them into a memory buffer. Once that is done, the <code>blit()</code> method provided by the screen object will display it.</p>
+<p>The memory buffers used by MicroPython are objects created from class <code>framebuf.FrameBuffer</code>. Let's take a look at how these objects are created:</p>
+<pre><code>class framebuf.FrameBuffer(buffer, width, height, format, stride=width)
+</code></pre>
+<p>The <code>buffer</code> argument is where the binary data for the image is stored. Since the images are going to be black and white, each pixel uses one bit of information. Since this is a binary representation, each byte in this buffer will store the state of eight pixels. In most cases this is going to be an instance of the Python's <code>bytearray</code> class.</p>
+<p>The <code>width</code> and <code>height</code> arguments specify the size of the image in pixels. Since each byte in the buffer stores eight pixels, a lot of things are simplified with the restriction that images need to have a width that is a multiple of 8, because that means that a row of pixels from the image fits into an exact number of bytes, so this is the case where the <code>stride</code> argument is equal to <code>width</code>. This is a restriction I'm totally fine with.</p>
+<p>The <code>format</code> specifies how the pixels are stored in the memory buffer. The documentation lists the following list of values for this argument:</p>
+<ul>
+<li><code>framebuf.MONO_VLSB</code>: Monochrome (1-bit) color format This defines a mapping where the bits in a byte are vertically mapped with bit 0 being nearest the top of the screen. Consequently each byte occupies 8 vertical pixels. Subsequent bytes appear at successive horizontal locations until the rightmost edge is reached. Further bytes are rendered at locations starting at the leftmost edge, 8 pixels lower.</li>
+<li><code>framebuf.MONO_HLSB</code>: Monochrome (1-bit) color format This defines a mapping where the bits in a byte are horizontally mapped. Each byte occupies 8 horizontal pixels with bit 0 being the leftmost. Subsequent bytes appear at successive horizontal locations until the rightmost edge is reached. Further bytes are rendered on the next row, one pixel lower.</li>
+<li><code>framebuf.MONO_HMSB</code>: Monochrome (1-bit) color format This defines a mapping where the bits in a byte are horizontally mapped. Each byte occupies 8 horizontal pixels with bit 7 being the leftmost. Subsequent bytes appear at successive horizontal locations until the rightmost edge is reached. Further bytes are rendered on the next row, one pixel lower.</li>
+<li><code>framebuf.RGB565</code>: Red Green Blue (16-bit, 5+6+5) color format</li>
+<li><code>framebuf.GS2_HMSB</code>: Grayscale (2-bit) color format</li>
+<li><code>framebuf.GS4_HMSB</code>: Grayscale (4-bit) color format</li>
+<li><code>framebuf.GS8</code>: Grayscale (8-bit) color format</li>
+</ul>
+<p>Since the screen is black and white only the monochrome options make sense, so have to pick a format from the first three options. I'm not going to go into a lot of detail on what the differences are, so I'll just say that the second option, <code>framebuf.MONO_HLSB</code>, is the one that I selected because after looking at a few image formats I found one that uses this exact format.</p>
+<p>The image format that is a close match to this structure is the binary variant of the <a href="https://en.wikipedia.org/wiki/Netpbm_format">Portable Bitmap</a> format. You can use the free <a href="https://www.gimp.org/">Gimp</a> image editor if you are interested in creating your own images in this format.</p>
+<p>Below you can see a few black &amp; white icons that I drew with Gimp:</p>
+<p><img alt="Icons" src="../../../static/images/micropython/ch06/icons.png" /></p>
+<p>One interesting detail is that in the PBM format black pixels are written as a 1, and white pixels as a 0. This is exactly the reverse of what MicroPython's screen object does, so I drew my icons in black on a white background. The black pixels in these icons are going to render as white on the screen, and viceversa.</p>
+<p>The structure of a binary PBM file is as follows:</p>
+<pre><code>P4
+# Description
+&lt;width&gt; &lt;height&gt;
+&lt;binary image data&gt;
+</code></pre>
+<p>The first line has an identifier for the format. The <code>P4</code> type indicates that this is a binary PBM file. The second line is just a description of the image. The third line contains the dimensions in pixels, and then after that the file includes the binary data with the definition of all the pixels.</p>
+<p>To read this image into a <code>FrameBuffer</code> object, I need to open the .pbm file, skip the first two lines, read the width and height from the third line, and then read the rest of the file as a <code>bytearray</code> object. Once I have everything loaded I can create the <code>FrameBuffer</code> object. I wrote a little function that does this:</p>
+<pre><code>import framebuf
+
+def load_image(filename):
+    with open(filename, 'rb') as f:
+        f.readline()
+        f.readline()
+        width, height = [int(v) for v in f.readline().split()]
+        data = bytearray(f.read())
+    return framebuf.FrameBuffer(data, width, height, framebuf.MONO_HLSB)
+</code></pre>
+<p>The <code>open()</code> function works like in standard Python. Here I'm opening the file using the <code>with ... as ...</code> syntax, which is known as a <em>context manager</em>. With this construct the object that represents the file is assigned to the <code>f</code> variable inside the block of code under the <code>with</code> statement. When this block ends the file is automatically closed.</p>
+<p>Inside the <code>with</code> block I skip the first two lines in the file by calling <code>readline()</code> and ignoring the return value. On the third line I parse the width and the height. This requires a few steps, so to help you understand what I've done I'm going to decompose that line into all those steps:</p>
+<ul>
+<li><code>f.readline().split()</code> reads the line from the file, and then creates a list of substrings by splitting the line at each space. Since this line has the format <code>&lt;width&gt; &lt;height&gt;</code> the split has the effect of creating a list with the format <code>['&lt;width&gt;', '&lt;height&gt;']</code>. For example, if this line is <code>8 16</code>, the result of this is <code>['8', '16']</code>.</li>
+<li>The problem is that the numbers are parsed as strings by the <code>split()</code> call, but I need them as integers. To convert them, I use a <a href="https://en.wikipedia.org/wiki/List_comprehension">list comprehension</a>, which basically applies a transformation to every element in the list. For the <code>['8', '16']</code> example, the resulting list is <code>[8, 16]</code>, which is exactly what I want.</li>
+<li>Since having these two numbers in a list is a bit inconvenient, I break the list into the two elements using a tuple assignment. So continuing with the example, <code>width, height = [8, 16]</code> would assign <code>width = 8</code> and <code>height = 16</code>.</li>
+</ul>
+<p>At this point I'm done reading the header data, so the rest of the file is the binary packed pixels. By calling <code>f.read()</code> I get the rest of the file starting from the current file position. Since the <code>FrameBuffer</code> class requires this data to be in a <code>bytearray</code> object, I transform it on the fly with the  <code>bytearray(f.read())</code> expression.</p>
+<p>The last line in the function creates the <code>FrameBuffer</code> object passing the <code>data</code>, <code>width</code> and <code>height</code> values plus the <code>MONO_HLSB</code> format. The <code>stride</code> parameter is not included because for the images I'm going to work with it is going to be the same as the image width.</p>
+<p>The procedure to draw an image on the screen is then as follows:</p>
+<pre><code class="language-python">image = load_image('filename.pbm')
+display.blit(image, x, y)
+</code></pre>
+<p>The <code>blit()</code> method of the screen object takes the frame buffer with the image data as first argument, and then the X and Y coordinates where the image should be drawn.</p>
+<p>Here you can see a practical application of this image drawing technique. I'm going to rewrite the <code>display_temperature_and_percentage()</code> function to render a much nicer screen. Below you can see a first attempt that includes some nice borders and the images:</p>
+<pre><code class="language-python">def display_temperature_and_humidity(temperature, humidity):
+    i2c = machine.I2C(scl=machine.Pin(config.DISPLAY_SCL_PIN),
+                      sda=machine.Pin(config.DISPLAY_SDA_PIN))
+    if 60 not in i2c.scan():
+        raise RuntimeError('Cannot find display.')
+
+    display = ssd1306.SSD1306_I2C(128, 64, i2c)
+
+    temperature_pbm = load_image('temperature.pbm')
+    units_pbm = load_image('fahrenheit.pbm') if config.FAHRENHEIT \
+        else load_image('celsius.pbm')
+    humidity_pbm = load_image('humidity.pbm')
+    percent_pbm = load_image('percent.pbm')
+
+    display.fill(0)
+    display.rect(0, 0, 128, 64, 1)
+    display.line(64, 0, 64, 64, 1)
+    display.blit(temperature_pbm, 24, 4)
+    display.blit(humidity_pbm, 88, 4)
+    display.blit(units_pbm, 28, 52)
+    display.blit(percent_pbm, 92, 52)
+
+    display.show()
+    time.sleep(10)
+    display.poweroff()
+</code></pre>
+<p>This is not a complete function, I'm still missing the actual temperature and humidity values, which I'm going to show you how to render in a custom font in the next section. But for now, this is how the new screen design looks:</p>
+<p><img alt="Icons" src="../../../static/images/micropython/ch06/ssd1306-icons.jpg" /></p>
+<p>Much nicer, right? If you are wondering how I aligned the images neatly on the screen, the answer is simple: trail and error. The <code>temperature.pbm</code> and <code>humidity.pbm</code> are 16x16 pixels, and the other images are 8x8. Knowing their sizes and the dimensions of the screen (128x64) makes it easy to calculate where the images should go to be centered, or left/right aligned, so I spent some time in the REPL trying out different designs until I arrived at this layout which I quite like. You can probably guess that I'm saving the space in the middle for the numbers.</p>
+<p>If you want to test this code with my images, here are download links for them:</p>
+<ul>
+<li><a href="https://raw.githubusercontent.com/miguelgrinberg/micropython-iot-tutorial/master/chapter6/temperature.pbm">temperature.pbm</a></li>
+<li><a href="https://raw.githubusercontent.com/miguelgrinberg/micropython-iot-tutorial/master/chapter6/celsius.pbm">celsius.pbm</a></li>
+<li><a href="https://raw.githubusercontent.com/miguelgrinberg/micropython-iot-tutorial/master/chapter6/fahrenheit.pbm">fahrenheit.pbm</a></li>
+<li><a href="https://raw.githubusercontent.com/miguelgrinberg/micropython-iot-tutorial/master/chapter6/humidity.pbm">humidity.pbm</a></li>
+<li><a href="https://raw.githubusercontent.com/miguelgrinberg/micropython-iot-tutorial/master/chapter6/percent.pbm">percent.pbm</a></li>
+</ul>
+<p>You have to copy them to your microcontroller board along with the updated <code>main.py</code> after you replace the old <code>display_temperature_and_humidity()</code> function with the new code and add the  <code>load_image()</code> function defined above.</p>
+<h2>Custom Fonts</h2>
+<p>The text rendering function in the <code>SSD1306</code> class is fairly basic. One of the more limiting aspects is that it does not support custom fonts, there is only one font that is hardcoded into the function. Unfortunately for a lot of purposes that font is too small and unreadable unless you have very good vision. To end this chapter I wanted to show you how to render text using custom fonts.</p>
+<p>The idea that I had was to treat a custom font as a collection of images. Writing text in a custom font then is simple, all you need to do is call the <code>blit()</code> method of the display once per character and moving the X position to the right each time. The only complication is in generating the images for each character in the chosen font.</p>
+<p>And it turns out that somebody has already done this and released the code as open source. A search on GitHub led me to the <a href="https://github.com/peterhinch/micropython-font-to-py">micropython-font-to-py</a> repository by Peter Hinch. In this repository, where you can find:</p>
+<ul>
+<li>A <code>font_to_py.py</code> script that converts a font from your computer into a format suitable to use by MicroPython. This runs on your computer and generates a <code>.py</code> file with all the font data inside.</li>
+<li>Several font renderer classes for MicroPython that use the font files generated by the <code>font_to_py.py</code> script.</li>
+<li>A few example font files, ready to be used.</li>
+<li>Documentation that explains the font format.</li>
+</ul>
+<p>The <code>freesans20.py</code> font file from Peter's repository seemed like the perfect size for my needs. The "20" in the name is the height of the characters in pixels. That is about the size of the space I have in my screen to add the numbers.</p>
+<p>From the font rendering options in Peter's repository, I settled on his simplest version, which he called <code>writer_minimal.py</code>. I renamed <code>writer_minimal.py</code> to <code>writer.py</code> in my project and also made a few minor changes to it.</p>
+<p>You can download the font and the render code below:</p>
+<ul>
+<li><a href="https://raw.githubusercontent.com/miguelgrinberg/micropython-iot-tutorial/master/chapter6/freesans20.py">freesans20.py</a></li>
+<li><a href="https://raw.githubusercontent.com/miguelgrinberg/micropython-iot-tutorial/master/chapter6/writer.py">writer.py</a></li>
+</ul>
+<p>The way font rendering with this code works is as follows:</p>
+<pre><code class="language-python"># import the font and the writer code
+import freesans20
+import writer
+
+# create a writer instance
+font_writer = writer.Writer(display, freesans20)
+
+# set writing position
+font_writer.set_textpos(0, 0)
+
+# write some text!
+font_writer.printstring(&quot;hello&quot;)
+
+# calculate how many pixels wide a text is
+len = font_writer.stringlen(&quot;hello&quot;)
+</code></pre>
+<p>If you are wondering what is the point of the last function, that is necessary if you want to center or right align some text. With the default font this is easy because all characters have an 8x8 size, but these custom fonts are not proportionally spaced, so for example the number "1" uses less horizontal space than the number "3". The only way to know how many pixels a string of text will take on the screen is to use this function to calculate it, and then once you know that number you can calculate where the text needs to be displayed to appear centered or right-aligned.</p>
+<p>Here is the snippet of code that renders the temperature and humidity values in the correct place:</p>
+<pre><code class="language-python">    text = '{:.1f}'.format(temperature)
+    textlen = font_writer.stringlen(text)
+    font_writer.set_textpos((64 - textlen) // 2, 30)
+    font_writer.printstring(text)
+
+    text = '{:.1f}'.format(humidity)
+    textlen = font_writer.stringlen(text)
+    font_writer.set_textpos(64 + (64 - textlen) // 2, 30)
+    font_writer.printstring(text)
+</code></pre>
+<p>I first convert the numbers into strings, because this <code>Writer</code> class that I'm using only knows how to print strings. To do this conversion I use the <code>format()</code> method of the string object once again. The <code>{:.1f}</code> format specifier requests that the number is rendered with no more than one decimal. If the number has more decimals, then it will be rounded to one in the string version.</p>
+<p>Next I use the <code>textlen()</code> method to get the width in pixels of the string. This is so that I can center these numbers in their areas.</p>
+<p>Based on experimentation in the REPL, I decided that the Y coordinate for these numbers is going to be Y=30. This font has 20 pixels of height, so I will be using the screen rows 30 to 50 for this text. If you look in the image rendering code above, the degrees and percent images are displayed starting at Y=52.</p>
+<p>The temperature needs to be centered in the left side box, which has 64 characters wide. To center it, I take 64 and substract the width in pixels of the string. This is going to be the amount of white space to the left and to the right of the string, so I divide it by two and that leaves me with the number of pixels on the left that need to be skipped. Note that I used the <code>//</code> to divide here, because I want the result to be an integer. I can then set the text rendering position to this number on X, and 30 on Y. For the humidity the calculation is similar, but I need to add 64 pixels because the left border of the humidity box starts at X=64.</p>
+<p>Once the text position is set, I call the <code>printstring()</code> method to render the text. Below you can see the complete, now final version of <code>main.py</code>:</p>
+<pre><code class="language-python">import dht
+import framebuf
+import machine
+import ssd1306
+import sys
+import time
+
+import config
+import freesans20
+import writer
+
+def show_error():
+    led = machine.Pin(config.LED_PIN, machine.Pin.OUT)
+    for i in range(3):
+        led.on()
+        time.sleep(0.5)
+        led.off()
+        time.sleep(0.5)
+    led.on()
+
+def is_debug():
+    debug = machine.Pin(config.DEBUG_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+    if debug.value() == 0:
+        print('Debug mode detected.')
+        return True
+    return False
+
+def get_temperature_and_humidity():
+    dht22 = dht.DHT22(machine.Pin(config.DHT22_PIN))
+    dht22.measure()
+    temperature = dht22.temperature()
+    if config.FAHRENHEIT:
+        temperature = temperature * 9 / 5 + 32
+    return temperature, dht22.humidity()
+
+def load_image(filename):
+    with open(filename, 'rb') as f:
+        f.readline()
+        f.readline()
+        width, height = [int(v) for v in f.readline().split()]
+        data = bytearray(f.read())
+    return framebuf.FrameBuffer(data, width, height, framebuf.MONO_HLSB)
+
+def display_temperature_and_humidity(temperature, humidity):
+    i2c = machine.I2C(scl=machine.Pin(config.DISPLAY_SCL_PIN),
+                      sda=machine.Pin(config.DISPLAY_SDA_PIN))
+    if 60 not in i2c.scan():
+        raise RuntimeError('Cannot find display.')
+
+    display = ssd1306.SSD1306_I2C(128, 64, i2c)
+    font_writer = writer.Writer(display, freesans20)
+
+    temperature_pbm = load_image('temperature.pbm')
+    units_pbm = load_image('fahrenheit.pbm') if config.FAHRENHEIT \
+        else load_image('celsius.pbm')
+    humidity_pbm = load_image('humidity.pbm')
+    percent_pbm = load_image('percent.pbm')
+
+    display.fill(0)
+    display.rect(0, 0, 128, 64, 1)
+    display.line(64, 0, 64, 64, 1)
+    display.blit(temperature_pbm, 24, 4)
+    display.blit(humidity_pbm, 88, 4)
+    display.blit(units_pbm, 28, 52)
+    display.blit(percent_pbm, 92, 52)
+
+    text = '{:.1f}'.format(temperature)
+    textlen = font_writer.stringlen(text)
+    font_writer.set_textpos((64 - textlen) // 2, 30)
+    font_writer.printstring(text)
+
+    text = '{:.1f}'.format(humidity)
+    textlen = font_writer.stringlen(text)
+    font_writer.set_textpos(64 + (64 - textlen) // 2, 30)
+    font_writer.printstring(text)
+
+    display.show()
+    time.sleep(10)
+    display.poweroff()
+
+def run():
+    try:
+        temperature, humidity = get_temperature_and_humidity()
+        print('Temperature = {temperature}, Humidity = {humidity}'.format(
+            temperature=temperature, humidity=humidity))
+        display_temperature_and_humidity(temperature, humidity)
+    except Exception as exc:
+        sys.print_exception(exc)
+        show_error()
+
+    if not is_debug():
+        machine.deepsleep()
+
+run()
+</code></pre>
+<p>To try this application you need to upload <code>main.py</code>, <code>config.py</code>, <code>freesans20.py</code> and <code>writer.py</code> to your board, along with the five <code>.pbm</code> images. Here is an example of how the screen looks with this final version of the application:</p>
+<p><img alt="Icons" src="../../../static/images/micropython/ch06/ssd1306-final.jpg" /></p>
+<h2>The End</h2>
+<p>With this example you have reached the end of my MicroPython tutorial. Congratulations!</p>
+<p>Before I go, I wanted to leave a few thoughts on continuing on your MicroPython learning adventure, as there are a few areas I haven't touched in this tutorial that you may want to research.</p>
+<h3>Building Custom MicroPython firmwares</h3>
+<p>In this tutorial I have used a stock build of MicroPython from <a href="https://micropython.org/">https://micropython.org</a>. This is a convenient approach that works well for most projects. One disadvantage of the stock build is that it does not allow the inclusion of "frozen" Python code.</p>
+<p>Consider that your <code>.py</code> files need to be read by the MicroPython interpreter running inside the board and compiled into the internal representation that the interpreter uses to run the code, and this identical process is repeated every time the application runs. An optimization would be to compile the code in your computer and then upload the compiled (or frozen) version to the board. This saves the microcontroller from having to compile your files every time.</p>
+<p>For small projects the compilation step is small so it isn't a problem, but if you are working with a larger application you may find that the MicroPython interpreter runs out of memory before it can compile all your code. So in this case working with frozen modules is the only solution.</p>
+<p>Freezing modules is a process that occurs as part of building the MicroPython firmware. The frozen modules are incorporated into the firmware in their final compiled format. The library packages that I have showed you in this tutorial such as <code>urequests</code> are stored in their frozen format in the stock firmware to save space and compilation time.</p>
+<p>The MicroPython documentation is lacking in terms of describing the build process and how to configure modules to be frozen. I have learned how to do this by reading lots of forum posts and GitHub projects from other developers, and then I have created a GitHub project if my own that attempts to simplify the task of building the firmware specifically for the ESP8266 microcontroller: <a href="https://github.com/miguelgrinberg/micropython-esp8266-vagrant">https://github.com/miguelgrinberg/micropython-esp8266-vagrant</a>.</p>
+<h3>Installing Packages from PyPI</h3>
+<p>The Python package repository (or PyPI) accepts packages for MicroPython. The MicroPython interpreter ships with <code>upip</code>, a simpler version of the <code>pip</code> installer that can be used from inside the MicroPython REPL, provided that you connect your board to your Internet router. I have decided to not discuss <code>upip</code> in this tutorial for two reasons:</p>
+<ul>
+<li>Running <code>upip</code> in your board works only when installing small packages. If you try to install something that is moderately complex then <code>upip</code> will run out of memory. This is related to the issues with compiling large source files in the microcontroller board that I discussed above. The <code>upip</code> tool performs a source install, which is inefficient due to the compile step requirement.</li>
+<li>Some of the packages available on PyPI for MicroPython are incompatible with current releases of MicroPython. This is an unfortunate side effect of disagreements between the creator of MicroPython and one of its core developers who now left the project. Many of the MicroPython libraries on PyPI are currently controlled by this developer and not by the official project.</li>
+</ul>
+<p>The approach that I have taken when I needed to install a third party package is to copy the source files into my project manually, a practice generally known as <em>vendoring</em> the dependencies. You saw me do this with the custom font rendering code in this chapter.</p>
+<h3>Implementing a Web Server</h3>
+<p>An interesting project to build with MicroPython is a web server. This could be used for configuring your device, for example. You would connect to the IP address used by your microcontroller's Wi-Fi interface with your browser from your computer and interact with the board through a website. I have decided to not cover writing a web server with MicroPython simply because there is currently a lack of web development tools for this platform.</p>
+<p>If you are wondering if standard Python microframeworks such as Bottle or Flask can work, the answer is no, because as odd as it sounds, these frameworks are too big to fit in the restricted environment of a microcontroller.</p>
+<p>I have started my own MicroPython web framework modeled after Flask called <a href="https://github.com/miguelgrinberg/microdot">microdot</a> that I hope will address this hole in the ecosystem. Feel free to give it a try!</p>
+<h3>Using Other Microcontroller Boards</h3>
+<p>There are a few other boards that are currently supported by MicroPython, and the list is likely to grow over time. I chose the ESP8266 because of its low cost and popularity, but you should definitely look at other boards if the ESP8266 is too small (or too big!) for your needs.</p>
+<p>You also have other options within the ESP8266 family. The ESP-12E model that I used in this tutorial is the high-level version which includes the micro-USB port for powering and programming. Often this is thought of as a prototyping board because of how easy it is to work with it. But once you have your application built on this board, you may consider building a production version using one of the more basic models, such as the also popular ESP-01:</p>
+<p><img alt="ESP8266-01" src="../../../static/images/micropython/ch06/esp8266-01.jpg" /></p>
+<p>Note that you will need to learn how to solder to work with this board!</p>
+<h3>Using MicroPython Derivatives</h3>
+<p>Most successful open source projects have "forks", and MicroPython is no exception. If you find that MicroPython is limiting you in some way, you may want to see if there is a derived project that works better for you. In particular, I would like to mention <a href="https://learn.adafruit.com/welcome-to-circuitpython/what-is-circuitpython">CircuitPython</a> as worthy of your attention. The folks at <a href="https://learn.adafruit.com/">Adafruit</a> have done a fantastic job in creating and maintaining their fork, along with lots of additional device drivers.</p>
+<h3>Learning Electronics and Digital Circuits</h3>
+<p>I took a software centric approach when I designed this tutorial. If you want to create more complex projects, you may want to invest some time in learning electronics and digital circuit concepts. I have found the <a href="https://www.khanacademy.org/science/electrical-engineering">Electrical Engineering</a> videos from Kahn Academy very good to learn the basics.</p>
+<h3>Running MicroPython on your Computer</h3>
+<p>There are builds of MicroPython that can run on Windows, Mac and Linux computers, so as long as you don't need to interact with the hardware, such as the <code>machine</code>, <code>network</code>, <code>dht</code> or <code>ssd1306</code> modules, you can write MicroPython code and run it on your computer. For some of my projects I have created emulated versions of some of these hardware specific modules, and this allows me to work on my applications directly on my computer without having to constantly upload my source code to the ESP8266 board.</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen&amp;t=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20VI%3A%20Working%20with%20a%20Screen" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen&amp;resubmit=true&amp;title=MicroPython%20and%20the%20Internet%20of%20Things,%20Part%20VI:%20Working%20with%20a%20Screen" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20VI%3A%20Working%20with%20a%20Screen&amp;url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen&amp;title=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20VI%3A%20Working%20with%20a%20Screen&amp;summary=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20VI%3A%20Working%20with%20a%20Screen&amp;source=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20VI%3A%20Working%20with%20a%20Screen&amp;body=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../micropython-and-the-internet-of-things-part-vi-working-with-a-screen.html#comments">18 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4ebc824bfdf0311067b717965870756e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Janio LIma</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-03T03:32:53Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-03T03:32:53Z</span>
+  </p>
+  <div>
+    <p>Perfect end... thanks!</p>
+<p>I did all classes on the blog and everthing works well and I bought the e-book version this week just to keep everthing on hands to consultation and as a way to thanks for this tutorial.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b49edf6fa76cc24d315eacff2a24f11a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-warning">mpopoma</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-03T17:20:58Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-03T17:20:58Z</span>
+  </p>
+  <div>
+    <p>Awesome :-)</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/2ceb16fc5a98f9dc963aef1325143fa7?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">Brian Hambleton</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-11-20T00:33:12Z" data-function="fromNow" data-refresh="0" style="display: none">2019-11-20T00:33:12Z</span>
+  </p>
+  <div>
+    <p>"Since these screens are so common, MicroPython also includes a class for them:"</p>
+<p>I am running:</p>
+<p>MicroPython v1.11-580-g973f68780 on 2019-11-18; ESP module with ESP8266.</p>
+<p>I am not finding this to be the case.</p>
+<p>(I have one d/l from adafruit but it doesn't have the draw rectangle method you describe.)</p>
+<p>Where can I get the class library you are using?</p>
+<p>Thanks,</p>
+<p>Brian H.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-11-21T00:09:10Z" data-function="fromNow" data-refresh="0" style="display: none">2019-11-21T00:09:10Z</span>
+  </p>
+  <div>
+    <p>@Brian: you seem to be using daily builds. Have you tried the official 1.11 release? In any case, the source file for the display driver is in the micropython git repo, here is the link to it: <a href="https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py" rel="nofollow">https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6a4c05ede9081ce0b22ab4bdfe399e8f?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-warning">Luca</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-14T14:04:06Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-14T14:04:06Z</span>
+  </p>
+  <div>
+    <p>thank you, I think it is the best guide I have read on micropython and OLED display.<br>
+are you planning to do something for the st7789 display too?<br>
+I am using <a href="https://github.com/devbis/st7789_mpy" rel="nofollow">https://github.com/devbis/st7789_mpy</a> but I don't understand how to write text or import fonts. Do you believe that I can use the section with the title "Custom Fonts" also for the st7789 display? even if I don't know how to set the color.<br>
+every suggestion is precious</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-14T22:36:12Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-14T22:36:12Z</span>
+  </p>
+  <div>
+    <p>@Luca: haven't used those screens, but you should be able to adapt the custom font code to work on any screen. You just need to change the method by which pixels are drawn.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6e4e43b09cc2de50a25014960f8a7099?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#7</span> <span class="badge text-bg-warning">Josh Burnett</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-03T01:17:48Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-03T01:17:48Z</span>
+  </p>
+  <div>
+    <p>Very well done! I was able to follow along with the entire tutorial, and then modify the code for my own purposes. I'm now logging temperature &amp; humidity to the AdafruitIO service. Truly amazing what you can do with only 120 lines of code.</p>
+<p>Thank you so much for this great tutorial.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/1f1b6d7e9e1b5df18dc66e852022a925?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#8</span> <span class="badge text-bg-warning">Kieran Bathgate</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-27T20:40:09Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-27T20:40:09Z</span>
+  </p>
+  <div>
+    <p>I just read through and followed along each of the sections of this tutorial. To anyone that has completed this, roughly how long did it take?</p>
+<p>Just trying to get an idea...</p>
+<p>Kieran</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/2e49c7b1901a1bab134890bd980fecdd?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#9</span> <span class="badge text-bg-warning">Diego</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-02-14T04:52:41Z" data-function="fromNow" data-refresh="0" style="display: none">2021-02-14T04:52:41Z</span>
+  </p>
+  <div>
+    <p>Thanks for the post! <br>
+I spent several days trying to change the default font size in the old display until I found your tutorial. The explanation is great.<br>
+Diego.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/640538565ea53e64bc7e0e70e1767fb5?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#10</span> <span class="badge text-bg-warning">David Kempton</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-02-20T23:48:05Z" data-function="fromNow" data-refresh="0" style="display: none">2021-02-20T23:48:05Z</span>
+  </p>
+  <div>
+    <p>Hello Miguel. This is a brilliant lesson! However sadly I have encountered two problems. Firstly I could not get the pbm graphics to display correctly when I tried to use your code on a new RPi Pico board. Rectangles and line are fine. I think that the display. blit function is the culprit. I fear that it doesn't work properly on the Pico.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#11</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-02-21T11:07:45Z" data-function="fromNow" data-refresh="0" style="display: none">2021-02-21T11:07:45Z</span>
+  </p>
+  <div>
+    <p>@David: I have not tested this code on the Pico yet, but I've got one already, so I'll review everything and make any necessary fixes.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/c5e8a0d99639969138bb54d8ad5614a2?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#12</span> <span class="badge text-bg-warning">Casey</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-02-27T08:05:51Z" data-function="fromNow" data-refresh="0" style="display: none">2021-02-27T08:05:51Z</span>
+  </p>
+  <div>
+    <p>Wow.  Best all around tutorial on the entire web!  Well put together, well thought out and well received.  I like how the end result was a real world solution to a real world problem and the "components" or "functions" could easily be swapped out to suit ones own needs.  I recently built a similar apparatus using the Arduino IDE and wanted to recreate the same thing using micropython. I looked everywhere for resources and that's just it, the resources were scattered everywhere.  Your lesson brought it all together. Good job Miguel.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d9abe6de641cbb75b3cbf7dfdbc49e57?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#13</span> <span class="badge text-bg-warning">Timo</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-03T10:32:57Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-03T10:32:57Z</span>
+  </p>
+  <div>
+    <p>Thanks for the great tutorial. Is anyone else having problems with the <a href="http://main.py/" rel="nofollow">main.py</a> file? Im getting an ValueError on execution.</p>
+<p>Traceback (most recent call last):<br>
+  File "<a href="http://main.py/" rel="nofollow">main.py</a>", line 86, in run<br>
+  File "<a href="http://main.py/" rel="nofollow">main.py</a>", line 57, in display_temperature_and_humidity<br>
+  File "<a href="http://main.py/" rel="nofollow">main.py</a>", line 40, in load_image<br>
+ValueError: need more than 0 values to unpack</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#14</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-04T10:17:12Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-04T10:17:12Z</span>
+  </p>
+  <div>
+    <p>@Timo: you don't seem to be using the exact same source code as I have, because line 40 of <a href="http://main.py/" rel="nofollow">main.py</a> is not part of the <code>load_image</code> function. I need to know exactly what code do you have in that line.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d9abe6de641cbb75b3cbf7dfdbc49e57?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#15</span> <span class="badge text-bg-warning">Timo</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-04T15:14:38Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-04T15:14:38Z</span>
+  </p>
+  <div>
+    <p>@Miguel. Thx fpr your reply. Right now, im using the exact same code and line 40 is part of the load_image function:</p>
+<p>width, height = [int(v) for v in f.readline().split()]</p>
+<p>I tried a fix were i assigned the width and height by myself, but that doesnt worked at all.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#16</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-05T10:07:58Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-05T10:07:58Z</span>
+  </p>
+  <div>
+    <p>@Timo: Are you loading a valid image encoded in pbm format? The load_image function can only understand pbm images, which have the width and height in the third line of the file. The error suggest that the third line of the file you are trying to load does not have this information.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d9abe6de641cbb75b3cbf7dfdbc49e57?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#17</span> <span class="badge text-bg-warning">Timo</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-05T10:38:53Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-05T10:38:53Z</span>
+  </p>
+  <div>
+    <p>@Miguel<br>
+The must have been an error in uploading the images. I uploaded them again, not it is working. Thank you for the hint and help.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/9d214c170383c8f211876cca64bc6847?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#18</span> <span class="badge text-bg-warning">Dustin</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-02-06T22:21:21Z" data-function="fromNow" data-refresh="0" style="display: none">2023-02-06T22:21:21Z</span>
+  </p>
+  <div>
+    <p>Just had to say THANKS! I have been looking for a way to use images and fonts on my Pi Pico/SSD1306 and this worked well for me.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdmcg.ikLRFwVWY5HD5dzCdvjn4z0YO9U">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  <div class="card-header">MicroPython for the Raspberry Pi Pico W</div>
+  <a class="card-book-cover" href="https://amzn.to/3Ugn6Ca">
+    <img src="../../../static/picow-book-small.png" alt="MicroPython for the Raspberry Pi Pico W">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you like my <a href="../../micropython-and-the-internet-of-things-part-i-welcome.html">MicroPython tutorial series</a> on this blog, you may also like my <a href="https://amzn.to/3Ugn6Ca">MicroPython for the Raspberry Pi Pico W</a> book.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3Ugn6Ca">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-vi-working-with-a-screen/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:48:04 GMT -->
+</html>

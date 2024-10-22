@@ -1,0 +1,1466 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:59 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    MicroPython and the Internet of Things, Part IV: Wi-Fi and the Cloud - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="python, micropython, iot, internet of things, breadboard, microcontroller, wi-fi">
+  
+  
+  <link rel="canonical" href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.html">
+  
+
+  
+    <link href="../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="MicroPython and the Internet of Things, Part IV: Wi-Fi and the Cloud">
+    <meta property="og:description" content="In this chapter I&#39;m going to show you how to use the Wi-Fi capabilities of the ESP8266 chip.If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud">
+    <meta name="twitter:title" content="MicroPython and the Internet of Things, Part IV: Wi-Fi and the Cloud">
+    <meta name="twitter:description" content="In this chapter I&#39;m going to show you how to use the Wi-Fi capabilities of the ESP8266 chip.If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.html">MicroPython and the Internet of Things, Part IV: Wi-Fi and the Cloud</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2019-07-25T06:54:16Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2019-07-25T06:54:16Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>In this chapter I'm going to show you how to use the Wi-Fi capabilities of the ESP8266 chip.</p>
+<p>If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the video version from my <a href="https://courses.miguelgrinberg.com/courses/micropython">Courses site</a>. Not only it will make for a better learning experience, but you'll also be supporting my effort in keeping my blog updated with relevant content. Thank you!</p>
+<p>For your reference, here is the complete list of chapters in this tutorial:</p>
+<ul>
+<li><a href="https://blog.miguelgrinberg.com/index">Chapter 1: Shopping List</a></li>
+<li><a href="micropython-and-the-internet-of-things-part-ii-hello-micropython.html">Chapter 2: Hello, MicroPython!</a></li>
+<li><a href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.html">Chapter 3: Building a MicroPython Application</a></li>
+<li><a href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.html">Chapter 4: Wi-Fi and the Cloud</a> (this article)</li>
+<li><a href="micropython-and-the-internet-of-things-part-v-temperature-and-humidity.html">Chapter 5: Temperature and Humidity</a></li>
+<li><a href="micropython-and-the-internet-of-things-part-vi-working-with-a-screen.html">Chapter 6: Working with a Screen</a></li>
+</ul>
+<h2>The Two ESP8266 Wi-Fi Interfaces</h2>
+<p>The ESP8266 microcontroller has two Wi-Fi interfaces, which in Wi-Fi jargon are called <a href="https://en.wikipedia.org/wiki/Wireless_access_point">access point</a> and <a href="https://en.wikipedia.org/wiki/Station_(networking)">station</a> interfaces. The access point interface allows devices with Wi-Fi such as your laptop to connect as clients to the microcontroller board. The station interface allows the microcontroller board itself to connect to other Wi-Fi access points such as the router in your home as a client.</p>
+<h3>The Access Point Interface</h3>
+<p>Current releases of MicroPython have the access point interface enabled by default. Connect your microcontroller board to a power source and then check the list of available Wi-Fi connections on your computer. While the microcontroller is running, you should see a <code>MicroPython-XXXXXX</code> connection:</p>
+<p><img alt="MicroPython Access Point" src="../static/images/micropython/ch04/micropython-access-point.png" /></p>
+<p>The default password for this connection is <code>micropythoN</code> (yes, that last N is uppercase). If you like, you can connect to your microcontroller with this password, but be aware that the microcontroller is not connected to the Internet through this interface so there is pretty much nothing you can do at this point while connected to it over Wi-Fi.</p>
+<p>This interface can be managed using the <code>network</code> package from MicroPython. Here is how to create an object that represents this interface:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import network
+&gt;&gt;&gt; ap_if = network.WLAN(network.AP_IF)
+</code></pre>
+<p>Now you can check if this interface is active:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ap_if.active()
+True
+</code></pre>
+<p>You can also get its settings:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ap_if.ifconfig()
+('192.168.4.1', '255.255.255.0', '192.168.4.1', '208.67.222.222')
+</code></pre>
+<p>The settings are, in order, the IP address, the subnet mask, gateway and DNS server. Don't worry if you don't know what these are, just know that they are the parameters that define this networking interface.</p>
+<p>If you plan on using the access point, it is a good idea to change the network name and password, since you do not want some random person walking by your house getting offered to connect to the <code>MicroPython-XXXXXX</code> network with its default password on their phone! You can change the network name and password as follows:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ap_if.config(essid='network name', password='password')
+</code></pre>
+<p>You can deactivate the access point if you don't plan on using it, which will also prevent it from appearing as a connection choice on phones and laptops:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ap_if.active(False)
+</code></pre>
+<p>Or activate it again:</p>
+<pre><code class="language-python">&gt;&gt;&gt; ap_if.active(True)
+</code></pre>
+<h3>The Station Interface</h3>
+<p>The station interface in your microcontroller is more interesting, because it will allow you to connect your board to the Wi-Fi network in your home and get access to the Internet through it:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import network
+&gt;&gt;&gt; sta_if = network.WLAN(network.STA_IF)
+</code></pre>
+<p>The station interface is not active by default, so it needs to be activated if you intend to use it:</p>
+<pre><code class="language-python">&gt;&gt;&gt; sta_if.active(True)
+</code></pre>
+<p>You can have it detect Wi-Fi networks that are within reach: </p>
+<pre><code class="language-python">&gt;&gt;&gt; sta_if.scan()
+[(b'NETGEAR99', b'\xa0@\xa0\x91}\xac', 3, -72, 3, 0), (b'test-net', b'pP\xaf\xc9\x90\xd2', 11, -73, 3, 0)]
+</code></pre>
+<p>The tuples returned here have the parameters of each available Wi-Fi connection. In particular, the first element in each tuple is the SSID name, the third element is the channel number, and the fourth is the <a href="https://en.wikipedia.org/wiki/Received_signal_strength_indication">RSSI</a> or signal strength indicator.</p>
+<p>Then you can connect to your Wi-Fi router with a simple <code>connect()</code> call, and you can ensure the connection was made with <code>isconnected()</code>:</p>
+<pre><code class="language-python">&gt;&gt;&gt; sta_if.connect('your SSID', 'your Wi-Fi password')
+&gt;&gt;&gt; sta_if.isconnected()
+True
+</code></pre>
+<p>As with the access point interface, you can also get the parameters of the connection:</p>
+<pre><code class="language-python">&gt;&gt;&gt; sta_if.ifconfig()
+('192.168.0.45', '255.255.255.0', '192.168.0.1', '192.168.0.1')
+</code></pre>
+<p>In case this isn't clear, when you connect to your microcontroller board using one of the Wi-Fi interfaces, the USB cable is only used for providing power to the board. You could plug your microcontroller to the wall using a cell phone charger or adapter and you will still be able to connect to it using these two interfaces.</p>
+<h2>The MicroPython WebREPL</h2>
+<p>MicroPython includes an experimental version of the REPL that works over Wi-Fi and can be accessed from a web browser. To enable this option, start a standard REPL session with <code>rshell</code> and run the following command:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import webrepl_setup
+</code></pre>
+<p>This is going to start an interactive configuration session that will ask you a few simple questions:</p>
+<pre><code>WebREPL daemon auto-start status: disabled
+
+Would you like to (E)nable or (D)isable it running on boot?
+(Empty line to quit)
+&gt; E
+To enable WebREPL, you must set password for it
+New password (4-9 chars): &lt;enter a password here&gt;
+Confirm password: &lt;enter a password again&gt;
+Changes will be activated after reboot
+Would you like to reboot now? (y/n) y
+</code></pre>
+<p>Remember the password that you entered as part of this questionnaire, because you are going to need it later.</p>
+<p>To use the WebREPL you need to download a client application, which runs on your web browser. You can download a zip file with this client from its <a href="https://github.com/micropython/webrepl/archive/master.zip">git repository</a>.</p>
+<p>The download above is a zip file, which will likely be named <code>webrepl-master.zip</code>. You need to extract the contents of this zip into a directory, and then from that directory open the file named <code>webrepl.html</code> in your web browser.</p>
+<p><img alt="MicroPython WebREPL client" src="../static/images/micropython/ch04/webrepl-client.png" /></p>
+<p>You can see that in the top left corner of the WebREPL client's window there is a text entry box that reads <code>ws://192.168.4.1:8266/</code>, followed by a "Connect" button. If you are connected to the microcontroller board through its access point interface, then the URL that appears in the entry field is the correct one, so you can press the Connect button to open the REPL.</p>
+<p>If you connected the board's station interface to your home Wi-Fi, then you need to find out what is the IP address that was assigned to the board, and replace it in the text box. For example, you can see above that for my board, the <code>sta_if.ifconfig()</code> call shows that the IP address of the board as <code>192.168.0.45</code>, so in my case the connection URL for the WebREPL should be changed to <code>ws://192.168.0.45:8266</code>. Make sure you only replace the IP address. The URL scheme needs to be <code>ws://</code> (for WebSocket), and the port needs to be <code>8266</code>. Once you set the correct IP address you can press the Connect button.</p>
+<p>You will need to enter the WebREPL password that you selected during the setup, and then you will have access to the same REPL interface, but on your browser.</p>
+<p><img alt="MicroPython WebREPL example" src="../static/images/micropython/ch04/webrepl-example.png" /></p>
+<p>The WebREPL supports copying files between your computer and the microcontroller, which is done on the REPL's side panel. Unfortunately at the time I'm writing this the file upload and download options do not appear to be working. I'm sure this will eventually work well, so if you find that you like the WebREPL more than the rshell REPL, then you can use it in place of rshell's <code>cp</code> command to install application files on the board.</p>
+<p>If you think you are going to use the WebREPL, then you can leave it enabled. But if you don't plan on using it to replace <code>rshell</code>, you can disable it by running <code>import webrepl_setup</code> again.</p>
+<h2>Using a Configuration File</h2>
+<p>To connect the board to your Wi-Fi router I had you type your router's password in the MicroPython REPL. I'm not sure about you, but seeing any kind of password written on the screen makes me very nervous. Continuing with the theme of providing you with good software development practices I think this is a good time to make an improvement on how the Wi-Fi connection is started, because you will need to include your Wi-Fi connection details in every application that you build from now on.</p>
+<p>So what I'm going to ask you to do is to create a <em>configuration file</em>, where all these details are going to be stored. Once they are in the configuration, you will not need to enter them again, you will just import them from there. One of the simplest patterns for configuration files in Python is to use variables defined in a separate Python module. </p>
+<p>As you did in the previous chapter, first create a separate subdirectory that is going to hold the code for this chapter. Make sure your current directory is set to <code>micropython-tutorial</code> and create a <code>chapter4</code> subdirectory:</p>
+<pre><code>(venv) $ mkdir chapter4
+(venv) $ cd chapter4
+</code></pre>
+<p>Now let's create a new file called <code>config.py</code> with the following contents:</p>
+<pre><code class="language-python">WIFI_SSID = 'your SSID'
+WIFI_PASSWORD = 'your Wi-Fi password'
+</code></pre>
+<p>You can now upload this file to your controller board. Using <code>rshell</code> the command is:</p>
+<pre><code>(venv) $ rshell --port &lt;board serial port name&gt; cp config.py /pyboard
+</code></pre>
+<p>Now, when you need to connect to your Wi-Fi network you can do it without having to write your password:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import config
+&gt;&gt;&gt; import network
+&gt;&gt;&gt; sta_if = network.WLAN(network.STA_IF)
+&gt;&gt;&gt; sta_if.connect(config.WIFI_SSID, config.WIFI_PASSWORD)
+&gt;&gt;&gt; sta_if.isconnected()
+</code></pre>
+<p>Similar code to the above snippet will be included in almost all the remaining applications in this tutorial. </p>
+<h2>Sending HTTP Requests</h2>
+<p>Now that you have a good understanding of the Wi-Fi capabilities in your microcontroller board, it is time to learn how to do something useful with them. In terms of Internet access, nothing beats being able to send a web request (more specifically called HTTP request) out to a cloud based service, which is basically one of the core ideas behind the <a href="https://en.wikipedia.org/wiki/Internet_of_things">Internet of Things</a> paradigm.</p>
+<p>When using standard Python, most people use the <code>requests</code> package to send HTTP requests. MicroPython comes preloaded with <code>urequests</code>, which is a simplified version of <code>requests</code>.</p>
+<p>To run the following example, make sure your microcontroller is connected to your home Wi-Fi router through the station interface so that it has access to the Internet. You can leave the access point interface in the board enabled, or if you prefer you can disable it, since it is not needed for this.</p>
+<p>As an example of how to send a web request, I'm going to contact the <code>icanhazip.com</code> service, a simple web service that tells you what is your public IP address. Here is how to do it:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import urequests
+&gt;&gt;&gt; r = urequests.get('http://icanhazip.com')
+&gt;&gt;&gt; r.status_code
+200
+&gt;&gt;&gt; r.text
+'56.19.70.24\n'
+</code></pre>
+<p>The <code>urequests.get()</code> function sends a web request using the <code>GET</code> method, which is normally associated with retrieving information from the remote server. For this example, the only argument to the function is the URL of the service that receives the request. More complex web services may require additional arguments, as you will see later.</p>
+<p>The return value of the <code>urequests.get()</code> function is a response object. The <code>status_code</code> attribute of this response tells you the result of the operation using the standard numeric codes specified by the HTTP standard. Codes in the 2xx range are all success codes. Codes in the 3xx range are used to indicate redirects, which are not as common with web APIs as they are in standard web applications. Codes in the 4xx range are error codes that indicate the request is incorrect in some way. Codes in the 5xx range indicate that an unexpected error has occurred.</p>
+<p>The <code>text</code> attribute of the response object contains the actual data returned by the service. For this service, the data returned is your public IP address, or in other words, the IP address that was assigned to your Wi-Fi router by your Internet service provider.</p>
+<h2>Setting Up a IFTTT Webhook</h2>
+<p>Now let's do something more "cloudy" with web requests. One of the standard ways in which events are communicated in the cloud is through <a href="https://en.wikipedia.org/wiki/Webhook">webhooks</a>. A webhook is basically a pre-configured web address that triggers an action when it is invoked. In this section I'm going to show you how to use the <a href="https://ifttt.com/">IFTTT</a> platform to define a custom webhook that can perform an action of your choosing when your microcontroller board calls it. IFTTT supports a large number of actions, from sending an email or SMS to ordering pizza!</p>
+<p><img alt="IFTTT" src="../static/images/micropython/ch04/ifttt.png" /></p>
+<p>The name "IFTTT" is short for "If This, Then That", a reference to being able to create fully customized triggers and actions. To begin, create a free account at <a href="https://ifttt.com/">https://ifttt.com</a>. As part of the new account creation you may be asked to provide a few services that you use to then get better recommendations. While it is not a problem if you do that, for this tutorial you can skip that part of the setup.</p>
+<p>Once you are logged in to IFTTT, click on your username in the top-right part of the page, and then select "New Applet" from the menu. This will take you to the "if this then that" page:</p>
+<p><img alt="IFTTT" src="../static/images/micropython/ch04/ifttt2.png" /></p>
+<p>As you can probably guess, the "this" part is a trigger, and the "that" part is the action. Both are completely configurable and IFTTT provides dozens of integrations with third party services to help you build what you need.</p>
+<p>Click on the "this" to configure the trigger. You are going to be offered lots of options from which you need to select a service called "Webhooks". You can type "webhook" in the search box to filter the list of services. Once you located the Webhooks service, click on it. You may be presented with a screen where you need to "connect" to this service. This is only going to appear the first time you use the Webhooks service in your account. Click on Connect to add it.</p>
+<p>The Webhooks service provides a single trigger called "Receive a web request". Click on it to add it to the applet. You will then need to provide an event name for this trigger. This webhook is going to be invoked when a button is pressed, so I called my event <code>button_pressed</code>. You can use a different name if you like:</p>
+<p><img alt="IFTTT" src="../static/images/micropython/ch04/ifttt3.png" /></p>
+<p>After you click the "Create trigger" button the "this" part will be complete, and you will be back to the "if this then that" page.</p>
+<p>Now click on "that" to configure the action part. Once again you will be offered lots of integrations with third party services. My recommendation for this first example is that you pick an "easy" one, such as Email or SMS. The idea is that when this example is complete, when you push a button connected to the microcontroller an email or SMS will be sent to you. Once you have familiarized with the IFTTT service you can browse through the tons of integrations to see what cool ideas you can come up with to automate your life.</p>
+<p>In my case I'm going to use the Email integration. If you don't see it as an icon, type "email" in the search box to help you find it. Click on it to configure an email action. The only action available in the email service is "Send me an email". Click on it to add it to the applet.</p>
+<p>You will now see another configuration panel where you can define the subject and body of the email that will be sent out to you. Note how placeholders are used to define the variable parts.</p>
+<p><img alt="IFTTT" src="../static/images/micropython/ch04/ifttt4.png" /></p>
+<p>You are free to edit the subject and body of the email however you like. In my case I left the subject alone, but made a small change in the body of the email. The original format included an "Extra data" line that had three custom values that can be provided with the webhook, represented by placeholders called <code>Value1</code>, <code>Value2</code> and <code>Value3</code>. For this example I'm only going to use only one custom value, so I edited the template so that this line shows only <code>Value1</code> and labels it appropriately as "Button".</p>
+<p>If this does not make much sense yet, do not worry, it will all be clear in a minute once you are able to see how IFTTT works. For now, click the "Create action" button and then on "Finish" complete the applet.</p>
+<p>The webhook is fully set up, so let's give it a try. What you need to find out now is what is the webhook URL that was created for this applet. Click once again on your username in the top-right part of the page, and select "Services" from the menu. Then click on "Webhooks", and in the Webhooks page click on "Documentation".</p>
+<p>You will be taken to a page that will allow you to build a URL for an event, including those three custom values that can be passed. Click on the <code>{event}</code> box and type <code>button_pressed</code> there (or the event name that you used in your applet). Then click on the empty box to the right of <code>"value1"</code> and enter <code>micropython1</code> or any identifier that you want to use with the button that you will be building soon. This value will be associated with the <code>{{Value1}}</code> placeholder that was added in the email body.</p>
+<p>After you entered the event name and the button identifier the bottom of the page will show an example request that you can use to trigger the action. This example is given using the <code>curl</code> utility, which is a very popular HTTP client that you can run from the command line. You also get a "Test It" button that you can click to invoke the webhook with the event name and custom values you provided. So as a first test, go ahead and click the test button, and a few seconds later an email should arrive (or whatever action you selected should be executed, if you didn't use an email).</p>
+<p>If you verified that the webhook is working, now it's time to invoke this webhook from MicroPython, and for that we need to translate the <code>curl</code> command into <code>urequests</code>.</p>
+<p>I showed you above how to send a <code>GET</code> request with <code>urequests</code>. For this request a <code>POST</code> method is used instead. This is the <code>-X POST</code> option sent to <code>curl</code>. So instead of <code>urequests.get()</code> this time it will be <code>urequests.post()</code>.</p>
+<p>The first argument to this function is the URL. This URL appears in the <code>curl</code> command as the last argument. It starts with <code>https://maker.ifttt.com/trigger/...</code> and includes your chosen event name and a long string of alphanumeric characters that are your webhook key. In case you are curious, the key is what identifies your account when the request is sent.</p>
+<p>The <code>curl</code> command also includes a <code>Content-Type</code> header (given with the <code>-H</code> option) and a body (given with the <code>-d</code> option). The body is where the custom "value1" argument is given, using a very popular format with web APIs called <a href="https://en.wikipedia.org/wiki/JSON">JSON</a>, which is somewhat similar to Python dictionaries. As it turns out, the <code>Content-Type</code> header is there to indicate to the web service that the request comes with JSON data in the body, so these two bits of data are related.</p>
+<p>In <code>urequests</code>, sending a JSON body is actually easy. The <code>Content-Type</code> header does not need to be manually set as in <code>curl</code>, and the data needs to be given as a Python dictionary. The conversion to JSON and the header are added by <code>urequests</code>.</p>
+<p>So finally, here is how this webhook can be invoked from MicroPython:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import urequests
+&gt;&gt;&gt; r = urequests.post('http://maker.ifttt.com/trigger/button_pressed/...',
+... json={'value1': 'micropython1'})
+&gt;&gt;&gt; r.status_code
+200
+</code></pre>
+<p>If you want to give this a try, power up your microcontroller, and enter the REPL. Make sure you are connected to your Wi-Fi router, and then use the above code as a reference in creating your own webhook request. Make sure that the URL that you pass is the complete URL, including the long key that identifies your account.</p>
+<p>Note that in the above snippet I entered the <code>urequests.post()</code> in two lines. When I reached the end of the URL I typed the comma and then pressed Enter. I then entered the rest of the call in a second line. This was entirely done by choice, it would have been just as well to enter everything in one line.</p>
+<p>Did you get an email notification from the MicroPython issued request? Great! Now that the proof of concept is working, this needs to be made into an application!</p>
+<h2>Emulating the Amazon Dash Button</h2>
+<p>You have probably been suspecting this all along. What I'm working towards in this chapter is building a clone of the <a href="https://en.wikipedia.org/wiki/Amazon_Dash">Amazon Dash</a> button. In case you are not familiar with these devices, these are little Wi-Fi enabled buttons made by Amazon (now discontinued) that automatically order specific Amazon products when pressed. The button that you will have at the end of this chapter is going to invoke an IFTTT webhook, and that means that you will be able to select the action that is carried out when the button is pressed from any of the options supported under the IFTTT platform.</p>
+<p>I've already showed you most of the functionality that is required to complete a first version of this project. The only part that I haven't discussed is how to implement the actual physical button that you have to push to trigger the webhook invocation. For the first solution I'm going to take advantage of the reset button that is already in this microcontroller board. What I'm going to do is to code my application so that it sends out the webhook request when it boots. So then each time the reset button is pressed, the board will reboot and a new request will be sent out.</p>
+<p>So basically, the high-level structure of this application is going to be as follows:</p>
+<pre><code class="language-python">connect_wifi()
+call_webhook()
+</code></pre>
+<p>Simple, right? Now I just need to implement these two functions to complete the project.</p>
+<p>Let's look at the <code>connect_wifi()</code> function first:</p>
+<pre><code class="language-python">import time
+import config
+
+def connect_wifi():
+    ap_if = network.WLAN(network.AP_IF)
+    ap_if.active(False)
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+        print('Connecting to WiFi...')
+        sta_if.active(True)
+        sta_if.connect(config.WIFI_SSID, config.WIFI_PASSWORD)
+        while not sta_if.isconnected():
+            time.sleep(1)
+    print('Network config:', sta_if.ifconfig())
+</code></pre>
+<p>This function is essentially a more robust version of the Wi-Fi connection code I've shown above. The function first deactivates the access point interface, since it is not used in this example.</p>
+<p>Then it checks if the station interface is already connected. This is always a good idea, as that will make this function return immediately if the connection has been already established. If the Wi-Fi connection does not exist, then the interface is activated and then a call to the <code>connect()</code> function is made. A Wi-Fi connection can take a few seconds to be completed, and this happens asynchronously. To avoid returning from this function before the connection is fully established, I've added a while-loop that blocks the function until the <code>isconnected()</code> function returns <code>True</code>. Inside the loop I just call <code>time.sleep(1)</code> to wait for one second before checking the connection again. Using a while-loop with a sleep inside is a standard way to block until a condition is satisfied. Without the sleep the loop would be checking the connection repeatedly as fast as it could, and there is really no point in doing that. Checking at a rate of once per second is sufficient.</p>
+<p>Before I implement the <code>call_webhook()</code> function, I'm going to take advantage of the configuration file that I built earlier and add more things to it, as that will help in keeping the code nicely organized. I'm going to add the webhook URL and the button name to the configuration, so that they are independent of the application, in the same way the <code>connect_wifi()</code> above is independent of the specific Wi-Fi connection details. Here is an expanded <code>config.py</code> file:</p>
+<pre><code class="language-python">WIFI_SSID = 'your SSID'
+WIFI_PASSWORD = 'your Wi-Fi password'
+WEBHOOK_URL = 'http://maker.ifttt.com/trigger/button_pressed/...'
+BUTTON_ID = 'micropython1'
+</code></pre>
+<p>Of course, you should set these four configuration settings as appropriate for you. In particular, note how I simplified the webhook URL, which in reality is going to be much longer as it includes the key that identifies your IFTTT account.</p>
+<p>Now I can show you a first implementation of the <code>call_webhook()</code> function:</p>
+<pre><code class="language-python">def call_webhook():
+    print('Invoking webhook')
+    response = urequests.post(config.WEBHOOK_URL,
+                              json={'value1': config.BUTTON_ID})
+    if response is not None and response.status_code &lt; 400:
+        print('Webhook invoked')
+    else:
+        print('Webhook failed')
+</code></pre>
+<p>This function considers any response that comes back with a status code of 400 or higher as an error. Note how I'm adding <code>print()</code> statements that provide information about what's going on in the application. These are obviously not going to be seen anywhere when you are running the device standalone, but the point of having them there is that you can also run these functions from the REPL, and in that case you will want to know what happens.</p>
+<p>Here is an almost complete version of <code>main.py</code> with this application:</p>
+<pre><code class="language-python">import network
+import time
+import urequests
+import config
+
+def connect_wifi():
+    ap_if = network.WLAN(network.AP_IF)
+    ap_if.active(False)
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+        print('Connecting to WiFi...')
+        sta_if.active(True)
+        sta_if.connect(config.WIFI_SSID, config.WIFI_PASSWORD)
+        while not sta_if.isconnected():
+            time.sleep(1)
+    print('Network config:', sta_if.ifconfig())
+
+def call_webhook():
+    print('Invoking webhook')
+    response = urequests.post(config.WEBHOOK_URL,
+                              json={'value1': config.BUTTON_ID})
+    if response.status_code &lt; 400:
+        print('Webhook invoked')
+    else:
+        print('Webhook failed')
+</code></pre>
+<p>The only thing I haven't added yet to <code>main.py</code> is the code that invokes these two functions, and the reason for that is that first I want to test these functions by hand from the REPL to make sure they are working. So go ahead and copy <code>main.py</code> and <code>config.py</code> to your microcontroller using <code>rshell</code>:</p>
+<pre><code>(venv) $ rshell --port &lt;board serial port name&gt; cp main.py config.py /pyboard
+</code></pre>
+<p>Then to start fresh you may want to unplug the microcontroller and plug it again. This is so that the Wi-Fi connection goes away. Now start a REPL session to test the two functions:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import main
+&gt;&gt;&gt; main.connect_wifi()
+Network config: ('192.168.0.45', '255.255.255.0', '192.168.0.1', '192.168.0.1')
+&gt;&gt;&gt; main.call_webhook()
+Invoking webhook
+Webhook invoked
+&gt;&gt;&gt; _
+</code></pre>
+<p>Since everything is working as expected, I can complete the application by adding the two calls to <code>main.py</code>. Here is the complete first version of my little Amazon Dash clone:</p>
+<pre><code class="language-python">import network
+import time
+import urequests
+import config
+
+def connect_wifi():
+    ap_if = network.WLAN(network.AP_IF)
+    ap_if.active(False)
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+        print('Connecting to WiFi...')
+        sta_if.active(True)
+        sta_if.connect(config.WIFI_SSID, config.WIFI_PASSWORD)
+        while not sta_if.isconnected():
+            time.sleep(1)
+    print('Network config:', sta_if.ifconfig())
+
+def call_webhook():
+    print('Invoking webhook')
+    response = urequests.post(config.WEBHOOK_URL,
+                              json={'value1': config.BUTTON_ID})
+    if response is not None and response.status_code &lt; 400:
+        print('Webhook invoked')
+    else:
+        print('Webhook failed')
+
+def run():
+    connect_wifi()
+    call_webhook()
+
+run()
+</code></pre>
+<p>Here I added one more function called <code>run()</code> which combines the two other functions. The <code>run()</code> function is then invoked at the bottom from the global scope.</p>
+<p>Copy the updated <code>main.py</code> to your board, and now each time the microcontroller is plugged in or restarted, the webhook is going to be hit. For now you can use the little reset button that comes with the board as "the button", and each time you press it the board will reset and call the webhook.</p>
+<h2>Reporting Errors</h2>
+<p>I've mentioned above that I've added the <code>print()</code> statements to the code so that I can see what the application is doing when I run it from the REPL. That is all great, but when the webhook request fails and the REPL isn't connected, there is currently no way to know there was a failure. Failures when sending requests can happen for many different reasons and are not that unlikely. For example, the IFTTT service could be temporarily down for maintenance. Since I haven't incorporated a screen yet, for now the only visual elements that I have available are (you guessed!) the LEDs! So let's blink the LEDs a few times to show that there's been an error. Here is a function that does the blinking called <code>show_error()</code>:</p>
+<pre><code class="language-python">import machine
+
+def show_error():
+    led = machine.Pin(config.LED_PIN, machine.Pin.OUT)
+    led2 = machine.Pin(config.LED2_PIN, machine.Pin.OUT)
+    for i in range(3):
+        led.on()
+        led2.off()
+        time.sleep(0.5)
+        led.off()
+        led2.on()
+        time.sleep(0.5)
+    led.on()
+    led2.on()
+</code></pre>
+<p>This is similar to the blinking lights application from last chapter, but instead of using a while-loop I'm now using a for-loop that only runs the blinking cycle 3 times. I have also moved the <code>LED_PIN</code> and <code>LED2_PIN</code> constants to the configuration file. Here is a new <code>main.py</code> version that includes the LED error reporting:</p>
+<pre><code class="language-python">import machine
+import network
+import sys
+import time
+import urequests
+import config
+
+def connect_wifi():
+    ap_if = network.WLAN(network.AP_IF)
+    ap_if.active(False)
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+        print('Connecting to WiFi...')
+        sta_if.active(True)
+        sta_if.connect(config.WIFI_SSID, config.WIFI_PASSWORD)
+        while not sta_if.isconnected():
+            time.sleep(1)
+    print('Network config:', sta_if.ifconfig())
+
+def call_webhook():
+    print('Invoking webhook')
+    response = urequests.post(config.WEBHOOK_URL,
+                              json={'value1': config.BUTTON_ID})
+    if response is not None and response.status_code &lt; 400:
+        print('Webhook invoked')
+    else:
+        print('Webhook failed')
+        raise RuntimeError('Webhook failed')
+
+def show_error():
+    led = machine.Pin(config.LED_PIN, machine.Pin.OUT)
+    led2 = machine.Pin(config.LED2_PIN, machine.Pin.OUT)
+    for i in range(3):
+        led.on()
+        led2.off()
+        time.sleep(0.5)
+        led.off()
+        led2.on()
+        time.sleep(0.5)
+    led.on()
+    led2.on()
+
+def run():
+    try:
+        connect_wifi()
+        call_webhook()
+    except Exception as exc:
+        sys.print_exception(exc)
+        show_error()
+
+run()
+</code></pre>
+<p>The main change that I've made to make this application more robust is to add a try/except block around the code in the <code>run()</code> function. This is so that I can catch those unexpected errors and handle them by calling the function that blinks the lights. The <code>sys.print_exception()</code> function will show the error message and the location of the error in the same way errors that are not caught are shown. This is obviously going to be useful when you run the application manually from the REPL.</p>
+<p>The other change is in the <code>call_webhook()</code> function. I've added a <code>raise RuntimeError()</code> right after I print the error message for a failed webhook. If you look at the code carefully, you'll notice that the <code>raise</code> statement will occur while the code that is inside the <code>try</code> block is running. This is in the <code>call_webhook()</code> function which is the second line inside the <code>try</code>. Any errors that occur in there, including this one that I'm self-generating, will trigger the code in the <code>except</code> block to run, and that is where I make the lights blink. If no errors occur, then the code in the <code>except</code> block will be skipped.</p>
+<p>Doing the error handling in this way is nice, because not only I'm handling my own error condition, but I'm also capturing any unexpected ones. I've mentioned above that errors in requests come back with status codes 400 and above, but while this is in general true, you only get these codes when the server on the other side is running and is able to report them. There are situations in which the remote server cannot be contacted at all, and in those cases <code>urequests</code> will also raise an exception. The try/except block will catch my own error as well as any others that occur while those two functions in the <code>try</code> block run.</p>
+<p>I should mention that in many cases doing a "catch-all" try/except is seen as a bad practice, because it can silence errors that would otherwise point to bugs or other conditions that you as developer might want to be aware of. In this case that does not apply because I'm using <code>sys.print_exception()</code> to show the error in the same way the MicroPython interpreter would have shown it.</p>
+<p>Here is the new <code>config.py</code> that includes the LED pins:</p>
+<pre><code class="language-python">WIFI_SSID = 'your SSID'
+WIFI_PASSWORD = 'your Wi-Fi password'
+WEBHOOK_URL = 'http://maker.ifttt.com/trigger/button_pressed/...'
+BUTTON_ID = 'micropython1'
+LED_PIN = 2  # D4
+LED2_PIN = 16  # D0
+</code></pre>
+<p>To test how the error reporting works you can modify the webhook URL in <code>config.py</code> to be something incorrect. For example, change it to <code>http://maker1.ifttt.com/...</code>. Then each time you press the reset button, wait a couple of seconds and then you will see the blinking lights.</p>
+<h2>The Deep Sleep State</h2>
+<p>Did you consider what happens after you press the reset button and the webhook is invoked? The <code>main.py</code> script will reach the end, so the MicroPython interpreter will just remain idle until the reset button is pressed again, which will restart everything. While this does not present a technical problem, you may argue that it is wasteful to leave the microcontroller in a fully operational state when it is not doing anything. If you were powering the device with a battery then keeping the device running all the time would shorten the battery life in a considerable way.</p>
+<p>The 8266 microcontroller has a mode called "deep sleep", in which it turns itself almost completely off. In particular, the Wi-Fi subsystem and the CPU are both stopped, and this is what makes this mode attractive, because the amount of power needed to maintain the deep sleep mode is minimal. The only subsystem that is kept awake is the real-time clock (RTC), and this is because there is a mechanism by which you can program the device to wake up from deep sleep at a specified time (we will learn about this particular topic in another chapter).</p>
+<p>To make the microcontroller enter deep sleep mode you just need to call <code>machine.deepsleep()</code>. Once the device is in this mode, it can be awaken by pressing the reset button, which is exactly the behavior that is needed for the webhook.</p>
+<p>There are many use cases in which it is necessary to know if the board is awakening from deep sleep, as opposite to being powered on for the first time. There is actually one that affects this project, which is that there is currently no way to distinguish a restart due to pushing the reset button versus a first start after the device is powered on. The <code>machine.reset_cause()</code> provides detailed information about the reset cause. The possible return values are:</p>
+<ul>
+<li><code>machine.PWRON_RESET</code>: the device was just powered on for the first time.</li>
+<li><code>machine.HARD_RESET</code>: the device is coming back from a "hard" reset, such as when pressing the reset button.</li>
+<li><code>machine.WDT_RESET</code>: the watchdog timer reset the device. This is a mechanism that ensures the device is reset if it crashes or hangs.</li>
+<li><code>machine.DEEPSLEEP_RESET</code>: the device was reset while being in deep sleep mode.</li>
+<li><code>machine.SOFT_RESET</code>: the device is coming back from a "soft" reset, such as when pressing Ctrl-D when in the REPL.</li>
+</ul>
+<p>For the button application I can check that the reset cause was <code>machine.DEEPSLEEP_RESET</code>, and only in that case call the webhook.</p>
+<p>Here is yet a new version of the <code>run()</code> function in <code>main.py</code> that puts the device into deep sleep mode after invoking the webhook, and also avoids the webhook for all reset causes except when it is coming out of deep sleep:</p>
+<pre><code class="language-python">def run():
+    try:
+        if machine.reset_cause() == machine.DEEPSLEEP_RESET:
+            connect_wifi()
+            call_webhook()
+    except Exception as exc:
+        sys.print_exception(exc)
+        show_error()
+    machine.deepsleep()
+</code></pre>
+<p>With this change, the webhook is not going to be invoked when you first power the device, since in that situation the reset cause is going to be <code>machine.PWRON_RESET</code>. In that first running instance the microcontroller will go right into deep sleep mode. Then each time the reset button is pressed the device will boot and <code>main.py</code> will run again, and in those cases the reset cause will be the expected one, so the webhook will be invoked.</p>
+<h2>Adding a Debug Mode</h2>
+<p>Did you notice a problem with the change I've made in the previous section? Now the board is only awake for the short time it sends the webhook request. At any other times the device is almost entirely asleep, which means that you cannot connect to it with the REPL!</p>
+<p>If you try to connect a few times you will eventually be able to connect, because <code>rshell</code> triggers a reset of the board when it fails to connect to it. But this is a very annoying problem that needs to be addressed. The solution I came up with is to have a "debug mode" for this application. When this debug mode is activated, the application will not put the board into deep sleep mode, it will keep it awake like before, and this will allow you to connect to it with <code>rshell</code>. Using a debug mode is a useful way to alter the behavior of the application to make your development work on it easier or more convenient.</p>
+<p>Remember the button implementation from the previous chapter? That used pin <code>D5</code>, which was connected to <code>GND</code> with a button in the middle. I used the pull-up resistor attached to this pin to make the pin read a value of 1 when the button was released or 0 when it was pressed. The same concept can be used to create a debug "switch" that can tell the application if it is okay to go into deep sleep or not.</p>
+<p>The debug switch will work as follows:</p>
+<ul>
+<li>If pin <code>D5</code> reads as a 1 it means that it is not connected to ground and the pull-up resistor is giving it the 1 value. In this case I'm going to assume this is the "normal" mode, and deep sleep will be invoked after the webhoook is called.</li>
+<li>If pin <code>D5</code> reads as a 0, then it means that there is a connection from the pin to the ground, and that will make the application assume it is operating in "debug" mode, which will skip the deep sleep mode and keep the device awake at all times.</li>
+</ul>
+<p>While using a button wired exactly as in the previous chapter is fine as a debug switch, these buttons that I'm using are not the best type for this because they don't stay in the pressed state. I would prefer a button that is really a switch, so that I can leave it in the on or off position to indicate which mode I want it to use. If you have a button of that type, you can use it to add the debug switch. Since I don't have that type of button at hand, I'm going to improvise.</p>
+<p>To activate debug mode, I'm going to take a jumper wire and connect one end to pin <code>D5</code>, and the other end to a <code>GND</code> pin in the breadboard power strips. This would close the circuit and give the GPIO pin a value of 0, which would be the same as having the button pressed. And when I want to stop using debug mode, I just remove the jumper wire. Below you can see a diagram of the circuit when debug is in use:</p>
+<p><img alt="Debug Switch" src="../static/images/micropython/ch04/debug-switch.png" /></p>
+<p>Now I can add another helper function that tells me if I'm in debug mode or not that is checked before <code>machine.deepsleep()</code> is invoked in <code>run()</code>:</p>
+<pre><code class="language-python">def is_debug():
+    debug = machine.Pin(config.DEBUG_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+    if debug.value() == 0:
+        print('Debug mode detected.')
+        return True
+    return False
+
+
+def run():
+    try:
+        if machine.reset_cause() == machine.DEEPSLEEP_RESET:
+            connect_wifi()
+            call_webhook()
+    except Exception as exc:
+        sys.print_exception(exc)
+        show_error()
+
+    if not is_debug():
+        machine.deepsleep()
+</code></pre>
+<p>As you probably noticed, I've also added pin <code>D5</code> to the configuration with the name <code>DEBUG_PIN</code>, so this is how <code>config.py</code> should look like now:</p>
+<pre><code class="language-python">WIFI_SSID = 'your SSID'
+WIFI_PASSWORD = 'your Wi-Fi password'
+WEBHOOK_URL = 'http://maker.ifttt.com/trigger/button_pressed/...'
+BUTTON_ID = 'micropython1'
+LED_PIN = 2  # D4
+LED2_PIN = 16  # D0
+DEBUG_PIN = 14  # D5
+</code></pre>
+<p>Now you can upload the new versions of <code>main.py</code> and <code>config.py</code> to the board and see how normal and debug modes work. Note that if you do it carefully, you can insert the debug jumper wire while the device is connected to power, so you could go into debug mode by adding the wire and then pressing the reset button to trigger a restart that will not finish in deep sleep. If you connect the debug wire on a hot device, just make sure you don't inadvertently touch anything with the wire connectors, as you could cause a short circuit. If you prefer to be on the safe side, then disconnect the device from power before adding the wire.</p>
+<h2>Using an External Reset Button</h2>
+<p>There is one last improvement before I call this application complete. I thought it would be useful to wire an external button to trigger the webhook, since the on-board reset button is so small and difficult to reach. This button will have to work in a different way than the button from the previous chapter, because for this application the button needs to be wired to the reset function of the board.</p>
+<p>Luckily, the board has a <code>RST</code> pin. This pin is pulled high (i.e. to a value of 1), just like the <code>D5</code> pin I used for a button. If the pin is connected momentarily to ground, then also like the button from last chapter, it will go low (to a value of 0), and this will cause the board to reset. So then, I can hook up a button to the <code>RST</code> on one side, and to <code>GND</code> on the other. When the button is pressed, the connection between these two pins will be made, and that will reset the board. Here is the breadboard diagram including an external reset button:</p>
+<p><img alt="External Reset Button" src="../static/images/micropython/ch04/reset-button.png" /></p>
+<p>Note that I removed the debug wire in this diagram. You should add this wire whenever you want to prevent the board from going into deep sleep.</p>
+<p>And with this I'm going to end this chapter. Remember to copy the latest versions of <code>main.py</code> and <code>config.py</code> to try the latest version on your board. Below you can see two views of my breadboard with the reset button in place:</p>
+<p><img alt="Reset Button Circuit" src="../static/images/micropython/ch04/button-circuit1.jpg" /></p>
+<p><img alt="Reset Button Circuit" src="../static/images/micropython/ch04/button-circuit2.jpg" /></p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud&amp;t=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20IV%3A%20Wi-Fi%20and%20the%20Cloud" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud&amp;resubmit=true&amp;title=MicroPython%20and%20the%20Internet%20of%20Things,%20Part%20IV:%20Wi-Fi%20and%20the%20Cloud" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20IV%3A%20Wi-Fi%20and%20the%20Cloud&amp;url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud&amp;title=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20IV%3A%20Wi-Fi%20and%20the%20Cloud&amp;summary=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20IV%3A%20Wi-Fi%20and%20the%20Cloud&amp;source=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20IV%3A%20Wi-Fi%20and%20the%20Cloud&amp;body=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.html#comments">15 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/c802f2cd79a026cf17440416c5ca7b6d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Ghouse</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-16T14:30:22Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-16T14:30:22Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>I'm unable to connect to my Dlink wifi router getting sta_if.status() as '4', but i'm able to connect my mobile hotspot wifi.</p>
+<p>I also modified my Dlink wifi router Security Options to "None" or "WPA2-PSK(AES)"  or "WPA-PSK/WPA2-PES(AES)" but still unable to connect using below code.</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>import network<br>
+sta_if = network.WLAN(network.STA_IF)<br>
+sta_if.active()<br>
+True<br>
+sta_if.connect('ssid','password')<br>
+sta_if.status()<br>
+1<br>
+sta_if.status()<br>
+1<br>
+sta_if.status()<br>
+4</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>After googling i found status code "4" means STAT_CONNECT_FAIL – failed due to other problems<br>
+<a href="https://docs.micropython.org/en/latest/library/network.WLAN.html#network.WLAN.status" rel="nofollow">https://docs.micropython.org/en/latest/library/network.WLAN.html#network.WLAN.status</a></p>
+<p>Could you please help me do i need to modify my dilink wifi router settings to accept connection.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-16T15:50:34Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-16T15:50:34Z</span>
+  </p>
+  <div>
+    <p>@Ghouse: Hard for me to know what the problem is. Is this an old router? Is your router found when you call scan()?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/c802f2cd79a026cf17440416c5ca7b6d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">ghouse</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-16T17:29:59Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-16T17:29:59Z</span>
+  </p>
+  <div>
+    <p>@miguel: My Router model: Dlink DIR 600M manufacture date: Jan 2016. yes i'm able to see my router when i do sta_if.scan()</p>
+<p>MicroPython v1.11-8-g48dcbbe60 on 2019-05-29; ESP module with ESP8266<br>
+Type "help()" for more information.</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>import network<br>
+sta_if = network.WLAN(network.STA_IF)<br>
+sta_if.scan()<br>
+[(b'Honor 9N_B85F', b'&lt;\xcd]\x88t"', 1, -45, 3, 0), (b'ghouse_new', b'\x1c_+\x8d\xde4', 11, -50, 4, 0)]</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>'ghouse_new' is my router. <br>
+'Honor 9N_B85F' is my mobile hotspot.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-16T18:15:57Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-16T18:15:57Z</span>
+  </p>
+  <div>
+    <p>@ghouse: the two differences you have between these two connections are the channel (1 for the one that works, 11 for the one that doesn't) and the authentication mode (3 for the working one, 4 for the other). I believe all the ones that I have used here were all 3s for auth mode, which is WPA2-PSK, while 4 is WPA/WPA2-PSK. Do you have a way to configure your router so that it appears as a 3 (i.e. WPA2 only)? That would be the first thing to try. The channel difference is less likely to be a problem, channel numbers are automatically detected, and I have seen different numbers there in my own tests.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/c802f2cd79a026cf17440416c5ca7b6d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-warning">Ghouse</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-17T05:22:08Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-17T05:22:08Z</span>
+  </p>
+  <div>
+    <p>@miguel: I configured wifi router to WPA only by using security options in dlink wifi router when i do scan() it shows 3 for authentication. Still am unable to connect. Im getting error status code as 4.</p>
+<p>May i know which router your using, so that i can try with that. </p>
+<p>Thank you for your support..</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-17T11:18:01Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-17T11:18:01Z</span>
+  </p>
+  <div>
+    <p>@Ghouse: I'm not using a generic router you can buy, I've got it from my Internet provider, Sky Networks. The Wi-Fi encryption mode on my router is "WPA2-PSK (AES)", which is the most secure of the WPA2 variants. I have also been able to connect to my phone's Wi-Fi access point without problem.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6395f9acc88a330b04033963f9aa2dee?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#7</span> <span class="badge text-bg-warning">Unagwu  Chimezie </span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-27T00:15:47Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-27T00:15:47Z</span>
+  </p>
+  <div>
+    <p>Great as always.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/34d31ff41eb28a994ab05609c38a2e2c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#8</span> <span class="badge text-bg-warning">Zitienne </span> said
+    
+    <span class="flask-moment" data-timestamp="2020-09-25T22:45:11Z" data-function="fromNow" data-refresh="0" style="display: none">2020-09-25T22:45:11Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel</p>
+<p>Very informative, thank you.</p>
+<p>How can I send the config file to the ESP32 without using the terminal. Terminal is not user friendly for non technical people. There needs to be some GUI that enables the end user to set SSID, password and some other device settings.</p>
+<p>Options I can think of is:<br>
+1. Write a small desktop app, using python perhaps and the ampy and <a href="http://serial.py/" rel="nofollow">serial.py</a>. Will need to be cross platform.<br>
+2. Create captive portal in AP mode that is launched when no config is present. This will also need some external interface to start in AP mode when button is pushed during boot to change settings.</p>
+<p>Any suggestions?</p>
+<p>Cheers</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#9</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-09-26T18:36:17Z" data-function="fromNow" data-refresh="0" style="display: none">2020-09-26T18:36:17Z</span>
+  </p>
+  <div>
+    <p>@Zitienne: these are both valid options, I have nothing against them. You also need to flash micropython and the application code, so this uploader can do that as well. This course is for developers though, not for end users. You can apply what you learn and build the GUI that automates these tasks if your project can benefit from a single-click installation.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/39e0edd5fd1554d3555dc977a857bca8?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#10</span> <span class="badge text-bg-warning">Eron Castro</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-11-09T13:45:44Z" data-function="fromNow" data-refresh="0" style="display: none">2020-11-09T13:45:44Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel!</p>
+<p>I have been following your Flask Tutorial, Flask Microservices tutorial and now MicroPython. Thank you for all!</p>
+<p>One question: have you managed to use TLS with MicroPython and urequests?</p>
+<p>Thanks!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#11</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-11-09T17:18:00Z" data-function="fromNow" data-refresh="0" style="display: none">2020-11-09T17:18:00Z</span>
+  </p>
+  <div>
+    <p>@Eron: I don't use MicroPython a lot, but there isn't a problem with TLS that I recall, it was more of an issue with the limited RAM in the ESP8266 that required certificate verification to be disabled. Is this what you refer to? If you need this, I suggest you move up to a slightly more powerful microprocessor such as the ESP32.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6e9c09d20793675bbf2bc501546e72f4?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#12</span> <span class="badge text-bg-warning">Fisher</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-30T15:09:41Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-30T15:09:41Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>Thanks for your huge help to me with the content of pycon 2016, and I'm also a reader of your Flask (Py3) Mega tutorial and the new react book on Amazon. <br>
+Recently I found out your another open source contribution, Microdot (async version), which works like a charm on my ESP32-WROOM. Now I've 5+ coros running multitasking and managed by html pages on Microdot, which is not worse than freeRTOS with C stuff in my opinion. </p>
+<p>Then I met a little problem, I realized that there is simply no good aio-httpclient in MicroPython, the only one there is out of date and so simple that even don't support post a body to the server. <br>
+So, may I ask what's your suggestion? I want to use one to runn in coro task and periodically post the weather data to a server, and it could be simple enough to avoid the mqtt stuff. </p>
+<p>Thanks,<br>
+Fisher</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#13</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-30T23:11:36Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-30T23:11:36Z</span>
+  </p>
+  <div>
+    <p>@Fisher: I don't know of any async HTTP client, sorry. The only suggestion I can make is to take the urequests code and port it to async, which shouldn't be a huge effort since it isn't a very large module.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6e9c09d20793675bbf2bc501546e72f4?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#14</span> <span class="badge text-bg-warning">Fisher</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-12-01T00:00:06Z" data-function="fromNow" data-refresh="0" style="display: none">2022-12-01T00:00:06Z</span>
+  </p>
+  <div>
+    <p>OK, I see. Thanks anyway, I'm kinda integration role, but I guess that's not that tough if I really want one with some reading on documents.<br>
+Appreciate what u suggested, Sir.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/733a712823035a5cf696034ca716488f?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#15</span> <span class="badge text-bg-warning">Fisher</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-12-01T12:48:19Z" data-function="fromNow" data-refresh="0" style="display: none">2022-12-01T12:48:19Z</span>
+  </p>
+  <div>
+    <p>Thanks again Miguel, and I found this works nicely - with async and timeout - perfectly meets my needs. Someone says https has problem but it's not one of my requirements. <br>
+<a href="https://github.com/StevenRuest/async_urequests" rel="nofollow">https://github.com/StevenRuest/async_urequests</a></p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud/page/1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud/page/0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud/page/0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud/page/0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdl2w.KZA_aT-ls8nEJ--wm7v70OnxzrM">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  <div class="card-header">MicroPython for the Raspberry Pi Pico W</div>
+  <a class="card-book-cover" href="https://amzn.to/3Ugn6Ca">
+    <img src="../static/picow-book-small.png" alt="MicroPython for the Raspberry Pi Pico W">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you like my <a href="micropython-and-the-internet-of-things-part-i-welcome.html">MicroPython tutorial series</a> on this blog, you may also like my <a href="https://amzn.to/3Ugn6Ca">MicroPython for the Raspberry Pi Pico W</a> book.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3Ugn6Ca">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../static/prettify.js"></script>
+  <script src="../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:45:00 GMT -->
+</html>

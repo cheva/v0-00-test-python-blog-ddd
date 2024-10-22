@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron/page/2 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:11 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    Run Your Flask Regularly Scheduled Jobs with Cron - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="cron, cronjob, crontab, scheduler, jobs, flask, python">
+  
+  
+  <link rel="canonical" href="../../run-your-flask-regularly-scheduled-jobs-with-cron.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="Run Your Flask Regularly Scheduled Jobs with Cron">
+    <meta property="og:description" content="A common need of web applications is to have a periodically running task in the background. This could be a task that imports new data from third party sources, or maybe one that removes revoked…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/run-your-flask-regularly-scheduled-jobs-with-cron.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron">
+    <meta name="twitter:title" content="Run Your Flask Regularly Scheduled Jobs with Cron">
+    <meta name="twitter:description" content="A common need of web applications is to have a periodically running task in the background. This could be a task that imports new data from third party sources, or maybe one that removes revoked…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/run-your-flask-regularly-scheduled-jobs-with-cron.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../run-your-flask-regularly-scheduled-jobs-with-cron.html">Run Your Flask Regularly Scheduled Jobs with Cron</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2020-07-20T10:29:00Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2020-07-20T10:29:00Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><div style="margin: auto; margin-bottom: 15px;"><div class="video-container"><iframe width="425" height="315" src="https://www.youtube.com/embed/kJXCW9KZSTE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div></div>
+
+<p>A common need of web applications is to have a periodically running task in the background. This could be a task that imports new data from third party sources, or maybe one that removes revoked tokens from your database once they have expired. In this and many other situations you are faced with the challenge of implementing a task that runs in the background at regular intervals.</p>
+<p>This is a pattern that many people ask me about. I've seen implementations that are based on the APScheduler package, on Celery, and even homegrown solutions built inside a background thread. Sadly none of these options are very good. In this article I'm going to show you what I believe is a very robust implementation that is based on the <a href="https://flask.palletsprojects.com/en/1.1.x/cli/">Flask CLI</a> and the <a href="https://en.wikipedia.org/wiki/Cron">cron</a> service.</p>
+<h2>Implementing the Job Logic</h2>
+<p>I adhere to the "divide and conquer" principle, so when I'm implementing a scheduled job I prefer to separate the job itself from the scheduling and also from the web application. So I really view a job that runs at regular intervals as a standalone short-lived job that runs once, configured to run over and over again at the desired frequency.</p>
+<p>When working with a Flask application, I find that the best option to implement a short-lived job is to do it as a command attached to the <code>flask</code> command, not only because I can consolidate all my jobs under a single command but also because a Flask command runs inside an application context, so I can  use many of the same facilities I have access in the Flask routes, the most important of all being the database.</p>
+<p>Below you can see an example of how I would implement a job. In this case I'm using the <a href="https://github.com/miguelgrinberg/flasky">flasky</a> application featured in my <a href="https://www.oreilly.com/library/view/flask-web-development/9781491991725/">Flask Web Development</a> book. This application already has a few custom commands, so I added one more at the end of the <em>flasky.py</em> module:</p>
+<pre><code class="python">import time
+
+@app.cli.command()
+def scheduled():
+    &quot;&quot;&quot;Run scheduled job.&quot;&quot;&quot;
+    print('Importing feeds...')
+    time.sleep(5)
+    print('Users:', str(User.query.all()))
+    print('Done!')
+</code></pre>
+
+<p>Because this is just a demonstration, I'm not doing anything specific in this job, just a five second sleep to simulate some work being done. I have added a few print statements which would be used for logging, and I have also included a simple database query, to confirm that the Flask configured database works great inside the custom command.</p>
+<p>Now I can see my custom command when I run <code>flask --help</code>:</p>
+<pre><code class="bash">(venv) $ flask --help
+Usage: flask [OPTIONS] COMMAND [ARGS]...
+
+  This shell command acts as general utility script for Flask applications.
+
+  It loads the application configured (through the FLASK_APP environment
+  variable) and then provides commands either provided by the application or
+  Flask itself.
+
+  The most useful commands are the &quot;run&quot; and &quot;shell&quot; command.
+
+  Example usage:
+
+    $ export FLASK_APP=hello.py
+    $ export FLASK_DEBUG=1
+    $ flask run
+
+Options:
+  --version  Show the flask version
+  --help     Show this message and exit.
+
+Commands:
+  db         Perform database migrations.
+  deploy     Run deployment tasks.
+  profile    Start the application under the code...
+  run        Runs a development server.
+  scheduled  Run scheduled job.
+  shell      Runs a shell in the app context.
+  test       Run the unit tests.
+</code></pre>
+
+<p>This way of writing the job makes it easy to do testing, since I can simply run this job from the command-line as many times as I need to get it right: </p>
+<pre><code class="bash">(venv) $ flask scheduled
+Importing feeds...
+Users: [&lt;User 'miguel'&gt;]
+Done!
+</code></pre>
+
+<h2>Defining a Cron Job</h2>
+<p>Once the job is written and tested, it is time to implement the scheduling part. For this I find the <a href="https://en.wikipedia.org/wiki/Cron">cron</a> service available in all Unix-based distributions more than adequate.</p>
+<p>Each user in a Unix system has the option to set up scheduled commands that are executed by the system in a "crontab" (cron table) file. The <code>crontab</code> command is used to open a text editor on the user's crontab file:</p>
+<pre><code class="bash">$ crontab -e
+</code></pre>
+
+<p>It is important to run the <code>crontab</code> command under the user that is intended to run the scheduled job, which typically is the same user that runs the web application. This ensures the job will run with the correct permissions. I recommend you do not put your scheduled jobs on the root user, in the same way you shouldn't be running your web application as root.</p>
+<p>The <code>crontab -e</code> command will start a text editor on the user's crontab file, which will initially be empty, aside from some explanatory comments.</p>
+<p>A scheduled job is given in the crontab file as a line with six fields. The first five fields are used to set up the run scheduled for the job. The sixth and last field is the command to run. You can configure multiple jobs, each with its own schedule by writing multiple lines in the crontab file.</p>
+<p>I find the easiest way to set up my scheduled job is to start with a default configuration that runs the command once per minute, as this allows me to test that the command runs correctly without having to wait a lot of time between runs.</p>
+<p>To run a job once a minute put five stars separated by spaces, followed by the command to run:</p>
+<pre><code>* * * * * command
+</code></pre>
+
+<p>In my example the command I want to run is <code>flask scheduled</code>, but in general when you write a command in a crontab file you have to adapt the command to compensate for the differences between running the command from the terminal versus having cron run it as a service. I can think of three aspects that need to be considered:</p>
+<ul>
+<li>Current directory: If the command needs to run from a specific directory, you have to add a <code>cd</code> in the cron job. It may also be necessary to specify an absolute path to the command.</li>
+<li>Environment variables: If the command needs environment variables set, they need to be set as part of the command. My recommendation is that you use a <em>.env</em> and/or <em>.flaskenv</em> files to store your variables, so that they are automatically imported by Flask when the command starts.</li>
+<li>Virtual environment: This one is specific to Python applications. You have to either activate the virtual environment as part of the cron command, or else execute the Python executable located inside the virtualenv directory.</li>
+<li>Logging: The cron service collects the output of the command and sends it to the Unix user as an email. This is almost always inconvenient, so it is best to ensure that the command generates no output by redirecting <code>stdout</code> and <code>stderr</code> to a logfile.</li>
+</ul>
+<p>Here is how my <code>flask scheduled</code> command can be configured to run once a minute as a cron job:</p>
+<pre><code>* * * * * cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;&gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>The <code>&amp;&amp;</code> is used to include multiple commands in a single line. With it I can <code>cd</code> to the directory of my project and then execute the command. To make sure the virtual environment is activated I fish the <code>flask</code> command directly out of the virtualenv's <em>bin</em> directory. This achieves the same effect as activating the environment. For environment variables this application uses a <em>.env</em> file, so that works the same under cron. In terms of logging I first redirect <code>stdout</code> to a file with <code>&gt;&gt;scheduled.log</code>, which will cause new runs of the job to append at the end of the file. For <code>stderr</code> I used <code>2&gt;&amp;1</code>, which means that I want to apply the same redirection for <code>stderr</code> that I configured for <code>stdout</code> (the "2" and the "1" reference the file handle numbers for <code>stderr</code> and <code>stdout</code> respectively).</p>
+<p>As soon as you save and exit the text editor the scheduled job will start to run at the top of every minute, and you should see the output of each run added to the end of the <em>scheduled.log</em> file. If the command ends with a crash, the stack trace will be written to <code>stderr</code>, which we are also writing the logfile, so you'll see the error in the log.</p>
+<p>Once you have the command running successfully once a minute, you can start thinking about creating a final schedule for it. The five stars represent the following time specifications in order:</p>
+<ul>
+<li>The minute, from 0 to 59 or * for every minute</li>
+<li>The hour, from 0 to 23 or * for every hour</li>
+<li>The day of the month, from 1 to 31 or * for every day</li>
+<li>The month, from 1 to 12 or * for every month</li>
+<li>The day of the week from 0 (Sunday) to 6 (Saturday) or * for every day of the week</li>
+</ul>
+<p>Using stars for all fields means that we want to run the job on every minute of every hour of every day of every month, and on every day of the week. If I wanted to run the job once per hour instead of once per minute, all I need to do is set a specific minute. For example, to run at the 0th minute of every hour:</p>
+<pre><code>0 * * * * cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;&gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>If instead I wanted to run once per hour, but at the 5th minute (i.e. at 0:05, 1:05, 2:05 and so on):</p>
+<pre><code>5 * * * * cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;&gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>To run the job daily at 4:05am:</p>
+<pre><code>5 4 * * * cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;&gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>If I want to run at at 04:05pm:</p>
+<pre><code>5 16 * * * cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>To run the job at 4:05am, but only on Tuesdays:</p>
+<pre><code>5 4 * * 2 cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>Instead of using a single number for each field, you can specify multiple ones separated by commas. To run the job at 4:05am on Tuesdays and Fridays:</p>
+<pre><code>5 4 * * 2,4 cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>Ranges of consecutive numbers can be given with a dash. To run the job at 4:05am only on weekdays:</p>
+<pre><code>5 4 * * 1-5 cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>When you specify a range of numbers, you can also include a step argument. The following example runs the job every 2 minutes, on the even minutes: </p>
+<pre><code>0-59/2 * * * * cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>And if I wanted to run every two minutes on the odd ones:</p>
+<pre><code>1-59/2 * * * * cd /home/ubuntu/flasky &amp;&amp; venv/bin/flask scheduled &gt;scheduled.log 2&gt;&amp;1
+</code></pre>
+
+<p>I hope by now you get how this works. If you want to practice different cron schedules, the <a href="https://crontab.guru/">crontab.guru</a> site is great, as it translates a given specification into words to make it more clear.</p>
+<h2>Logging Improvements</h2>
+<p>Once you configure your desired interval your cron job will run at the schedule time. To review how it is working, you may want to check the logfile. If you use the <code>print</code> technique I used above for logging, you will end up with a confusing logfile that looks somewhat like this:</p>
+<pre><code>Importing feeds...
+Users: [&lt;User 'miguel'&gt;]
+Done!
+Importing feeds...
+Users: [&lt;User 'miguel'&gt;]
+Done!
+Importing feeds...
+Users: [&lt;User 'miguel'&gt;]
+Done!
+</code></pre>
+
+<p>The problem is that the output of the command is always the same, so you get this repetitive stream. If at any time there was an error, or output that was unexpected, you will not know when that happened. If you wanted to know how long your runs are taking, you cannot know either.</p>
+<p>To add a little bit more context into this logfile, timestamps can be added to each line.</p>
+<pre><code class="python">from datetime import datetime
+import time
+
+@app.cli.command()
+def scheduled():
+    &quot;&quot;&quot;Run scheduled job.&quot;&quot;&quot;
+    print(str(datetime.utcnow()), 'Importing feeds...')
+    time.sleep(5)
+    print(str(datetime.utcnow()), 'Users:', str(User.query.all()))
+    print(str(datetime.utcnow()), 'Done!')
+</code></pre>
+
+<p>With this change, now your logfile will show the time each line was printed:</p>
+<pre><code>2020-06-28 23:03:25.597371 Importing feeds...
+2020-06-28 23:03:30.599382 Users: []
+2020-06-28 23:03:30.621601 Done!
+</code></pre>
+
+<p>If your job outputs more than a handful of lines in each run, you should use the <code>logging</code> module from Python to create a more robust logfile.</p>
+<h2>Conclusion</h2>
+<p>I hope this tutorial gave you a clear idea of how to implement regularly scheduled background jobs in your Flask application. In the introduction I mentioned that using Python-based solutions is a bad idea. In case you want to know why, here are some problems:</p>
+<ul>
+<li>If your background job runs in the context of your Python process with APScheduler or a similar package, when you scale your Flask application to more than one worker you'll have multiple background jobs as well.</li>
+<li>If you run your background job in a homegrown thread-based solution, you'll have to have very robust error handling in place. If not, whenever the background thread crashes your jobs will stop running.
+Unlike most of these Python implementations, using cron requires to additional dependencies. If you deploy on a Linux machine, you always have cron available to you.</li>
+</ul>
+<p>I hope I convinced you, but if you have a method of running background jobs that you like better than cron and would like to tell me about it let me know below in the comments!</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron&amp;t=Run%20Your%20Flask%20Regularly%20Scheduled%20Jobs%20with%20Cron" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron&amp;resubmit=true&amp;title=Run%20Your%20Flask%20Regularly%20Scheduled%20Jobs%20with%20Cron" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=Run%20Your%20Flask%20Regularly%20Scheduled%20Jobs%20with%20Cron&amp;url=https%3A//blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron&amp;title=Run%20Your%20Flask%20Regularly%20Scheduled%20Jobs%20with%20Cron&amp;summary=Run%20Your%20Flask%20Regularly%20Scheduled%20Jobs%20with%20Cron&amp;source=https%3A//blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=Run%20Your%20Flask%20Regularly%20Scheduled%20Jobs%20with%20Cron&amp;body=https%3A//blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../run-your-flask-regularly-scheduled-jobs-with-cron.html#comments">50 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#26</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-12-01T10:20:43Z" data-function="fromNow" data-refresh="0" style="display: none">2020-12-01T10:20:43Z</span>
+  </p>
+  <div>
+    <p>@Roark: No. This is not a topic covered in any of my books.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8814ef676d15cdbab19dd13e57cb2770?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#27</span> <span class="badge text-bg-warning">drdd</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-01-14T15:44:10Z" data-function="fromNow" data-refresh="0" style="display: none">2021-01-14T15:44:10Z</span>
+  </p>
+  <div>
+    <p>Dude, you're amazing. That's so much easier than setting up python advanced scheduler. Thank you!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/0d8babbf60be9e98ced509e93174f649?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#28</span> <span class="badge text-bg-warning">Mike</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-01-16T13:01:27Z" data-function="fromNow" data-refresh="0" style="display: none">2021-01-16T13:01:27Z</span>
+  </p>
+  <div>
+    <p>@Miguel: Thank you for the tutorial, it's so informative. Could you please comment on any options/workarounds for a Cloud Foundry container? Thus, I could manually run my task/job in SSH by "tmp/lifecycle/shell", then "export FLASK_APP=my_app", finally "flask my-task". But crontab file wasn't run as far as there is no cron service in CF. Thank you!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#29</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-01-16T23:54:10Z" data-function="fromNow" data-refresh="0" style="display: none">2021-01-16T23:54:10Z</span>
+  </p>
+  <div>
+    <p>@Mike: I'm not familiar enough with CF to comment on this. I suppose you can use a base image that has cron, I know that works for Docker. Or else use any scheduling options provided to you by the CF platform.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/451bb604faea75224d0bedb561ef8caf?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#30</span> <span class="badge text-bg-warning">Kolade</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-01-31T10:06:00Z" data-function="fromNow" data-refresh="0" style="display: none">2021-01-31T10:06:00Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, Thank you so much for your Mega Tutorial, it's been so helpful although I am wondering why I can't use Celery's crontab option instead of a linux cronjob. What are the complications as my current Flask API is using celery. Thank you</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#31</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-01-31T23:10:02Z" data-function="fromNow" data-refresh="0" style="display: none">2021-01-31T23:10:02Z</span>
+  </p>
+  <div>
+    <p>@Kolade: You can use any method that you like. Because I show how to use A you shouldn't assume that I'm telling you not to use B. I prefer cron jobs. If you already have Celery running and you are happy with it I don't see why you shouldn't use it for your scheduled jobs.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a2f934c9c543bc033166df7117181fcb?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#32</span> <span class="badge text-bg-warning">Abhishek Kumar</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-05-10T19:58:40Z" data-function="fromNow" data-refresh="0" style="display: none">2021-05-10T19:58:40Z</span>
+  </p>
+  <div>
+    <p>I am not using virtual environment how will I execute cli command using crontab flask</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#33</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-05-10T22:53:17Z" data-function="fromNow" data-refresh="0" style="display: none">2021-05-10T22:53:17Z</span>
+  </p>
+  <div>
+    <p>@Abhishek: if you prefer not to use a virtualenv, then you need to figure out where your <code>flask</code> command is installed, and use the full path in the crontab command.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4c0efd599295bf5f7befa925ea3ad1e9?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#34</span> <span class="badge text-bg-warning">Dannel</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-24T23:48:43Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-24T23:48:43Z</span>
+  </p>
+  <div>
+    <p>@Miguel I am using Windows for develop and heroku for deployment what do you recomend in my case</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#35</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-25T13:21:44Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-25T13:21:44Z</span>
+  </p>
+  <div>
+    <p>@Dannel: Heroku has a scheduler extension. On Windows I would use cron under the WSL.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6204f9314a2b266f973378c8bbbe32fc?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#36</span> <span class="badge text-bg-warning">Adel</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-03-14T15:24:58Z" data-function="fromNow" data-refresh="0" style="display: none">2022-03-14T15:24:58Z</span>
+  </p>
+  <div>
+    <p>@Miguel, thank you very much for such a great tutorial! Did I understand right that every invocation of a flask CLI command (in this case, our custom command) will create the app context and then destroy it after the command finishes? So, if we invoke a background task every minute, and we have a connection to a database in that command (or in the app context), we will be establishing and destroying connections to the database every minute. Is not it more efficient to simply have a daemon running in the background (say, with a simple infinite loop) that will keep 1 open connection to the database and just fire commands when needed?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#37</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-03-14T17:12:28Z" data-function="fromNow" data-refresh="0" style="display: none">2022-03-14T17:12:28Z</span>
+  </p>
+  <div>
+    <p>@Adel: It really depends. A connection per minute is really small, so I don't see it as something that needs to be optimized. But if you feel the need to do it, then sure, make it a daemon, and let SQLAlchemy pool the connection. You won't be able to use cron though, you'll have to use your own scheduler or use a third party one from the Python ecosystem.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6204f9314a2b266f973378c8bbbe32fc?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#38</span> <span class="badge text-bg-warning">Adel</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-03-16T17:46:57Z" data-function="fromNow" data-refresh="0" style="display: none">2022-03-16T17:46:57Z</span>
+  </p>
+  <div>
+    <p>@Miguel, I got you, thank you very much once again!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6204f9314a2b266f973378c8bbbe32fc?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#39</span> <span class="badge text-bg-warning">Adel</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-01T20:10:20Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-01T20:10:20Z</span>
+  </p>
+  <div>
+    <p>Dear @Miguel, I have another question to you - is it possible to access an active flask <a href="http://socket.io/" rel="nofollow">socket.io</a> connection inside the croned background task? So that, the updates can be pushed immediately to the ones who are connected at the moment.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#40</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-01T22:36:10Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-01T22:36:10Z</span>
+  </p>
+  <div>
+    <p>@Adel: Yes. See the "emitting from an external process" section of the documentation.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/1434a03cd733378c022b9f3a3a3d3282?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#41</span> <span class="badge text-bg-warning">Jonas Hansen</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-30T10:02:25Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-30T10:02:25Z</span>
+  </p>
+  <div>
+    <p>If you do a custom command that updates data for your webapp how do you then tell the flask app to refresh the website to include the new data?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#42</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-30T12:25:37Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-30T12:25:37Z</span>
+  </p>
+  <div>
+    <p>@Jonas: Flask does not have the ability to update the page, unless you implement something like WebSocket. In general it is the client code running in the browser that requests periodic updates by refreshing the page.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4afe86849803c3e6eeb0693ee6e38871?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#43</span> <span class="badge text-bg-warning">Filipe Galo</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-08-18T16:50:11Z" data-function="fromNow" data-refresh="0" style="display: none">2022-08-18T16:50:11Z</span>
+  </p>
+  <div>
+    <p>Hey Miguel,</p>
+<p>I've been reading your blog since the start of this crazy pandemic and 100% you taught me a lot. Every time I want to do something with Python or Flask I came here. </p>
+<p>This post about how to run scheduled jobs is so clean and simple. Instead of installing APScheduler and worrying about the application context.</p>
+<p>Thanks a lot for everything.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/ac7145f9627aaa8f07c2c9f37e3fafab?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#44</span> <span class="badge text-bg-warning">Osama Abbas</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-04-26T01:29:56Z" data-function="fromNow" data-refresh="0" style="display: none">2023-04-26T01:29:56Z</span>
+  </p>
+  <div>
+    <p>First, thanks a lot for the tutorial. </p>
+<p>I was wondering if I am able to use your method in updating a token. Let me briefly explain what I mean. </p>
+<p>I have a Flask Application that uses a token from a provider with client_id and client_secret (obtained from the provider) to be able to use some API endpoints. I am using Request-OAuth for this. The bearer access token I receive is then used with subsequent requests. But this token expires in 1 hour (3600 seconds).</p>
+<p>My Flask application doesn't have any login system to log the user out when token is expired. Thus, my workaround is that when the webserver is started with home page visited a token is obtained. A get_token function runs, and the token is then saved in Flask's session</p>
+<pre><code>session[&quot;access_token&quot;] = access_token
+session.modified = True
+</code></pre>
+<p>However, after the first hour, the application needs to obtain a new access token. Currently, I redirect the user to the home page to get the access token renewed where the get_token function runs. But I feel like it is silly that the user has to be redirected home to get the token renewed.</p>
+<p>Does your method fit my scenario?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#45</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-04-26T09:55:50Z" data-function="fromNow" data-refresh="0" style="display: none">2023-04-26T09:55:50Z</span>
+  </p>
+  <div>
+    <p>@Osama: what do you mean here by "my method"? Nothing I show in this article is really my invention, I'm showing to configure cron jobs, which are a feature of UNIX operating systems. I don't understand what is the relationship you made between cron jobs, which run at given times with renewing tokens when they expire. Wouldn't it make more sense to renew the token directly in the app when it expires?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/f32374898e4460a6e080409f99e2b988?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#46</span> <span class="badge text-bg-warning">Anthony Udeagbala</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-05-25T15:59:34Z" data-function="fromNow" data-refresh="0" style="display: none">2023-05-25T15:59:34Z</span>
+  </p>
+  <div>
+    <p>This works perfectly. </p>
+<p>I have been trying to automate the process using docker but I can't seem to do this. I don't want to manually edit the corn file because I would deploy the application to Digital Ocean. </p>
+<p>How can Docker handle this?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#47</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-05-26T09:18:40Z" data-function="fromNow" data-refresh="0" style="display: none">2023-05-26T09:18:40Z</span>
+  </p>
+  <div>
+    <p>@Anthony: I would imagine you need to install the cron daemon in your image if you want to run cron jobs inside your container.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a960b6dfa9614e64341f0b1f85099b43?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#48</span> <span class="badge text-bg-warning">José María Sánchez</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-08-13T11:11:39Z" data-function="fromNow" data-refresh="0" style="display: none">2023-08-13T11:11:39Z</span>
+  </p>
+  <div>
+    <p>Thank you very much Miguel, I love your articles and your videos. I'm programming with Flask thanks to you. Muchas gracias amigo, por favor, sigue ilustrándonos con tus conocimientos. Saludos desde la Isla de Ibiza, España.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8c86bc30e91846fb85ff4b3505ffa532?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#49</span> <span class="badge text-bg-warning">Naved</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-08-22T12:54:12Z" data-function="fromNow" data-refresh="0" style="display: none">2023-08-22T12:54:12Z</span>
+  </p>
+  <div>
+    <p>I have to run a cron job every month and also when a user does an action .30 min after that action I have to remove that action how can I do both (corn job and scheduler) in the Flask app?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#50</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-08-22T18:53:25Z" data-function="fromNow" data-refresh="0" style="display: none">2023-08-22T18:53:25Z</span>
+  </p>
+  <div>
+    <p>@Naved: this article is for scheduled jobs, I would not use cron for background jobs that start as a result of user actions. Maybe look into Celery or RQ for that.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdnWA.tPwclW-fb65ki4tZiQ5YBCGcZ60">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  
+  <div class="card-header">
+    <div class="row">
+      <div class="col">The Flask Mega-Tutorial</div>
+      <div class="col text-end">
+        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
+          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <a class="card-book-cover" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">
+    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/run-your-flask-regularly-scheduled-jobs-with-cron/page/2 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:11 GMT -->
+</html>

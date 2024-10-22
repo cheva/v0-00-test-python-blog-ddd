@@ -1,0 +1,1473 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:56 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The React Mega-Tutorial, Chapter 1: Modern JavaScript - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="javascript, react, transpiling, babel, typescript, jsx">
+  
+  
+  <link rel="canonical" href="the-react-mega-tutorial-chapter-1-modern-javascript.html">
+  
+
+  
+    <link href="../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The React Mega-Tutorial, Chapter 1: Modern JavaScript">
+    <meta property="og:description" content="The JavaScript language has evolved significantly in the last few years, but because browsers have been slow in adopting these changes a lot of people have not kept up with the language. React…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-react-mega-tutorial-chapter-1-modern-javascript.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript">
+    <meta name="twitter:title" content="The React Mega-Tutorial, Chapter 1: Modern JavaScript">
+    <meta name="twitter:description" content="The JavaScript language has evolved significantly in the last few years, but because browsers have been slow in adopting these changes a lot of people have not kept up with the language. React…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-react-mega-tutorial-chapter-1-modern-javascript.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="the-react-mega-tutorial-chapter-1-modern-javascript.html">The React Mega-Tutorial, Chapter 1: Modern JavaScript</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2022-04-02T10:18:17Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2022-04-02T10:18:17Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>The JavaScript language has evolved significantly in the last few years, but because browsers have been slow in adopting these changes a lot of people have not kept up with the language. React encourages developers to use modern JavaScript, so this chapter gives you an overview of the newest features of the language.</p>
+<p>The complete course, including videos for every chapter is available to order from my <a href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">courses site</a>. Ebook and paperback versions of this course are also available from <a href="https://www.amazon.com/dp/B09YPBXMMY/ref=nosim?tag=thirdwish-20">Amazon</a>. Thank you for your support!</p>
+<p>For your reference, here is the complete list of articles in this series:</p>
+<ul>
+<li><a href="introducing-the-react-mega-tutorial.html">Introducing the React Mega-Tutorial</a></li>
+<li><a href="the-react-mega-tutorial-chapter-1-modern-javascript.html">Chapter 1: Modern JavaScript</a> (this article)</li>
+<li><a href="the-react-mega-tutorial-chapter-2-hello-react.html">Chapter 2: Hello, React!</a></li>
+<li><a href="the-react-mega-tutorial-chapter-3-working-with-components.html">Chapter 3: Working with Components</a></li>
+<li><a href="the-react-mega-tutorial-chapter-4-routing-and-page-navigation.html">Chapter 4: Routing and Page Navigation</a></li>
+<li><a href="the-react-mega-tutorial-chapter-5-connecting-to-a-back-end.html">Chapter 5: Connecting to a Back End</a></li>
+<li><a href="the-react-mega-tutorial-chapter-6-building-an-api-client.html">Chapter 6: Building an API Client</a></li>
+<li><a href="the-react-mega-tutorial-chapter-7-forms-and-validation.html">Chapter 7: Forms and Validation</a></li>
+<li><a href="the-react-mega-tutorial-chapter-8-authentication.html">Chapter 8: Authentication</a></li>
+<li><a href="the-react-mega-tutorial-chapter-9-application-features.html">Chapter 9: Application Features</a></li>
+<li><a href="the-react-mega-tutorial-chapter-10-memoization.html">Chapter 10: Memoization</a></li>
+<li><a href="the-react-mega-tutorial-chapter-11-automated-testing.html">Chapter 11: Automated Testing</a></li>
+<li><a href="the-react-mega-tutorial-chapter-12-production-builds.html">Chapter 12: Production Builds</a></li>
+</ul>
+<h2>ES5 vs. ES6</h2>
+<p>The JavaScript language specification is managed by <a href="https://www.ecma-international.org/">ECMA</a>, a non-profit organization that maintains a standardized version of this language known as <a href="https://tc39.es/ecma262/">ECMAScript</a>.</p>
+<p>You may have heard the terms "ES5" and "ES6" in the context of JavaScript language versions. These refer to the 5th and 6th editions of the ECMAScript standard respectively. The ES5 version of the language, which was released in 2009, is currently considered a baseline implementation, with wide support across desktop and mobile devices. ES6, released in 2015, introduces significant improvements over ES5, and remains backwards compatible with it. Since the release of ES6, ECMA has been making yearly revisions to the standard, which continue to improve and modernize the language. In many contexts, the "ES6" denomination is loosely used for all the improvements brought to the language after ES5, and not strictly those from the ES6 specification.</p>
+<p>How can web browsers keep up with a language that evolves so rapidly? They actually can't and don't! Features that were introduced in ES6 and later updates to the standard aren't guaranteed to be implemented in all browsers. To avoid code failing to run due to missing language features, modern JavaScript frameworks rely on a technique called <a href="https://en.wikipedia.org/wiki/Source-to-source_compiler">transpiling</a>, which converts modern JavaScript source code into functionally equivalent ES5 code that runs everywhere. Thanks to transpiling, JavaScript developers don't have to worry about what parts of the JavaScript language browsers support.</p>
+<h2>Summary of Recent JavaScript Features</h2>
+<p>The code in this book is written in modern JavaScript. Assuming you are familiar with the ES5 version of the language, you can use the sections that follow to refresh your knowledge of the newer parts of the language and fill any gaps that you may have.</p>
+<h3>Semicolons</h3>
+<p>The rules regarding when semicolons are required in JavaScript are confusing. The JavaScript compiler assumes implicit semicolons in some situations, but not in others. In practice, this means that in most cases, semicolons do not need to be typed. What makes things complicated is that in some situations they are still required.</p>
+<p>To avoid the confusion generated by the semicolon rules, for this book I have decided to use explicit semicolons after all statements. I do not use a semicolon after a closing <code>}</code> at the end of a function declaration or a control structure, such as a loop or a conditional. Why these exceptions? Most other languages that use the semicolons as statement separators do not require it after the closing brace.</p>
+<p>Here are some examples:</p>
+<pre><code class="language-javascript">const a = 1;  // &lt;-- semicolon here
+
+function f() {
+  console.log('this is f');  // &lt;-- semicolon here
+}  // &lt;-- but not here
+</code></pre>
+<p>An interesting situation occurs when an arrow function is assigned to a variable or constant. I consider this an exception to the exception rule above, so I use a semicolon in this case:</p>
+<pre><code class="language-javascript">const f = () =&gt; {
+  console.log('this is f');
+};  // &lt;-- this is an assignment, so a semicolon is used
+</code></pre>
+<p>It goes without saying that you do not need to adopt my semicolon choices if you don't like them. If you have developed a personal preference for using or omitting semicolons, you can definitely use it in place of my own.</p>
+<h3>Trailing Commas</h3>
+<p>When defining objects or arrays that span multiple lines, it is useful to leave a comma after the last element. Look at the following examples:</p>
+<pre><code class="language-javascript">const myArray = [
+  1,
+  3,
+  5,
+];
+
+const myObject = {
+  name: 'susan',
+  age: 20,
+};
+</code></pre>
+<p>The commas after the last elements of the array and object might seem like a syntax error at first, but they are valid. In fact, JavaScript is not unique in allowing this, as most other languages support trailing commas as well.</p>
+<p>There are two benefits that result from this practice. The most important one is that if you need to reorder the elements, you can just move the lines up and down, without worrying about having to fix the commas. The other one is that when you need to add an element at the end, you do not need to go up to the previous line to add the trailing comma.</p>
+<h3>Imports and Exports</h3>
+<p>If you are used to writing old-style JavaScript applications for the browser, you probably never needed to "import" functions or objects from other modules. You simply added <code>&lt;script&gt;</code> tags that loaded your dependencies, and that was enough to bring what you needed into the global scope, which is accessible to any JavaScript code running in the context of the current page.</p>
+<p>Thanks to the tooling incorporated into modern JavaScript front end frameworks, applications can now use a much more sane dependency model that is based on <em>imports</em> and <em>exports</em>.</p>
+<p>A JavaScript module that wants to make a function or variable available for other modules to use, can declare it as a default export. Let's say there is a <em>cool.js</em> module with <code>myCoolFunction()</code> inside. Here is how this module could be written:</p>
+<pre><code class="language-javascript">export default function myCoolFunction() {
+  console.log('this is cool!');
+}
+</code></pre>
+<p>Any other module that wants to use the function can then import it:</p>
+<pre><code class="language-javascript">import myCoolFunction from './cool';
+</code></pre>
+<p>In this import, <code>./cool</code> is the path of the dependent module, relative to the location of the importing file. The path can navigate up or down the directory hierarchy as necessary. The <code>.js</code> extension can be included in the import filename, but it is optional.</p>
+<p>When using default exports, the name of the exported symbol does not really matter. The importing module can use any name it likes. The next example is also valid:</p>
+<pre><code class="language-javascript">import myReallyCoolFunction from './cool';
+</code></pre>
+<p>Importing from third-party libraries works similarly, but the import location uses the library name instead of a local path. For example, here is how to import the <code>React</code> object:</p>
+<pre><code class="language-javascript">import React from 'react';
+</code></pre>
+<p>A module can have only one default export, but it can also export additional things. Here is an extension of the above <em>cool.js</em> module with a couple of exported constants (you'll learn more about constants in the next section):</p>
+<pre><code class="language-javascript">export const PI = 3.14;
+export const SQRT2 = 1.41;
+
+export default function myCoolFunction() {
+  console.log('this is cool!');
+}
+</code></pre>
+<p>To import a non-default export, the imported symbol must be enclosed in <code>{</code> and <code>}</code> braces:</p>
+<pre><code class="language-javascript">import { SQRT2 } from './cool';
+</code></pre>
+<p>This syntax also allows multiple imports in the same line:</p>
+<pre><code class="language-javascript">import { SQRT2, PI } from './cool';
+</code></pre>
+<p>Default and non-default symbols can also be included together in a single import line:</p>
+<pre><code class="language-javascript">import myCoolFunction, { SQRT2, PI } from './cool';
+</code></pre>
+<p>If you want to learn about imports and exports in more detail, consult the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import">import</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export">export</a> sections in the JavaScript reference.</p>
+<h3>Variables and Constants</h3>
+<p>Older JavaScript versions were very sloppy in terms of how to declare variables. Starting with ES6, the <code>let</code> and <code>const</code> keywords are used for the declaration of variables and constants respectively. You may have seen the <code>var</code> keyword used to declare variables in older versions of JavaScript. The <code>var</code> keyword has some scoping quirks, so it is best to replace it with the more predictable <code>let</code>.</p>
+<p>To define a variable, just prepend it with the <code>let</code> keyword:</p>
+<pre><code class="language-javascript">let a;
+</code></pre>
+<p>It is also possible to declare a variable and give it an initial value at the same time:</p>
+<pre><code class="language-javascript">let a = 1;
+</code></pre>
+<p>If an initial value isn't given, the variable is assigned the special value <code>undefined</code>.</p>
+<p>A constant is a variable that can only be assigned a value when it is declared:</p>
+<pre><code class="language-javascript">const c = 3;
+
+console.log(c); // 3
+c = 4;  // error
+</code></pre>
+<p>While it may look confusing, it is perfectly legal to create a constant and assign a mutable object to it. For example:</p>
+<pre><code class="language-javascript">const d = [1, 2, 3];
+
+d.push(4);  // allowed
+console.log(d)  // [1, 2, 3, 4]
+</code></pre>
+<p>Why does this work? Because the requirement for constants is that they do not have a new assignment after declaration. There are no requirements regarding mutating the initially assigned value.</p>
+<p>The JavaScript reference documentation contains more information about <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let">let</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const">const</a>.</p>
+<h3>Equality and Inequality Comparisons</h3>
+<p>Older JavaScript implementations had very strange rules in regard to automatic casting of values between different types. For that reason, the original equality (<code>==</code>) and inequality (<code>!=</code>) operators work in ways that may appear wrong, or at least different to what you would expect.</p>
+<p>To avoid breaking older code, these comparison operators preserve the odd behaviors, but recent versions of JavaScript introduced new comparison operators <code>===</code> and <code>!==</code>, so that more predictable comparisons can be used.</p>
+<p>In general, all equality and inequality comparisons should use the newer operators. Examples:</p>
+<pre><code class="language-javascript">let a = 1;
+
+console.log(a === 1);  // true
+console.log(a === '1');  // false
+console.log(a !== '1');  // true
+</code></pre>
+<p>Given that many other languages use the <code>==</code> and <code>!=</code> operators for comparisons, it is very common to inadvertently use these when writing JavaScript. In a properly set up project (such as the one you will build with this book), static code analysis tools can detect and warn about this mistake.</p>
+<p>See the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality">Strict equality</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_inequality">Strict inequality</a> operators in the JavaScript reference documentation for more details.</p>
+<h3>String Interpolation</h3>
+<p>Many times it is necessary to create a string that includes a mix of static text and variables. ES6 uses <em>template literals</em> for this:</p>
+<pre><code class="language-javascript">const name = 'susan';
+let greeting = `Hello, ${name}!`;  // &quot;Hello, susan!&quot;
+</code></pre>
+<p>There are more examples in the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals">Template literals</a> reference documentation.</p>
+<h3>For-Of Loops</h3>
+<p>Older versions of JavaScript only provide strange and contorted ways to iterate over an array of elements, but luckily ES6 introduces the <code>for ... of</code> statement for this purpose.</p>
+<p>Given an array, a for-loop that iterates over its elements can be constructed as follows:</p>
+<pre><code class="language-javascript">const allTheNames = ['susan', 'john', 'alice'];
+for (name of allTheNames) {
+  console.log(name);
+}
+</code></pre>
+<h3>Arrow Functions</h3>
+<p>ES6 introduces an alternative syntax for the definition of functions that is more concise, in addition to having a more consistent behavior for the <code>this</code> variable, compared to the <code>function</code> keyword.</p>
+<p>Consider the following function, defined in the traditional way:</p>
+<pre><code class="language-javascript">function mult(x, y) {
+  const result = x * y;
+  return result;
+}
+
+mult(2, 3);  // 6
+</code></pre>
+<p>Using the newer arrow function syntax, the function can be written as follows:</p>
+<pre><code class="language-javascript">const mult = (x, y) =&gt; {
+  const result = x * y;
+  return result;
+};
+
+mult(2, 3);  // 6
+</code></pre>
+<p>Looking at this it isn't very clear why the arrow syntax is better, but this syntax can be simplified in a few ways. If the function has a single statement instead of two, then the curly braces and the <code>return</code> keyword can be omitted, and the entire function can be written in a single line:</p>
+<pre><code class="language-javascript">const mult = (x, y) =&gt; x * y;
+</code></pre>
+<p>If the function accepts a single argument instead of two, then the parenthesis can also be omitted:</p>
+<pre><code class="language-javascript">const square = x =&gt; x * x;
+
+square(2);  // 4
+</code></pre>
+<p>When passing a callback function as an argument to another function, the arrow function syntax is more convenient. Consider the following example, shown with traditional and arrow function definitions:</p>
+<pre><code class="language-javascript">longTask(function (result) { console.log(result); });
+
+longTask(result =&gt; console.log(result));
+</code></pre>
+<p>See the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">Arrow function</a> documentation for more information.</p>
+<h3>Promises</h3>
+<p>A <em>promise</em> is a proxy object that is returned to the caller of an asynchronous operation running in the background. This object can be used by the caller to keep track of the background task and obtain a result from it when it completes.</p>
+<p>The promise object has <code>then()</code> and <code>catch()</code> methods (among others) that allow the construction of chains of asynchronous operations with solid error handling.</p>
+<p>Many internal and third-party JavaScript libraries return promises. Here is an example use of the <code>fetch()</code> function to make an HTTP request, and then print the status code of the response:</p>
+<pre><code class="language-javascript">fetch('https://example.com').then(r =&gt; console.log(r.status));
+</code></pre>
+<p>This executes the HTTP request in the background. When the fetch operation completes, the arrow function passed as an argument to the <code>then()</code> method is invoked with the response object as an argument.</p>
+<p>Promises can be chained. A common case that requires chaining is when making an HTTP request that returns a response with some data. The following example shows how the request operation is chained to a second background operation that reads and parses JSON data from the server response:</p>
+<pre><code class="language-javascript">fetch('http://example.com/data.json')
+  .then(r =&gt; r.json())
+  .then(data =&gt; console.log(data));
+</code></pre>
+<p>This is still a single statement, but I have broken it up into multiple lines to increase clarity. Once the <code>fetch()</code> call completes, the callback function passed to the first <code>then()</code> executes with the response object as an argument. This callback function returns <code>r.json()</code>, a method of the response object that also returns a promise. The second <code>then()</code> call is invoked when the second promise completes, receiving the parsed JSON data as an argument.</p>
+<p>To handle errors, the <code>catch()</code> method can be added to the chain:</p>
+<pre><code class="language-javascript">fetch('http://example.com/data.json')
+  .then(r =&gt; r.json())
+  .then(data =&gt; console.log(data))
+  .catch(error =&gt; console.log(`Error: ${error}`));
+</code></pre>
+<p>For additional details on promises, consult the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise API documentation</a>.</p>
+<h3>Async and Await</h3>
+<p>Promises are a nice improvement that help simplify the handling of asynchronous operations, but having to chain several actions in long sequences of <code>then()</code> calls can still generate code that is difficult to read and maintain.</p>
+<p>In the 2017 revision of ECMAScript, the <code>async</code> and <code>await</code> keywords were introduced as an alternative way to work with promises. Here is the first <code>fetch()</code> example from the previous section once again:</p>
+<pre><code class="language-javascript">fetch('http://example.com/data.json')
+  .then(r =&gt; r.json())
+  .then(data =&gt; console.log(data));
+</code></pre>
+<p>Using async/await syntax, this can be coded as follows:</p>
+<pre><code class="language-javascript">async function f() {
+  const r = await fetch('https://example.com/data.json');
+  const data = await r.json();
+  console.log(data);
+}
+</code></pre>
+<p>With this syntax, the asynchronous tasks can be given sequentially, and the resulting code looks very close to how it would be with synchronous function calls. A limitation is that the <code>await</code> keyword can only be used inside functions declared with <code>async</code>.</p>
+<p>Error handling in async functions can be implemented with <code>try/catch</code>:</p>
+<pre><code class="language-javascript">async function f() {
+  try {
+    const r = await fetch('https://example.com/data.json');
+    const data = await r.json();
+    console.log(data);
+  }
+  catch (error) {
+    console.log(`Error: ${error}`);
+  }
+}
+</code></pre>
+<p>An interesting feature of functions declared as <code>async</code> is that they are automatically upgraded to return a promise. The <code>f()</code> function above can be chained to additional asynchronous tasks using the <code>then()</code> method if desired:</p>
+<pre><code class="language-javascript">f().then(() =&gt; console.log('done!'));
+</code></pre>
+<p>Or of course, it can also be awaited if the calling function is also async:</p>
+<pre><code class="language-javascript">async function g() {
+  await f();
+  console.log('done!');
+}
+</code></pre>
+<p>The arrow function syntax can also be used with <code>async</code> functions:</p>
+<pre><code class="language-javascript">const g = async () =&gt; {
+  await f();
+  console.log('done!');
+};
+</code></pre>
+<p>The <a href="https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await">Making asynchronous programming easier with async and await</a> section of the JavaScript documentation is a good place to learn more.</p>
+<h3>Spread Operator</h3>
+<p>The <em>spread operator</em> (<code>...</code>) can be used to expand an array or object in place. This allows for very concise expressions when working with arrays or objects. The best way to learn the spread operator is through some examples.</p>
+<p>Let's say you have an array with some numbers, and you want to find the smallest of them. The traditional way to do this would require a for-loop. With the spread operator, you can leverage the <code>Math.min()</code> function, which takes a variable list of arguments:</p>
+<pre><code class="language-javascript">const a = [5, 3, 9, 2, 7];
+console.log(Math.min(...a));  // 2
+</code></pre>
+<p>The basic idea is that the <code>...a</code> expression expands the contents of <code>a</code>, so the <code>Math.min()</code> function receives five independent arguments instead of single array argument.</p>
+<p>The spread operator can also be used to create a new array by mixing another array with new elements:</p>
+<pre><code class="language-javascript">const a = [5, 3, 9, 2, 7];
+const b = [10, ...a, 8, 0];  // [10, 5, 3, 9, 2, 7, 8, 0]
+</code></pre>
+<p>It also allows for a simple way to do a shallow copy of an array:</p>
+<pre><code class="language-javascript">const c = [...a];  // [5, 3, 9, 2, 7]
+</code></pre>
+<p>The spread syntax also works with objects:</p>
+<pre><code class="language-javascript">const d = {name: 'susan'};
+const e = {...d, age: 20};  // {name: 'susan', age: 20}
+const f = {...d};  // {name: 'susan'}
+</code></pre>
+<p>An interesting usage of the spread operator on objects is to make partial updates:</p>
+<pre><code class="language-javascript">const user = {name: 'susan', age: 20};
+const new_user = {...user, age: 21};  // {name: 'susan', age: 21}
+</code></pre>
+<p>Here, the collision that occurs when having two values for the <code>age</code> key is resolved by using the version that appears last.</p>
+<p>See the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax">Spread syntax</a> reference for more details.</p>
+<h3>Object Property Shorthand</h3>
+<p>In the same league as the spread operator, the object property shorthand provides a simplified syntax for object properties. Consider how the following object is created:</p>
+<pre><code class="language-javascript">const name = 'susan';
+const age = 20;
+const user = {name: name, age: age};
+</code></pre>
+<p>Do you see the repetition of <code>name</code> and <code>age</code>? These keywords are used as property names, and also as the names of the constants that hold the property values. With the object property shorthand syntax, you can create the same object as follows:</p>
+<pre><code class="language-javascript">const user = {name, age};
+</code></pre>
+<p>Objects created as above use the name of the given variable or constant as the property name, and also assign the value to the new property.</p>
+<p>Shorthand and regular properties can be combined as well:</p>
+<pre><code class="language-javascript">const user = {name, age, active: true};  // {name: 'susan', age: 20, active: true}
+</code></pre>
+<h3>Destructuring Assignments</h3>
+<p>Destructuring assignments are yet another nice syntax shorthand that can be used to simplify assignments of arrays and objects. The idea is that the right side value can be decomposed into its elements on the fly as part of the assignment operation. Here is an array example:</p>
+<pre><code class="language-javascript">const a = ['susan', 20];
+let name, age;
+[name, age] = a;
+</code></pre>
+<p>The square brackets on the left side of the assignment tell JavaScript that the right side is an array that must be taken apart before assigning the elements to the list of variables.</p>
+<p>What happens if the number of elements in the left and right sides don't match? If the left side has more elements than the right side, then the extra elements on the left are assigned the <code>undefined</code> value. If the right side has more elements than the left side, then the extra elements are discarded.</p>
+<p>There is an interesting combination between the destructuring assignment and the spread operator discussed above. Consider the following example:</p>
+<pre><code class="language-javascript">const b = [1, 2, 3, 4, 5];
+let c, d, e;
+[c, d, ...e] = b;
+console.log(c);  // 1
+console.log(d);  // 2
+console.log(e);  // [3, 4, 5]
+</code></pre>
+<p>Destructuring assignments can also be used with objects:</p>
+<pre><code class="language-javascript">const user = {name: 'susan', active: true, age: 20};
+const {name, age} = user;
+console.log(name);  // susan
+console.log(age);  // 20
+</code></pre>
+<p>This technique can be applied not only to direct assignments, but also to function arguments. The following example demonstrates it:</p>
+<pre><code class="language-javascript">const f = ({ name, age }) =&gt; {
+  console.log(name);  // susan
+  console.log(age);  // 20
+};
+
+const user = {name: 'susan', active: true, age: 20};
+f(user);
+</code></pre>
+<p>Here the <code>f()</code> arrow function accepts an object as its only argument, but instead of accepting the whole object, the function just takes the <code>name</code> and <code>age</code> properties from the input. As with assignments, if the object has additional properties, they are discarded, and if any of the named properties in the function declaration are not in the object, then they are assigned the <code>undefined</code> value.</p>
+<p>To learn about more ways to use this feature consult the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment">Destructuring Assignment</a> section of the JavaScript reference.</p>
+<h3>Classes</h3>
+<p>A big omission in the earlier versions of the JavaScript language up to, and including ES5 is <em>classes</em>, which are the core component of object-oriented programming. Below you can see an example of an ES6-style class:</p>
+<pre><code class="language-javascript">class User {
+  constructor(name, age, active) {  // constructor
+    this.name = name;
+    this.age = age;
+    this.active = active;
+  }
+
+  isActive() {  // standard method
+    return this.active;
+  }
+
+  async read() {  // async method
+    const r = await fetch(`https://example.org/user/${this.name}`);
+    const data = await r.json();
+    return data;
+  }
+}
+</code></pre>
+<p>To create an instance of a class, the <code>new</code> keyword is used:</p>
+<pre><code class="language-javascript">const user = new User('susan', 20, true);
+</code></pre>
+<p>Learn more about <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes">classes</a> in the JavaScript reference.</p>
+<h3>JSX</h3>
+<p>The last modern JavaScript feature discussed in this chapter is in a category of its own, as it is not part of any ECMAScript specification, and it is not intended to ever be. It is called <a href="https://facebook.github.io/jsx/">JSX</a>, which is short for JavaScript XML. Its purpose is to make it easier to create inline structured content, mainly to be used in HTML pages.</p>
+<p>Let's say that you need to create an HTML paragraph element. Using plain JavaScript and the DOM API, you could create this <code>&lt;p&gt;</code> element as follows:</p>
+<pre><code class="language-javascript">const paragraph = document.createElement('p');
+paragraph.innerText = 'Hello, world!';
+</code></pre>
+<p>Can you imagine what it would be like to create a more complex tree of elements, like maybe a complete table, using plain JavaScript? With JSX, it becomes much easier, and the resulting code is more readable:</p>
+<pre><code class="language-jsx">const paragraph = &lt;p&gt;Hello, world!&lt;/p&gt;;
+</code></pre>
+<p>Here is a more complex example of an HTML table:</p>
+<pre><code class="language-jsx">const myTable = (
+  &lt;table&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Age&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Susan&lt;/td&gt;
+      &lt;td&gt;20&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;John&lt;/td&gt;
+      &lt;td&gt;45&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+);
+</code></pre>
+<p>The JSX syntax is a key component of React applications. While technically not required by React, it makes HTML content and templates much easier to create and maintain.</p>
+<p>Ready to continue? Here is <a href="the-react-mega-tutorial-chapter-2-hello-react.html">Chapter 2</a>!</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript&amp;t=The%20React%20Mega-Tutorial%2C%20Chapter%201%3A%20Modern%20JavaScript" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript&amp;resubmit=true&amp;title=The%20React%20Mega-Tutorial,%20Chapter%201:%20Modern%20JavaScript" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20React%20Mega-Tutorial%2C%20Chapter%201%3A%20Modern%20JavaScript&amp;url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript&amp;title=The%20React%20Mega-Tutorial%2C%20Chapter%201%3A%20Modern%20JavaScript&amp;summary=The%20React%20Mega-Tutorial%2C%20Chapter%201%3A%20Modern%20JavaScript&amp;source=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20React%20Mega-Tutorial%2C%20Chapter%201%3A%20Modern%20JavaScript&amp;body=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="the-react-mega-tutorial-chapter-1-modern-javascript.html#comments">23 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/0902a1e578963a2fcb9cafd8421b422a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Russ</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-03T11:33:13Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-03T11:33:13Z</span>
+  </p>
+  <div>
+    <p>If I purchase the course, do I get the documents all at once, now?  Basically, is the series ready, and just being released one at a time.</p>
+<p>I followed your flask series (all versions) from the very beginning, and since I am getting ready to rejoin the workforce, this seems like an ideal way to refamiliar myself with the latest ES, as well as React.  I cannot say enough about the flask tutorials;  Top notch in every respect (for my learning style, anyway).</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4103c782b1557dd17ddda5caabea046f?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-warning">Scott</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-03T18:09:20Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-03T18:09:20Z</span>
+  </p>
+  <div>
+    <p>Thanks for this post! I've read pretty much all of this content in other forms over the years trying to get my head around it (I come from Python), but it's never been as clear as it is when you write it. Bookmarked!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-04T14:26:55Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-04T14:26:55Z</span>
+  </p>
+  <div>
+    <p>@Russ: Yes, but the content isn't ready yet. You are "pre-ordering" the course. The expected availability for the written course is before the end of this month. The video and ebook content are going to be available before end of May.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/04859d5f67a6949b11b53416ff558e7c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-warning">Kenneth</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-06T05:39:10Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-06T05:39:10Z</span>
+  </p>
+  <div>
+    <p>Thanks, Miguel. This was the best summary of the JS features I have read. I think React will be my summer project, just to have fun and follow your excellent tutorials.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/f1c13640aee6036f90551764c0b863c0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-warning">Arthur</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-06T17:40:49Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-06T17:40:49Z</span>
+  </p>
+  <div>
+    <p>Hello Miguel,</p>
+<p>First of all, super excited for this. Will you be covering Redux in this mega-tutorial?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-06T23:14:23Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-06T23:14:23Z</span>
+  </p>
+  <div>
+    <p>@Arthur: No. I will be using React contexts.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/0250a367963f4be8dc2a7ccc7c568847?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#7</span> <span class="badge text-bg-warning">Roger</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-07T04:00:41Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-07T04:00:41Z</span>
+  </p>
+  <div>
+    <p>Thanks Miguel, will this tutorial introduce React hooks use cases instead of some classes?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#8</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-07T22:06:22Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-07T22:06:22Z</span>
+  </p>
+  <div>
+    <p>@Roger: this tutorial uses React hooks exclusively. Class-based components are not used at all.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/36b00fd5e8921eaffbc07f25aabd80cd?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#9</span> <span class="badge text-bg-warning"> Arturo</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-11T14:08:47Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-11T14:08:47Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>Awesome content! The backend that is going to be used in this course is designed with Flask?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#10</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-04-11T15:29:59Z" data-function="fromNow" data-refresh="0" style="display: none">2022-04-11T15:29:59Z</span>
+  </p>
+  <div>
+    <p>@Arturo: Yes. Here it is: <a href="https://github.com/miguelgrinberg/microblog-api" rel="nofollow">https://github.com/miguelgrinberg/microblog-api</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/63309084bfa2395670e46864f9443b25?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#11</span> <span class="badge text-bg-warning">fisher</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-05-25T05:06:29Z" data-function="fromNow" data-refresh="0" style="display: none">2022-05-25T05:06:29Z</span>
+  </p>
+  <div>
+    <p>Thanks for the clear analysis between old js and the new enhancement. <br>
+Just curious, since the full text version is released on Amazon for sale, why you're still putting them open on this blog?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#12</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-05-25T10:04:31Z" data-function="fromNow" data-refresh="0" style="display: none">2022-05-25T10:04:31Z</span>
+  </p>
+  <div>
+    <p>@fisher: What is your concern? If you like the content of this blog and would like to have my longer tutorials in book format, or if you would just like to help support my efforts, then you are welcome to buy my books.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/63309084bfa2395670e46864f9443b25?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#13</span> <span class="badge text-bg-warning">fisher</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-05-26T13:39:38Z" data-function="fromNow" data-refresh="0" style="display: none">2022-05-26T13:39:38Z</span>
+  </p>
+  <div>
+    <p>Thanks for response @Miguel.<br>
+My concern is clearly about that the blog posts might affect the sales of ebook on Amazon, it seems that you don't have put the full version here.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#14</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-05-26T14:27:15Z" data-function="fromNow" data-refresh="0" style="display: none">2022-05-26T14:27:15Z</span>
+  </p>
+  <div>
+    <p>@fisher: That is not a concern that you should have. I have published several books and I also have them available for free on my blog. This is how I want to make my content available.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/63309084bfa2395670e46864f9443b25?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#15</span> <span class="badge text-bg-warning">fisher</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-05-27T13:09:59Z" data-function="fromNow" data-refresh="0" style="display: none">2022-05-27T13:09:59Z</span>
+  </p>
+  <div>
+    <p>Good to you Sir.<br>
+I've supported your Python 3 version flask tutorial, since I've been benefited from your class on pycon 2016, which gave me a clear architecture that's still working today. <br>
+The world is getting better with tech guys like u.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/70d8a6904c3baefe42e583a8e496ed97?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#16</span> <span class="badge text-bg-warning">Tomas</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-07-16T19:36:34Z" data-function="fromNow" data-refresh="0" style="display: none">2022-07-16T19:36:34Z</span>
+  </p>
+  <div>
+    <p>Good day,</p>
+<p>What is extra in complete course? </p>
+<p>Regards</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#17</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-07-17T07:29:37Z" data-function="fromNow" data-refresh="0" style="display: none">2022-07-17T07:29:37Z</span>
+  </p>
+  <div>
+    <p>@Tomas: the video content for every chapter.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/559de77c41b1a5d361be224e0f608d4a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#18</span> <span class="badge text-bg-warning">Kyle Lawlor-Bagcal</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-08-05T21:54:35Z" data-function="fromNow" data-refresh="0" style="display: none">2022-08-05T21:54:35Z</span>
+  </p>
+  <div>
+    <p>I'm very glad that you choose to implement this course in regular Javascript and that you did not add Typescript. I feel like it is implied that you must use Typescript to work with React nowadays. It is a non-trivial overhead and I'm glad that our learning can be focused on the core concepts of React, rather than learning how to compile a React + Typescript project.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#19</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-08-05T22:16:48Z" data-function="fromNow" data-refresh="0" style="display: none">2022-08-05T22:16:48Z</span>
+  </p>
+  <div>
+    <p>@Kyle: Yes, I see JS as the core language. People can take what they learn here and use it as is, or adapt it to their TypeScript workflow.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/72dd2f34c997907eb93a8139c52577f9?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#20</span> <span class="badge text-bg-warning">JD</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-09-07T07:16:44Z" data-function="fromNow" data-refresh="0" style="display: none">2022-09-07T07:16:44Z</span>
+  </p>
+  <div>
+    <p>Hello Miguel!</p>
+<p>in this React series you mentioned in prerequisites, that reader needs to have JS experience to follow along. I have very recently started learning JavaScript, but want  to move to learning React now.</p>
+<p>I have built a very basic TodoApp, A Weather App(to learn using APIs), A satellite tracking app etc. from tutorials, would ou say I'm good to begin React? If not, can you suggest some project that will make me ready to learn React. Also, I don't know any jQuery.</p>
+<p>Thank You!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#21</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-09-07T09:44:54Z" data-function="fromNow" data-refresh="0" style="display: none">2022-09-07T09:44:54Z</span>
+  </p>
+  <div>
+    <p>@JD: you are probably ready to start on this course. The first chapter is a refresher of the newest and least known features of JavaScript that are used throughout the course. Links to documentation for each of these features are included.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/990a9cb688ea5e1f9ff25796c52421c3?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#22</span> <span class="badge text-bg-warning">Andriy Utkin</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-11-20T12:15:10Z" data-function="fromNow" data-refresh="0" style="display: none">2023-11-20T12:15:10Z</span>
+  </p>
+  <div>
+    <blockquote>
+<p>(spread operator) ... also allows for a simple way to do a shallow copy of an array:</p>
+</blockquote>
+<p>I think you meant "deep copy" here.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#23</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-11-20T13:58:50Z" data-function="fromNow" data-refresh="0" style="display: none">2023-11-20T13:58:50Z</span>
+  </p>
+  <div>
+    <p>@Andriy: Well, it's complicated, right? The top-level elements of the array are new copies, but if any of those elements have nested elements, those are not copied. So to be technically correct, this is neither shallow nor deep, but a combination of the two. If I have to choose between deep or shallow to describe this behavior I think it is closer to shallow than to deep, but I recognize that this is debatable.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="the-react-mega-tutorial-chapter-1-modern-javascript/page/1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="the-react-mega-tutorial-chapter-1-modern-javascript/page/0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="the-react-mega-tutorial-chapter-1-modern-javascript/page/0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="the-react-mega-tutorial-chapter-1-modern-javascript/page/0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdl2A.CnT021iIdE_XQzFfxQnej6IT0us">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  
+  <div class="card-header">The React Mega-Tutorial</div>
+  <a class="card-book-cover" href="https://amzn.to/3LK7Skg">
+    <img src="../static/react-book-small.png">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you would you like to support my <a href="introducing-the-react-mega-tutorial.html">React Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial in book and/or video formats, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3LK7Skg">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3LK7Skg">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">Click here to get the Video Course!</a>
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../static/prettify.js"></script>
+  <script src="../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-1-modern-javascript by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:56 GMT -->
+</html>

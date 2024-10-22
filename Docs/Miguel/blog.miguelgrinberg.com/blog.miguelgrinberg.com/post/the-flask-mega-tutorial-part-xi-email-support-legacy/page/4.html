@@ -1,0 +1,1477 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:50:40 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The Flask Mega-Tutorial, Part XI: Email Support (2012) - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="python, programming, flask, web, tutorial, email">
+  
+  
+  <link rel="canonical" href="../../the-flask-mega-tutorial-part-xi-email-support-legacy.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The Flask Mega-Tutorial, Part XI: Email Support (2012)">
+    <meta property="og:description" content="(Great news! There is a new version of this tutorial!)This is the eleventh article in the series in which I document my experience writing web applications in Python using the Flask…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-xi-email-support-legacy.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy">
+    <meta name="twitter:title" content="The Flask Mega-Tutorial, Part XI: Email Support (2012)">
+    <meta name="twitter:description" content="(Great news! There is a new version of this tutorial!)This is the eleventh article in the series in which I document my experience writing web applications in Python using the Flask…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-xi-email-support-legacy.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../the-flask-mega-tutorial-part-xi-email-support-legacy.html">The Flask Mega-Tutorial, Part XI: Email Support (2012)</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2012-12-12T07:54:49Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2012-12-12T07:54:49Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p><em>(Great news! There is a <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">new version of this tutorial</a>!)</em></p>
+<p>This is the eleventh article in the series in which I document my experience writing web applications in <a href="http://python.org/">Python</a> using the <a href="http://flask.pocoo.org/">Flask</a> microframework.</p>
+<p>The goal of the tutorial series is to develop a decently featured microblogging application that demonstrating total lack of originality I have decided to call <code>microblog</code>.</p>
+<p><strong>NOTE</strong>: This article was revised in September 2014 to be in sync with current versions of Python and Flask.</p>
+<p>Here is an index of all the articles in the series that have been published to date:</p>
+<ul>
+<li><a href="../../the-flask-mega-tutorial-part-i-hello-world-legacy.html">Part I: Hello, World!</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ii-templates-legacy.html">Part II: Templates</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iii-web-forms-legacy.html">Part III: Web Forms</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iv-database-legacy.html">Part IV: Database</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-v-user-logins-legacy.html">Part V: User Logins</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vi-profile-page-and-avatars-legacy.html">Part VI: Profile Page And Avatars</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vii-unit-testing-legacy.html">Part VII: Unit Testing</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.html">Part VIII: Followers, Contacts And Friends</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ix-pagination-legacy.html">Part IX: Pagination</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-x-full-text-search-legacy.html">Part X: Full Text Search</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xi-email-support-legacy.html">Part XI: Email Support</a> (this article)</li>
+<li><a href="../../the-flask-mega-tutorial-part-xii-facelift-legacy.html">Part XII: Facelift</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiii-dates-and-times-legacy.html">Part XIII: Dates and Times</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiv-i18n-and-l10n-legacy.html">Part XIV: I18n and L10n</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xv-ajax-legacy.html">Part XV: Ajax</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvi-debugging-testing-and-profiling-legacy.html">Part XVI: Debugging, Testing and Profiling</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvii-deployment-on-linux-even-on-the-raspberry-pi-legacy.html">Part XVII: Deployment on Linux (even on the Raspberry Pi!)</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xviii-deployment-on-the-heroku-cloud-legacy.html">Part XVIII: Deployment on the Heroku Cloud</a></li>
+</ul>
+<h2>Recap</h2>
+<p>In the most recent installments of this tutorial we've been looking at improvements that mostly had to do with our database.</p>
+<p>Today we are letting our database rest for a bit, and instead we'll look at another important function that most web applications  have: the ability to send emails to its users.</p>
+<p>In our little <code>microblog</code> application we are going to implement one email related function, we will send an email to a user each time he/she gets a new follower. There are several more ways in which email support can be useful, so we'll make sure we design a generic framework for sending emails that can be reused.</p>
+<h2>Configuration</h2>
+<p>Luckily for us, Flask already has an extension that handles email called Flask-Mail, and while it will not take us 100% of the way, it gets us pretty close.</p>
+<p>Back when we looked at <a href="../../the-flask-mega-tutorial-part-vii-unit-testing-legacy.html">unit testing</a>, we added configuration for Flask to send us an email should an error occur in the production version of our application. That same information is used for sending application related emails.</p>
+<p>Just as a reminder, what we need is two pieces of information:</p>
+<ul>
+<li>the email server that will be used to send the emails, along with any required authentication</li>
+<li>the email address(es) of the admins</li>
+</ul>
+<p>This is what we did in the previous article (file <code>config.py</code>):</p>
+<pre><code># email server
+MAIL_SERVER = 'your.mailserver.com'
+MAIL_PORT = 25
+MAIL_USERNAME = None
+MAIL_PASSWORD = None
+
+# administrator list
+ADMINS = ['you@example.com']
+</code></pre>
+<p>It goes without saying that you have enter the details of an actual email server and administrator above before the application can actually send emails. We are not going to enhance the server setup to allow those that require an encrypted communication through TLS or SSL. For example, if you want the application to send emails via your gmail account you would enter the following:</p>
+<pre><code># email server
+MAIL_SERVER = 'smtp.googlemail.com'
+MAIL_PORT = 465
+MAIL_USE_TLS = False
+MAIL_USE_SSL = True
+MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+
+# administrator list
+ADMINS = ['your-gmail-username@gmail.com']
+</code></pre>
+<p>Note that the username and password are read from environment variables. You will need to set <code>MAIL_USERNAME</code> and <code>MAIL_PASSWORD</code> to your Gmail login credentials. Putting sensitive information in environment variables is safer than writing down the information on a source file.</p>
+<p>We also need to initialize a <code>Mail</code> object, as this will be the object that will connect to the SMTP server and send the emails for us (file <code>app/__init__.py</code>):</p>
+<pre><code>from flask_mail import Mail
+mail = Mail(app)
+</code></pre>
+<h2>Let's send an email!</h2>
+<p>To learn how Flask-Mail works we'll just send an email from the command line. So let's fire up Python from our virtual environment and run the following:</p>
+<pre><code>&gt;&gt;&gt; from flask_mail import Message
+&gt;&gt;&gt; from app import app, mail
+&gt;&gt;&gt; from config import ADMINS
+&gt;&gt;&gt; msg = Message('test subject', sender=ADMINS[0], recipients=ADMINS)
+&gt;&gt;&gt; msg.body = 'text body'
+&gt;&gt;&gt; msg.html = '&lt;b&gt;HTML&lt;/b&gt; body'
+&gt;&gt;&gt; with app.app_context():
+...     mail.send(msg)
+....
+</code></pre>
+<p>The snippet of code above will send an email to the list of admins that are configured in <code>config.py</code>. The sender will be the first admin in the list. The email will have text and HTML versions, so depending on how your email client is setup you may see one or the other. Note that we needed to create an <code>app_context</code> to send the email. Recent releases of Flask-Mail require this. An application context is created automatically when a request is handled by Flask. Since we are not inside a request we have to create the context by hand just so that Flask-Mail can do its job.</p>
+<p>Pretty, neat. Now it's time to integrate this code into our application!</p>
+<h2>A simple email framework</h2>
+<p>We will now write a helper function that sends an email. This is just a generic version of the above test. We'll put this function in a new source file that will be dedicated to our email support functions (file <code>app/emails.py</code>):</p>
+<pre><code>from flask_mail import Message
+from app import mail
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    mail.send(msg)
+</code></pre>
+<p>Note that Flask-Mail support goes beyond what we are using. Bcc lists and attachments are available, for example, but we won't use them in this application.</p>
+<h2>Follower notifications</h2>
+<p>Now that we have the basic framework to send an email in place, we can write the function that sends out the follower notification (file <code>app/emails.py</code>):</p>
+<pre><code>from flask import render_template
+from config import ADMINS
+
+def follower_notification(followed, follower):
+    send_email("[microblog] %s is now following you!" % follower.nickname,
+               ADMINS[0],
+               [followed.email],
+               render_template("follower_email.txt", 
+                               user=followed, follower=follower),
+               render_template("follower_email.html", 
+                               user=followed, follower=follower))
+</code></pre>
+<p>Do you find any surprises in here? Our old friend the <code>render_template</code> function is making an appearance. If you recall, we used this function to render all the HTML templates from our views. Like the HTML from our views, the bodies of email messages are an ideal candidate for using templates. As much as possible we want to keep logic separate from presentation, so emails will also go into the <code>templates</code> folder along with our views.</p>
+<p>So we now need to write the templates for the text and HTML versions of our follower notification email.  Here is the text version (file <code>app/templates/follower_email.txt</code>):</p>
+<pre><code>Dear {{ user.nickname }},
+
+{{ follower.nickname }} is now a follower. Click on the following link to visit {{ follower.nickname }}'s profile page:
+
+{{ url_for('user', nickname=follower.nickname, _external=True) }}
+
+Regards,
+
+The microblog admin
+</code></pre>
+<p>For the HTML version we can do a little bit better and even show the follower's avatar and profile information (file <code>app/templates/follower_email.html</code>):</p>
+<pre><code>&lt;p&gt;Dear {{ user.nickname }},&lt;/p&gt;
+&lt;p&gt;&lt;a href="{{ url_for('user', nickname=follower.nickname, _external=True) }}"&gt;{{ follower.nickname }}&lt;/a&gt; is now a follower.&lt;/p&gt;
+&lt;table&gt;
+    &lt;tr valign="top"&gt;
+        &lt;td&gt;&lt;img src="{{ follower.avatar(50) }}"&gt;&lt;/td&gt;
+        &lt;td&gt;
+            &lt;a href="{{ url_for('user', nickname=follower.nickname, _external=True) }}"&gt;{{ follower.nickname }}&lt;/a&gt;&lt;br /&gt;
+            {{ follower.about_me }}
+        &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Regards,&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;microblog&lt;/code&gt; admin&lt;/p&gt;
+</code></pre>
+<p>Note the <code>_external=True</code> argument to <code>url_for</code> in the above templates. By default, the <code>url_for</code> function generates URLs that are relative to the domain from which the current page comes from. For example, the return value from <code>url_for("index")</code> will be <code>/index</code>, while in this case we want <code>http://localhost:5000/index</code>. In an email there is no domain context, so we have to force fully qualified URLs that include the domain, and the <code>_external</code> argument is just for that. </p>
+<p>The final step is to hook up the sending of the email with the actual view function that processes the "follow" (file <code>app/views.py</code>):</p>
+<pre><code>from .emails import follower_notification
+
+@app.route('/follow/&lt;nickname&gt;')
+@login_required
+def follow(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    # ...
+    follower_notification(user, g.user)
+    return redirect(url_for('user', nickname=nickname))
+</code></pre>
+<p>Now you can create two users (if you haven't yet) and make one follow the other to see how the email notification works.</p>
+<h2>So that's it? Are we done?</h2>
+<p>We could now pat ourselves in the back for a job well done and take email notifications out of our list of features yet to implement. </p>
+<p>But if you played with the application for some time and paid attention you may have noticed that now that we have email notifications when you click the <code>follow</code> link it takes 2 to 3 seconds for the browser to refresh the page, whereas before it was  almost instantaneous.</p>
+<p>So what happened? </p>
+<p>The problem is that Flask-Mail sends emails synchronously. The web server blocks while the email is being sent and only returns its response back to the browser once the email has been delivered. Can you imagine what would happen if we try to send an email to a server that is slow, or even worse, temporarily offline? Not good.</p>
+<p>This is a terrible limitation, sending an email should be a background task that does not interfere with the web server, so let's see how we can fix this.</p>
+<h2>Asynchronous calls in Python</h2>
+<p>What we really want is for the <code>send_email</code> function to return immediately, while the work of sending the email is moved to a background process.</p>
+<p>Turns out Python already has support for running asynchronous tasks, actually in more than one way. The <code>threading</code> and <code>multiprocessing</code> modules can both do this.</p>
+<p>Starting a thread each time we need to send an email is much less resource intensive than starting a brand new process, so let's move the <code>mail.send(msg)</code> call into thread (file <code>app/emails.py</code>):</p>
+<pre><code>from threading import Thread
+from app import app
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+</code></pre>
+<p>The <code>send_async_email</code> function now runs in a background thread. Because it is a separate thread, the application context required by Flask-Mail will not be automatically set for us, so the <code>app</code> instance is passed to the thread, and the application context is set up manually, like we did above when we sent an email from the Python console.</p>
+<p>If you test the 'follow' function of our application now you will notice that the web browser shows the refreshed page before the email is actually sent.</p>
+<p>So now we have asynchronous emails implemented, but what if in the future we need to implement other asynchronous functions? The procedure would be identical, but we would need to duplicate the threading code for each particular case, which is not good.</p>
+<p>We can improve our solution by implementing a <a href="http://www.python.org/dev/peps/pep-0318/">decorator</a>. With a decorator the above code would change to this:</p>
+<pre><code>from .decorators import async
+
+@async
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    send_async_email(app, msg)
+</code></pre>
+<p>Much nicer, right?</p>
+<p>The code that allows this magic is actually pretty simple. We will put it in a new source file (file <code>app/decorators.py</code>):</p>
+<pre><code>from threading import Thread
+
+def async(f):
+    def wrapper(*args, **kwargs):
+        thr = Thread(target=f, args=args, kwargs=kwargs)
+        thr.start()
+    return wrapper
+</code></pre>
+<p>And now that we indirectly have created a useful framework for asynchronous tasks we can say we are done!</p>
+<p>Just as an exercise, let's consider how this solution would look using processes instead of threads. We do not want a new process started for each email that we need to send, so instead we could use the <code>Pool</code> class from the <code>multiprocessing</code> module. This class creates a specified number of processes (which are forks of the main process) and all those processes wait to receive jobs to run, given to the pool via the <code>apply_async</code> method. This could be an interesting approach for a busy site, but we will stay with the threads for now.</p>
+<h2>Final words</h2>
+<p>The source code for the updated <code>microblog</code> application is available below:</p>
+<p>Download <a href="https://github.com/miguelgrinberg/microblog-2012/archive/version-0.11.zip">microblog-0.11.zip</a>.</p>
+<p>I've got a few requests for putting this application up on github or similar, which I think is a pretty good idea. I will be working on that in the near future. Stay tuned.</p>
+<p>Thank you again for following me on this tutorial series. I look forward to see you on the next chapter.</p>
+<p>Miguel</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy&amp;t=The%20Flask%20Mega-Tutorial%2C%20Part%20XI%3A%20Email%20Support%20%282012%29" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy&amp;resubmit=true&amp;title=The%20Flask%20Mega-Tutorial,%20Part%20XI:%20Email%20Support%20(2012)" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20Flask%20Mega-Tutorial%2C%20Part%20XI%3A%20Email%20Support%20%282012%29&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy&amp;title=The%20Flask%20Mega-Tutorial%2C%20Part%20XI%3A%20Email%20Support%20%282012%29&amp;summary=The%20Flask%20Mega-Tutorial%2C%20Part%20XI%3A%20Email%20Support%20%282012%29&amp;source=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20Flask%20Mega-Tutorial%2C%20Part%20XI%3A%20Email%20Support%20%282012%29&amp;body=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../the-flask-mega-tutorial-part-xi-email-support-legacy.html#comments">110 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/320fd6745d36837e0f5244376478cb5a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#76</span> <span class="badge text-bg-warning">Mara</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-11-05T03:57:43Z" data-function="fromNow" data-refresh="0" style="display: none">2015-11-05T03:57:43Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel!<br>
+Thank you so much for this tutorial!</p>
+<p>But I'm getting this error:</p>
+<p>Traceback (most recent call last):<br>
+  File "&lt;stdin&gt;", line 2, in &lt;module&gt;<br>
+  File "/home/microblog/flask/local/lib/python2.7/site-packages/<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 491, in send<br>
+    with self.connect() as connection:<br>
+  File "/home/microblog/flask/local/lib/python2.7/site-packages/<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 144, in <strong>enter</strong><br>
+    self.host = self.configure_host()<br>
+  File "/home/microblog/flask/local/lib/python2.7/site-packages/<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 158, in configure_host<br>
+    host = smtplib.SMTP(self.mail.server, self.mail.port)<br>
+  File "/usr/lib/python2.7/<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 249, in <strong>init</strong><br>
+    (code, msg) = self.connect(host, port)<br>
+  File "/usr/lib/python2.7/<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 309, in connect<br>
+    self.sock = self._get_socket(host, port, self.timeout)<br>
+  File "/usr/lib/python2.7/<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 284, in _get_socket<br>
+    return socket.create_connection((port, host), timeout)<br>
+  File "/usr/lib/python2.7/<a href="http://socket.py/" rel="nofollow">socket.py</a>", line 571, in create_connection<br>
+    raise err<br>
+socket.error: [Errno 111] Connection refused</p>
+<p>Btw, I'm using a virtual machine for Linux. Is that a problem? <br>
+Thanks so much. Hope to hear from you soon.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#77</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-11-05T15:39:53Z" data-function="fromNow" data-refresh="0" style="display: none">2015-11-05T15:39:53Z</span>
+  </p>
+  <div>
+    <p>@Mara: your VM is apparently unable to establish a connection to the SMTP server.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/fdb247c945b52b6d495d18e4b4b19352?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#78</span> <span class="badge text-bg-warning">Fernando França</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-01-28T13:00:27Z" data-function="fromNow" data-refresh="0" style="display: none">2016-01-28T13:00:27Z</span>
+  </p>
+  <div>
+    <p>Excellent tutorial series. Thanks for share this knowledge.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d1b98fcde0cbdb2a8b38eda54204d311?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#79</span> <span class="badge text-bg-warning">tOlorun</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-04-26T10:26:58Z" data-function="fromNow" data-refresh="0" style="display: none">2016-04-26T10:26:58Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel<br>
+Hi everyone</p>
+<p>I need help</p>
+<p>trying to use the @async decoration so that some functions can run in the background</p>
+<p>but i get the following error</p>
+<p>Exception in thread Thread-2:<br>
+Traceback (most recent call last):<br>
+  File "/usr/lib/python2.7/<a href="http://threading.py/" rel="nofollow">threading.py</a>", line 801, in <strong>bootstrap_inner<br>
+    self.run()<br>
+  File "/usr/lib/python2.7/<a href="http://threading.py/" rel="nofollow">threading.py</a>", line 754, in run<br>
+    self.__target(<em>self.__args, </em>*self.__kwargs)<br>
+  File "/media/tolorun/mmxv/104.131.174.54/edc/app/api_v1/<a href="http://aggrgtr.py/" rel="nofollow">aggrgtr.py</a>", line 36, in log<br>
+    alog.createdBy, alog.details, alog.stage = <a href="http://g.user.id/" rel="nofollow">g.user.id</a>, log[1], log[0]<br>
+  File "/usr/local/lib/python2.7/dist-packages/werkzeug/<a href="http://local.py/" rel="nofollow">local.py</a>", line 343, in __getattr</strong><br>
+    return getattr(self._get_current_object(), name)<br>
+  File "/usr/local/lib/python2.7/dist-packages/werkzeug/<a href="http://local.py/" rel="nofollow">local.py</a>", line 302, in _get_current_object<br>
+    return self.__local()<br>
+  File "/usr/local/lib/python2.7/dist-packages/flask/<a href="http://globals.py/" rel="nofollow">globals.py</a>", line 27, in _lookup_app_object<br>
+    raise RuntimeError('working outside of application context')<br>
+RuntimeError: working outside of application context</p>
+<p>please help me<br>
+thanks in advance</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#80</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-04-28T14:27:14Z" data-function="fromNow" data-refresh="0" style="display: none">2016-04-28T14:27:14Z</span>
+  </p>
+  <div>
+    <p>@tOlorun: you need to create an app context to send email or other tasks that require access to the Flask application, as shown above in this article.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/beb21939f6a5a1e3b48faa2d5eed358a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#81</span> <span class="badge text-bg-warning">Anonymous</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-05-14T01:45:15Z" data-function="fromNow" data-refresh="0" style="display: none">2016-05-14T01:45:15Z</span>
+  </p>
+  <div>
+    <p>Why do you need an extension to send e-mail? I can't see anything this package does over just using out of the box email module?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#82</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-05-14T04:19:11Z" data-function="fromNow" data-refresh="0" style="display: none">2016-05-14T04:19:11Z</span>
+  </p>
+  <div>
+    <p>@Anonymous: You do not "need" an extension to send an email, you can do so with the email support in the standard library. The main benefit of using Flask-Mail though, is that email configuration is given as part of the Flask configuration. If you have several configurations, then switching between them does not need to be done by hand.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/01c2968b5183f8c60855480286e6d9db?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#83</span> <span class="badge text-bg-warning">Amit Kumar</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-05-16T12:26:30Z" data-function="fromNow" data-refresh="0" style="display: none">2016-05-16T12:26:30Z</span>
+  </p>
+  <div>
+    <p>Hey,<br>
+I am getting KeyError: 'mail' <br>
+and it seems to be an issue with release, i even tried to downgrade but the issue with flask_mail remains.<br>
+Please help</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#84</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-05-16T17:48:14Z" data-function="fromNow" data-refresh="0" style="display: none">2016-05-16T17:48:14Z</span>
+  </p>
+  <div>
+    <p>@Amit: the text of the error alone isn't sufficient to diagnose the problem. I need to complete stack trace.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8c414a1ba56510027e7845c870b11d5a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#85</span> <span class="badge text-bg-warning">spetty</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-06-16T04:49:12Z" data-function="fromNow" data-refresh="0" style="display: none">2016-06-16T04:49:12Z</span>
+  </p>
+  <div>
+    <p>I dont really understand <a href="http://decorators.py/" rel="nofollow">decorators.py</a>, can you explain how the @async and the async(f) we define in <a href="http://decorators.py/" rel="nofollow">decorators.py</a> are linked and how async(f) works?</p>
+<p>like others have said, amazing tutorial. I've run into some problems (probably caused by updates to packages since your wrote this) but i've managed to work around them.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#86</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-06-18T18:17:52Z" data-function="fromNow" data-refresh="0" style="display: none">2016-06-18T18:17:52Z</span>
+  </p>
+  <div>
+    <p>@spetty: decorators are a standard feature of Python. The @async decorator and the async(f) function are not just linked, they are the same thing. Decorators in Python are defined as functions. You can find more information about decorators in the Python docs, and there are also lots of tutorials about how to make them.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/c2c70bb23388093744e71aa1b0fefb3a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#87</span> <span class="badge text-bg-warning">Chris Yoon</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-09-21T03:55:27Z" data-function="fromNow" data-refresh="0" style="display: none">2016-09-21T03:55:27Z</span>
+  </p>
+  <div>
+    <p>Thanks again Miguel. Great tutorial.</p>
+<p>For people having trouble with the python 2.xx command line mail send test, once you set the os.environ on your environment, you have to first "import os" so that print os.environ.get('mail_username') returns the string that you saved. I'm using powershell and the command was '$env:mail_username = "example@mail.com"' You can verify if the env is saved by typing the following in python: "print os.environ.get('mail_username'). I hope that helps. I spent an hour stuck on this AFTER I changed google security settings. </p>
+<p>Cheers!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/070e81572826b69393569190488415a2?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#88</span> <span class="badge text-bg-warning">Bos Hieu</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-10-02T17:43:31Z" data-function="fromNow" data-refresh="0" style="display: none">2016-10-02T17:43:31Z</span>
+  </p>
+  <div>
+    <p>Hi everyone, </p>
+<p>Yesterday, I tested send_mail() method and I had a bug like #46.<br>
+So, I read all comments in this blogs. And I found out three ways to fix this bug:<br>
+1. Use celery like this post '<a href="../../celery-and-the-flask-application-factory-pattern%27" rel="nofollow">http://blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern'</a><br>
+2. Use 'context' instead like #49<br>
+3. Use 'current_app._get_current_object()' instead like #50</p>
+<p>I have tested all and I fixed this bug.<br>
+But I really don't understand why '2' and '3' can fix this bug.</p>
+<p>Anyone can explain why?</p>
+<p>Thank you so much!</p>
+<p>Bos Hieu,</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/be7887f820c2f354512bef8c6b4f92e8?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#89</span> <span class="badge text-bg-warning">Reznov Ammar</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-11-08T12:55:11Z" data-function="fromNow" data-refresh="0" style="display: none">2016-11-08T12:55:11Z</span>
+  </p>
+  <div>
+    <p>I was wondering how to make a user notification using Flask, so for example:</p>
+<p>When a user make a comment or send another user a message, when the user entering his admin panel he will find a red point for example or a notification that there is a message have been sent to him so when he click on that the point disappear , please any why how to do that ?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#90</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-11-08T15:46:32Z" data-function="fromNow" data-refresh="0" style="display: none">2016-11-08T15:46:32Z</span>
+  </p>
+  <div>
+    <p>@Reznov: In my PyCon 2014 tutorial "Flask By Example" I showed an application in which the administrator receives notifications when users post comments that need to be reviewed. Take a look at that tutorial on youtube, or the project at GitHub for details.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/5afad839d773e9bb494f4f52c83812f2?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#91</span> <span class="badge text-bg-warning">Sam</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-11-21T06:10:19Z" data-function="fromNow" data-refresh="0" style="display: none">2016-11-21T06:10:19Z</span>
+  </p>
+  <div>
+    <p>Thank you Miguel for your dedicated work. Nicely done!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a49304cc4817d38ed35f4822910e8703?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#92</span> <span class="badge text-bg-warning">divya</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-10-18T19:46:36Z" data-function="fromNow" data-refresh="0" style="display: none">2017-10-18T19:46:36Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, You tutorial has been so helpful in getting up to speed with flask and python. I am new to both. I have a question with regard to flask-mail. My server is behind a proxy and i couldnt find a straightforward way to specify proxy information to smtp or socks library via flask. Do you have any suggestions? Thanks Divya</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#93</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-10-22T06:46:02Z" data-function="fromNow" data-refresh="0" style="display: none">2017-10-22T06:46:02Z</span>
+  </p>
+  <div>
+    <p>@divya: I would configure your proxy in the system, so that all processes that are running in it use it.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/449267d14e92df1c89e52a622c8d85fe?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#94</span> <span class="badge text-bg-warning">Rob</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-10-27T04:55:08Z" data-function="fromNow" data-refresh="0" style="display: none">2017-10-27T04:55:08Z</span>
+  </p>
+  <div>
+    <p>Hey Miguel,</p>
+<p>I'm totally stuck on the part where I need to set environment variables. That would be a great area to expand in the future. For now, I can get it to work if I plug in my actual username and password to "<a href="http://config.py/" rel="nofollow">config.py</a>", so I know mail is working.</p>
+<p>Now, I'm trying to setup a different file, called <a href="http://secure.py/" rel="nofollow">secure.py</a> in the same directory where the only code would be: </p>
+<p>export MAIL_USERNAME='actual_username'<br>
+export MAIL_PASSWORD='actual_password'</p>
+<p>It threw a SyntaxError at me that looks like this:</p>
+<p>Traceback (most recent call last):<br>
+  File "C:...\<a href="http://run.py/" rel="nofollow">run.py</a>", line 2, in &lt;module&gt;<br>
+    from app import app<br>
+  File "C:...\<a href="http://app__init__.py/" rel="nofollow">app__init__.py</a>", line 6, in &lt;module&gt;<br>
+    from config import basedir, ADMINS, MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, \<br>
+  File "C:...\<a href="http://config.py/" rel="nofollow">config.py</a>", line 1, in &lt;module&gt;<br>
+    import os, secure<br>
+  File "C:...\<a href="http://secure.py/" rel="nofollow">secure.py</a>", line 1<br>
+    export MAIL_USERNAME = 'actual_username'<br>
+                                           ^<br>
+SyntaxError: invalid syntax</p>
+<p>I researched it and saw that, since I am using a Windows PC, I need to use 'set' instead of 'export'. So I change it to set and...</p>
+<p>Traceback (most recent call last):<br>
+  File "C:...\<a href="http://run.py/" rel="nofollow">run.py</a>", line 2, in &lt;module&gt;<br>
+    from app import app<br>
+  File "C:...\<a href="http://app__init__.py/" rel="nofollow">app__init__.py</a>", line 6, in &lt;module&gt;<br>
+    from config import basedir, ADMINS, MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, \<br>
+  File "C:...\<a href="http://config.py/" rel="nofollow">config.py</a>", line 1, in &lt;module&gt;<br>
+    import os, secure<br>
+  File "C:...\<a href="http://secure.py/" rel="nofollow">secure.py</a>", line 1<br>
+    set MAIL_USERNAME = 'actual_username'<br>
+                                      ^<br>
+SyntaxError: invalid syntax</p>
+<p>Same error. I tried setting it via console, and got the same error. What's going on? Why would = not be valid syntax?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#95</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-10-27T13:44:49Z" data-function="fromNow" data-refresh="0" style="display: none">2017-10-27T13:44:49Z</span>
+  </p>
+  <div>
+    <p>@Rob: the export and/or set commands are not Python statements, they need to be typed on your command-line prompt. I suggest you familiarize with the basic operation of the command prompt and how environment variables work.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/449267d14e92df1c89e52a622c8d85fe?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#96</span> <span class="badge text-bg-warning">Rob</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-10-27T16:13:41Z" data-function="fromNow" data-refresh="0" style="display: none">2017-10-27T16:13:41Z</span>
+  </p>
+  <div>
+    <p>@Miguel: Yep, I'm an idiot. Just realizing it was an OS-level command cleared things up, and I found the appropriate syntax. Thanks!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4004abd99b6cbee2e3e705746d757cae?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#97</span> <span class="badge text-bg-warning">vaishali</span> said
+    
+    <span class="flask-moment" data-timestamp="2018-08-20T07:37:59Z" data-function="fromNow" data-refresh="0" style="display: none">2018-08-20T07:37:59Z</span>
+  </p>
+  <div>
+    <p>My mail_setting is:<br>
+mail_settings = {<br>
+                 "MAIL_SERVER"   : '<a href="http://smtp.orange.fr/" rel="nofollow">smtp.orange.fr</a>',<br>
+                 "MAIL_PORT"     : 465,<br>
+                 "MAIL_USE_TLS"  : False,<br>
+                 "MAIL_USE_SSL"  : True,<br>
+                 "MAIL_USERNAME" : "vaishali.chaudhari.ext@orange.com",<br>
+                 "MAIL_PASSWORD" : "pass",<br>
+                 "DEBUG"         : True,<br>
+                 }</p>
+<p>app.config.update(mail_settings)<br>
+mail = Mail()<br>
+from pprint import pprint<br>
+pprint(app.config)<br>
+mail.init_app(app)<br>
+with app.app_context():<br>
+    msg = Message(subject="Welcome in ioc-manager application",<br>
+              sender="vaishali@orange.com",<br>
+              recipients=["vaishali.chaudhari@orange.com"],<br>
+              body="This is test email")<br>
+    mail.send(msg)</p>
+<p>I am getting following error:</p>
+<p>socket.error: [Errno 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond</p>
+<p>Can you suggest me why this error is coming? Even with server <a href="http://smtp.gmail.com/" rel="nofollow">smtp.gmail.com</a> its a same error</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#98</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2018-08-21T09:26:04Z" data-function="fromNow" data-refresh="0" style="display: none">2018-08-21T09:26:04Z</span>
+  </p>
+  <div>
+    <p>@vaishali: I don't know. Maybe a firewall rule prevents outgoing connections on the email ports. It's difficult for me to say, try the development SMTP server, that will confirm that the application is working okay.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8003f9013b240da7216e688078f16a01?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#99</span> <span class="badge text-bg-warning">Luciano</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-12-10T14:54:47Z" data-function="fromNow" data-refresh="0" style="display: none">2019-12-10T14:54:47Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,<br>
+great job with this tutorials... however i get this error and i cannot figure out how to solve it.</p>
+<p>Traceback (most recent call last):<br>
+  File "&lt;input&gt;", line 1, in &lt;module&gt;<br>
+  File "C:\Users\lucia\PycharmProjects\provaemail1\venv\lib\site-packages\<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 438, in send<br>
+    with self.connect() as connection:<br>
+  File "C:\Users\lucia\PycharmProjects\provaemail1\venv\lib\site-packages\<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 106, in <strong>enter</strong><br>
+    self.host = self.configure_host()<br>
+  File "C:\Users\lucia\PycharmProjects\provaemail1\venv\lib\site-packages\<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 121, in configure_host<br>
+    host = smtplib.SMTP(self.mail.server, self.mail.port)<br>
+  File "C:\Python27\Lib\<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 256, in <strong>init</strong><br>
+    (code, msg) = self.connect(host, port)<br>
+  File "C:\Python27\Lib\<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 317, in connect<br>
+    self.sock = self._get_socket(host, port, self.timeout)<br>
+  File "C:\Python27\Lib\<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 292, in _get_socket<br>
+    return socket.create_connection((host, port), timeout)<br>
+  File "C:\Python27\Lib\<a href="http://socket.py/" rel="nofollow">socket.py</a>", line 575, in create_connection<br>
+    raise err<br>
+error: [Errno 10061] Impossibile stabilire la connessione. Rifiuto persistente del computer di destinazione</p>
+<p>this is my code:</p>
+<p>from flask import Flask<br>
+from flask_mail import Mail<br>
+import os</p>
+<p>app = Flask(<strong>name</strong>)<br>
+app.config['SECRET_KEY'] = 'hard-to-guess'<br>
+mail = Mail(app)</p>
+&lt;h1&gt;email server&lt;/h1&gt;
+<p>MAIL_SERVER = '<a href="http://smtp.gmail.com/" rel="nofollow">smtp.gmail.com</a>'<br>
+MAIL_PORT = 465<br>
+MAIL_USERNAME = os.environ.get('my_username@gmail.com')<br>
+MAIL_PASSWORD = os.environ.get('my_password')</p>
+&lt;h1&gt;administrator list&lt;/h1&gt;
+<p>ADMINS = [my_username@gmail.com', 'another_mail@live.com']</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br>
+    app.run()</p>
+<p>Please, what am I mistaking?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#100</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-12-11T10:51:26Z" data-function="fromNow" data-refresh="0" style="display: none">2019-12-11T10:51:26Z</span>
+  </p>
+  <div>
+    <p>@Luciano: the mail server you are connecting to is refusing the connection. I notice you are using "<a href="http://smtp.gmail.com/" rel="nofollow">smtp.gmail.com</a>", while I use "<a href="http://smtp.googlemail.com/" rel="nofollow">smtp.googlemail.com</a>". Any reason for changing that?</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="3.html#comments">&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="5.html#comments">&raquo;</a></li>
+    <li class="page-item"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdnEw.nByddUVZeZGHDuPdmK-seevgXzk">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xi-email-support-legacy/page/4 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:50:40 GMT -->
+</html>

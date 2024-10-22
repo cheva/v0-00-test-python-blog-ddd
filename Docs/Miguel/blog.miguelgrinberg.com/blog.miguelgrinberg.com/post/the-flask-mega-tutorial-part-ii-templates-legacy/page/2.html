@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy/page/2 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:04 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The Flask Mega-Tutorial, Part II: Templates (2012) - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="programming, python, flask, web, tutorial, templates, jinja2">
+  
+  
+  <link rel="canonical" href="../../the-flask-mega-tutorial-part-ii-templates-legacy.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The Flask Mega-Tutorial, Part II: Templates (2012)">
+    <meta property="og:description" content="(Great news! There is a new version of this tutorial!)This is the second article in the series where I document my experience writing web applications in Python using the Flask microframework.The…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-ii-templates-legacy.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy">
+    <meta name="twitter:title" content="The Flask Mega-Tutorial, Part II: Templates (2012)">
+    <meta name="twitter:description" content="(Great news! There is a new version of this tutorial!)This is the second article in the series where I document my experience writing web applications in Python using the Flask microframework.The…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-ii-templates-legacy.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../the-flask-mega-tutorial-part-ii-templates-legacy.html">The Flask Mega-Tutorial, Part II: Templates (2012)</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2012-05-09T05:26:06Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2012-05-09T05:26:06Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p><em>(Great news! There is a <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">new version of this tutorial</a>!)</em></p>
+<p>This is the second article in the series where I document my experience writing web applications in <a href="http://python.org/">Python</a> using the <a href="http://flask.pocoo.org/">Flask</a> microframework.</p>
+<p>The goal of the tutorial series is to develop a decently featured microblogging application that demonstrating total lack of originality I have decided to call <code>microblog</code>.</p>
+<p><strong>NOTE</strong>: This article was revised in September 2014 to be in sync with current versions of Python and Flask.</p>
+<p>Here is an index of all the articles in the series that have been published to date:</p>
+<ul>
+<li><a href="../../the-flask-mega-tutorial-part-i-hello-world-legacy.html">Part I: Hello, World!</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ii-templates-legacy.html">Part II: Templates</a> (this article)</li>
+<li><a href="../../the-flask-mega-tutorial-part-iii-web-forms-legacy.html">Part III: Web Forms</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iv-database-legacy.html">Part IV: Database</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-v-user-logins-legacy.html">Part V: User Logins</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vi-profile-page-and-avatars-legacy.html">Part VI: Profile Page And Avatars</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vii-unit-testing-legacy.html">Part VII: Unit Testing</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.html">Part VIII: Followers, Contacts And Friends</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ix-pagination-legacy.html">Part IX: Pagination</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-x-full-text-search-legacy.html">Part X: Full Text Search</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xi-email-support-legacy.html">Part XI: Email Support</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xii-facelift-legacy.html">Part XII: Facelift</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiii-dates-and-times-legacy.html">Part XIII: Dates and Times</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiv-i18n-and-l10n-legacy.html">Part XIV: I18n and L10n</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xv-ajax-legacy.html">Part XV: Ajax</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvi-debugging-testing-and-profiling-legacy.html">Part XVI: Debugging, Testing and Profiling</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvii-deployment-on-linux-even-on-the-raspberry-pi-legacy.html">Part XVII: Deployment on Linux (even on the Raspberry Pi!)</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xviii-deployment-on-the-heroku-cloud-legacy.html">Part XVIII: Deployment on the Heroku Cloud</a></li>
+</ul>
+<h2>Recap</h2>
+<p>If you followed the <a href="../../the-flask-mega-tutorial-part-i-hello-world-legacy.html">previous chapter</a> you should have a fully working, yet very simple web application that has the following file structure:</p>
+<pre><code>    microblog\
+      flask\
+        &lt;virtual environment files&gt;
+      app\
+        static\
+        templates\
+        __init__.py
+        views.py
+      tmp\
+      run.py
+</code></pre>
+<p>To run the application you execute the <code>run.py</code> script and then open the <code>http://localhost:5000</code> URL on your web browser.</p>
+<p>We are picking up exactly from where we left off, so you may want to make sure you have the above application correctly installed and working.</p>
+<h2>Why we need templates</h2>
+<p>Let's consider how we can expand our little application.</p>
+<p>We want the home page of our microblogging app to have a heading that welcomes the logged in user, that's pretty standard for applications of this kind. Ignore for now the fact that we have no way to log a user in, I'll present a workaround for this issue in a moment.</p>
+<p>An easy option to output a nice and big heading would be to change our view function to output HTML, maybe something like this:</p>
+<pre><code>from app import app
+
+@app.route('/')
+@app.route('/index')
+def index():
+    user = {'nickname': 'Miguel'}  # fake user
+    return '''
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Home Page&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Hello, ''' + user['nickname'] + '''&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+'''
+</code></pre>
+<p>Give the application a try to see how this looks in your browser.</p>
+<p>Since we don't have support for users yet I have resorted to using a placeholder user object, sometimes called fake or mock object. This allows us to concentrate on certain aspects of our application that depend on parts of the system that haven't been built yet.</p>
+<p>I hope you agree with me that the solution used above to deliver HTML to the browser is very ugly. Consider how complex the code will become if you have to return a large and complex HTML page with lots of dynamic content. And what if you need to change the layout of your web site in a large app that has dozens of views, each returning HTML directly? This is clearly not a scalable option.</p>
+<h2>Templates to the rescue</h2>
+<p>If you could keep the logic of your application separate from the layout or presentation of your web pages things would be much better organized, don't you think? You could even hire a web designer to create a killer web site while you code the site's behaviors in Python. Templates help implement this separation.</p>
+<p>Let's write our first template (file <code>app/templates/index.html</code>):</p>
+<pre><code>&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;{{ title }} - microblog&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+      &lt;h1&gt;Hello, {{ user.nickname }}!&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>As you see above, we just wrote a mostly standard HTML page, with the only difference that there are some placeholders for the dynamic content enclosed in <code>{{ ... }}</code> sections.</p>
+<p>Now let's see how we use this template from our view function (file <code>app/views.py</code>):</p>
+<pre><code>from flask import render_template
+from app import app
+
+@app.route('/')
+@app.route('/index')
+def index():
+    user = {'nickname': 'Miguel'}  # fake user
+    return render_template('index.html',
+                           title='Home',
+                           user=user)
+</code></pre>
+<p>Try the application at this point to see how the template works. Once you have the rendered page in your browser you may want to view the source HTML and compare it against the original template.</p>
+<p>To render the template we had to import a new function from the Flask framework called <code>render_template</code>. This function takes a template filename and a variable list of template arguments and returns the rendered template, with all the arguments replaced.</p>
+<p>Under the covers, the <code>render_template</code> function invokes the <a href="http://jinja.pocoo.org/">Jinja2</a> templating engine that is part of the Flask framework. Jinja2 substitutes <code>{{...}}</code> blocks with the corresponding values provided as template arguments.</p>
+<h2>Control statements in templates</h2>
+<p>The Jinja2 templates also support control statements, given inside <code>{%...%}</code> blocks. Let's add an if statement to our template (file <code>app/templates/index.html</code>):</p>
+<pre><code>&lt;html&gt;
+  &lt;head&gt;
+    {% if title %}
+    &lt;title&gt;{{ title }} - microblog&lt;/title&gt;
+    {% else %}
+    &lt;title&gt;Welcome to microblog&lt;/title&gt;
+    {% endif %}
+  &lt;/head&gt;
+  &lt;body&gt;
+      &lt;h1&gt;Hello, {{ user.nickname }}!&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Now our template is a bit smarter. If the view function forgets to define a page title then instead of showing an empty title the template will provide its own title. Feel free to remove the <code>title</code> argument in the <code>render_template</code> call of our view function to see how the conditional statement works.</p>
+<h2>Loops in templates</h2>
+<p>The logged in user in our <code>microblog</code> application will probably want to see recent posts from followed users in the home page, so let's see how we can do that.</p>
+<p>To begin, we use our handy fake object trick to create some users and some posts to show (file <code>app/views.py</code>):</p>
+<pre><code>def index():
+    user = {'nickname': 'Miguel'}  # fake user
+    posts = [  # fake array of posts
+        { 
+            'author': {'nickname': 'John'}, 
+            'body': 'Beautiful day in Portland!' 
+        },
+        { 
+            'author': {'nickname': 'Susan'}, 
+            'body': 'The Avengers movie was so cool!' 
+        }
+    ]
+    return render_template("index.html",
+                           title='Home',
+                           user=user,
+                           posts=posts)
+</code></pre>
+<p>To represent user posts we are using a list, where each element has <code>author</code> and <code>body</code> fields. When we get to implement a real database we will preserve these field names, so we can design and test our template using the fake objects without having to worry about updating it when we move to a database.</p>
+<p>On the template side we have to solve a new problem. The list can have any number of elements, it will be up to the view function to decide how many posts need to be presented. The template cannot make any assumptions about the number of posts, so it needs to be prepared to render as many posts as the view sends.</p>
+<p>So let's see how we do this using a <code>for</code> control structure (file <code>app/templates/index.html</code>):</p>
+<pre><code>&lt;html&gt;
+  &lt;head&gt;
+    {% if title %}
+    &lt;title&gt;{{ title }} - microblog&lt;/title&gt;
+    {% else %}
+    &lt;title&gt;Welcome to microblog&lt;/title&gt;
+    {% endif %}
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Hi, {{ user.nickname }}!&lt;/h1&gt;
+    {% for post in posts %}
+    &lt;div&gt;&lt;p&gt;{{ post.author.nickname }} says: &lt;b&gt;{{ post.body }}&lt;/b&gt;&lt;/p&gt;&lt;/div&gt;
+    {% endfor %}
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Simple, right? Give it a try, and be sure to play with adding more content to the posts array.</p>
+<h2>Template inheritance</h2>
+<p>We have one more topic to cover before we close for the day.</p>
+<p>Our <code>microblog</code> web application will need to have a navigation bar at the top of the page with a few links. Here you will get the link to edit your profile, to login, logout, etc.</p>
+<p>We can add a navigation bar to our <code>index.html</code> template, but as our application grows we will be needing to implement more pages, and this navigation bar will have to be copied to all of them. Then you will have to keep all these identical copies of the navigation bar in sync, and that could become a lot of work if you have a lot of pages and templates.</p>
+<p>Instead, we can use Jinja2's template inheritance feature, which allows us to move the parts of the page layout that are common to all templates and put them in a base template from which all other templates are derived.</p>
+<p>So let's define a base template that includes the navigation bar and also the bit of title logic we implemented earlier (file <code>app/templates/base.html</code>):</p>
+<pre><code>&lt;html&gt;
+  &lt;head&gt;
+    {% if title %}
+    &lt;title&gt;{{ title }} - microblog&lt;/title&gt;
+    {% else %}
+    &lt;title&gt;Welcome to microblog&lt;/title&gt;
+    {% endif %}
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div&gt;Microblog: &lt;a href="/index"&gt;Home&lt;/a&gt;&lt;/div&gt;
+    &lt;hr&gt;
+    {% block content %}{% endblock %}
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>In this template we use the <code>block</code> control statement to define the place where the derived templates can insert themselves. Blocks are given a unique name, and their content can be replaced or enhanced in derived templates.</p>
+<p>And now what's left is to modify our <code>index.html</code> template to <em>inherit</em> from <code>base.html</code> (file <code>app/templates/index.html</code>):</p>
+<pre><code>{% extends "base.html" %}
+{% block content %}
+    &lt;h1&gt;Hi, {{ user.nickname }}!&lt;/h1&gt;
+    {% for post in posts %}
+    &lt;div&gt;&lt;p&gt;{{ post.author.nickname }} says: &lt;b&gt;{{ post.body }}&lt;/b&gt;&lt;/p&gt;&lt;/div&gt;
+    {% endfor %}
+{% endblock %}
+</code></pre>
+<p>Since the <code>base.html</code> template will now take care of the general page structure we have removed those elements from this one and left only the content part. The <code>extends</code> block establishes the inheritance link between the two templates, so that Jinja2 knows that when it needs to render <code>index.html</code> it needs to include it inside <code>base.html</code>. The two templates have matching <code>block</code> statements with name <code>content</code>, and this is how Jinja2 knows how to combine the two into one. When we get to write new templates we will also create them as extensions to <code>base.html</code>.</p>
+<h2>Final words</h2>
+<p>If you want to save time, the <code>microblog</code> application in its current state is available here:</p>
+<p>Download <a href="https://github.com/miguelgrinberg/microblog-2012/archive/version-0.2.zip">microblog-0.2.zip</a>.</p>
+<p>Note that the zip file does not include the flask virtual environment, you will need to create it following the instructions in the first chapter in the series before you can run the application.</p>
+<p>If you have any questions or comments feel free to leave them below.</p>
+<p>In the next chapter of the series we will be looking at web forms. I hope to see you then.</p>
+<p>Miguel</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy&amp;t=The%20Flask%20Mega-Tutorial%2C%20Part%20II%3A%20Templates%20%282012%29" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy&amp;resubmit=true&amp;title=The%20Flask%20Mega-Tutorial,%20Part%20II:%20Templates%20(2012)" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20Flask%20Mega-Tutorial%2C%20Part%20II%3A%20Templates%20%282012%29&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy&amp;title=The%20Flask%20Mega-Tutorial%2C%20Part%20II%3A%20Templates%20%282012%29&amp;summary=The%20Flask%20Mega-Tutorial%2C%20Part%20II%3A%20Templates%20%282012%29&amp;source=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20Flask%20Mega-Tutorial%2C%20Part%20II%3A%20Templates%20%282012%29&amp;body=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../the-flask-mega-tutorial-part-ii-templates-legacy.html#comments">45 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/7a742be3413539d8d8d3f60e4a89cbc1?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#26</span> <span class="badge text-bg-warning">Paolo</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-07-05T06:38:40Z" data-function="fromNow" data-refresh="0" style="display: none">2014-07-05T06:38:40Z</span>
+  </p>
+  <div>
+    <p>the line "from app import db" did not work for me in <a href="http://db_create.py/" rel="nofollow">db_create.py</a></p>
+<p>I had to copy the code to set the db variable from <strong>init</strong>.py to get <a href="http://db_create.py/" rel="nofollow">db_create.py</a> to work.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/c3014be4c5704ebfbe58c6e7f976d574?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#27</span> <span class="badge text-bg-warning">Wendy</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-08-30T00:57:36Z" data-function="fromNow" data-refresh="0" style="display: none">2014-08-30T00:57:36Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, </p>
+<p>I'm using your O'Reilly book, and I'm stuck trying to get my favicon to render. I put the file (called "favicon.ico" in a directory called "static" in the app's root folder and implemented the code you prescribe in Example 3-10 in templates/base.html. But no go--just the plain old little blank page with a folded corner is showing up. Any thoughts? Thanks for the great information!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#28</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-08-30T06:01:27Z" data-function="fromNow" data-refresh="0" style="display: none">2014-08-30T06:01:27Z</span>
+  </p>
+  <div>
+    <p>@Wendy: if you are running with Flask's development web server then note that browsers will request the favicon.ico file as /favicon.ico, while static files go in /static/filename. In production I use nginx, and I add a special location block that redirects /favicon.ico to /static/favicon.ico. For development I just ignore the problem, but one way to make it work is to add a specific &lt;link&gt; tag that shows the correct URL for the favicon.ico in the static folder. I hope this helps.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6a2a72077fa62e3722b789e7764a1eff?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#29</span> <span class="badge text-bg-warning">Pranav</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-09-26T18:05:47Z" data-function="fromNow" data-refresh="0" style="display: none">2014-09-26T18:05:47Z</span>
+  </p>
+  <div>
+    <p>how does the "render_template" command know where to look for <a href="http://templates.is/" rel="nofollow">templates.Is</a> the "templates" folder default for it?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#30</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-09-28T06:14:24Z" data-function="fromNow" data-refresh="0" style="display: none">2014-09-28T06:14:24Z</span>
+  </p>
+  <div>
+    <p>@Pranav: The Flask class takes many optional arguments, one is to specify the location of the templates folder. The default is, as you suspected, a folder called "templates" located where the application is.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a64dfefdb19c26342d0db8eda254d6c4?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#31</span> <span class="badge text-bg-warning">Armen Babakanian</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-10-10T22:32:00Z" data-function="fromNow" data-refresh="0" style="display: none">2014-10-10T22:32:00Z</span>
+  </p>
+  <div>
+    <p>Very well documented tutorial Miguel, thanks for sharing these.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/970476b5ae7d342eb53974b4cf5c8ff8?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#32</span> <span class="badge text-bg-warning">Brett Gerry</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-10-29T18:34:06Z" data-function="fromNow" data-refresh="0" style="display: none">2014-10-29T18:34:06Z</span>
+  </p>
+  <div>
+    <p>Thanks for this tutorial Miguel. I notice you didn't include &lt;div&gt; tags around the content for the posts initially, but added it in the second example. Any reason for this?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#33</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-10-30T17:36:22Z" data-function="fromNow" data-refresh="0" style="display: none">2014-10-30T17:36:22Z</span>
+  </p>
+  <div>
+    <p>@Brett: no reason, something that I missed. I'll add the &lt;div&gt; in the first example as well.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/85dfe1fb4a6e64f77a9b11f6f57b0c48?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#34</span> <span class="badge text-bg-warning">Jim</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-04T18:35:42Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-04T18:35:42Z</span>
+  </p>
+  <div>
+    <p>I get an error that 'render_template' is not defined. I tried reinstalling all of the flask framework to no avail. Any advice?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#35</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-05T20:05:25Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-05T20:05:25Z</span>
+  </p>
+  <div>
+    <p>@Jim: make sure you have a "from flask import render_template" at the top of the file.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/802e0faeeeb0f62602fa88e9524c0cbd?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#36</span> <span class="badge text-bg-warning">Firdaus</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-08T10:44:17Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-08T10:44:17Z</span>
+  </p>
+  <div>
+    <p>Hi James,</p>
+<p>It could be spelling error --&gt; render_template(~/tempaltes/index.html)</p>
+<p>Check your spelling of temPLates</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/f626b4fde5ab9b91f1708e72692aca7d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#37</span> <span class="badge text-bg-warning">David</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-09T14:26:52Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-09T14:26:52Z</span>
+  </p>
+  <div>
+    <p>Hey Miguel,<br>
+Thanks for making this, I'm also slowly working through the book.</p>
+<p>Quick question:  for the nav bar inheritance, how would one have style tethered to a nav bar.  Would base.html reference the style sheet (in /statc?) or the new page itself.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#38</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-10T15:34:28Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-10T15:34:28Z</span>
+  </p>
+  <div>
+    <p>@David: base.html can include any stylesheets that apply to the page as a whole. Then any individual pages can add their own stylesheets if necessary.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/364c80492136222334a5e5609c6f547a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#39</span> <span class="badge text-bg-warning">Vic</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-23T02:59:36Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-23T02:59:36Z</span>
+  </p>
+  <div>
+    <p>Thanks for rebooting this tutorial in python3 which I have hardly touched! The Flask documentation is excellent, but going through a full tutorial helps tie things together.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/1c725ad82a8d2c822e097905dbcd8970?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#40</span> <span class="badge text-bg-warning">Nuno</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-01-13T20:38:17Z" data-function="fromNow" data-refresh="0" style="display: none">2015-01-13T20:38:17Z</span>
+  </p>
+  <div>
+    <p>Men Thx so much , i m new in this flask world and thx to you site a learn a lot!!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/56c27f3df63adbb2ca07432b29ab36ec?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#41</span> <span class="badge text-bg-warning">Harry John</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-03-18T16:30:29Z" data-function="fromNow" data-refresh="0" style="display: none">2015-03-18T16:30:29Z</span>
+  </p>
+  <div>
+    <p>Hi, I'm getting the error, NoneType not callable. And it seems to be happening after I revisit the login url after a successful login. <br>
+I have asked a question on stackoverflow with the link <a href="http://stackoverflow.com/questions/29126964/flask-login-user-callback-function-resets-to-none-after-login" rel="nofollow">http://stackoverflow.com/questions/29126964/flask-login-user-callback-function-resets-to-none-after-login</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/7971c22830233216d15e305114c9a675?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#42</span> <span class="badge text-bg-warning">Subhash Gupta</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-03-30T11:41:32Z" data-function="fromNow" data-refresh="0" style="display: none">2015-03-30T11:41:32Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel<br>
+This tutorial on flask is very informative and very easy as compared to other.<br>
+Thank you for it.<br>
+I am facing problem after adding posts to the <a href="http://views.py/" rel="nofollow">views.py</a><br>
+this is the error i get each time i try to run it<br>
+SyntaxError: invalid syntax<br>
+Subhashs-MacBook-Pro:microblog Subhash$ ./<a href="http://run.py/" rel="nofollow">run.py</a><br>
+Traceback (most recent call last):<br>
+  File "./<a href="http://run.py/" rel="nofollow">run.py</a>", line 2, in &lt;module&gt;<br>
+    from app import app<br>
+  File "/Users/Subhash/Desktop/microblog/app/<strong>init</strong>.py", line 4, in &lt;module&gt;<br>
+    from app import views<br>
+  File "/Users/Subhash/Desktop/microblog/app/<a href="http://views.py/" rel="nofollow">views.py</a>", line 15<br>
+    'body' : 'I love Jasmeen..:-*!'<br>
+         ^<br>
+SyntaxError: invalid syntax</p>
+<p>kindly help me out<br>
+thanks</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#43</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-03-31T00:40:20Z" data-function="fromNow" data-refresh="0" style="display: none">2015-03-31T00:40:20Z</span>
+  </p>
+  <div>
+    <p>@Subhash: not sure what the problem is. Likely in the line above or below line 15 of <a href="http://views.py/" rel="nofollow">views.py</a>. Check your syntax carefully.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/07e62b38b237916531d18e9fadfcf63d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#44</span> <span class="badge text-bg-warning">Marcus Yeagle</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-04-21T01:51:46Z" data-function="fromNow" data-refresh="0" style="display: none">2015-04-21T01:51:46Z</span>
+  </p>
+  <div>
+    <p>Wow this tutorial is fantastic. Really good stuff here! Thanks Miguel!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/18c7e4ab554610206601dbd701ff23e2?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#45</span> <span class="badge text-bg-warning">Rajesh</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-06-23T09:09:50Z" data-function="fromNow" data-refresh="0" style="display: none">2015-06-23T09:09:50Z</span>
+  </p>
+  <div>
+    <p>If you are not getting any thing from HTML, its because of template path.</p>
+<p>tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(<strong>file</strong>)), 'templates')<br>
+print tmpl_dir<br>
+app = Flask("<strong>name</strong>", template_folder=tmpl_dir)</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-ii-templates-legacy/page/2 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:04 GMT -->
+</html>

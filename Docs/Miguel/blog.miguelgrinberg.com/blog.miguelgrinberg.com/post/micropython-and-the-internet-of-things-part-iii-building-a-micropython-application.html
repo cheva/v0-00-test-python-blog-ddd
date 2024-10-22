@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:59 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    MicroPython and the Internet of Things, Part III: Building a MicroPython Application - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="python, micropython, iot, internet of things, breadboard, microcontroller">
+  
+  
+  <link rel="canonical" href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.html">
+  
+
+  
+    <link href="../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="MicroPython and the Internet of Things, Part III: Building a MicroPython Application">
+    <meta property="og:description" content="In this chapter you are going to learn how to write standalone MicroPython applications and upload them to your microcontroller board.If you want to see me and hear me explain everything in this…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application">
+    <meta name="twitter:title" content="MicroPython and the Internet of Things, Part III: Building a MicroPython Application">
+    <meta name="twitter:description" content="In this chapter you are going to learn how to write standalone MicroPython applications and upload them to your microcontroller board.If you want to see me and hear me explain everything in this…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.html">MicroPython and the Internet of Things, Part III: Building a MicroPython Application</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2019-06-25T08:04:12Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2019-06-25T08:04:12Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>In this chapter you are going to learn how to write standalone MicroPython applications and upload them to your microcontroller board.</p>
+<p>If you want to see me and hear me explain everything in this tutorial, I encourage you to purchase the video version from my <a href="https://courses.miguelgrinberg.com/courses/micropython">Courses site</a>. Not only it will make for a better learning experience, but you'll also be supporting my effort in keeping my blog updated with relevant content. Thank you!</p>
+<p>For your reference, here is the complete list of chapters in this tutorial:</p>
+<ul>
+<li><a href="micropython-and-the-internet-of-things-part-i-welcome.html">Chapter 1: Welcome</a></li>
+<li><a href="micropython-and-the-internet-of-things-part-ii-hello-micropython.html">Chapter 2: Hello, MicroPython!</a></li>
+<li><a href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.html">Chapter 3: Building a MicroPython Application</a> (this article)</li>
+<li><a href="micropython-and-the-internet-of-things-part-iv-wi-fi-and-the-cloud.html">Chapter 4: Wi-Fi and the Cloud</a></li>
+<li><a href="micropython-and-the-internet-of-things-part-v-temperature-and-humidity.html">Chapter 5: Temperature and Humidity</a></li>
+<li><a href="micropython-and-the-internet-of-things-part-vi-working-with-a-screen.html">Chapter 6: Working with a Screen</a></li>
+</ul>
+<h2>The MicroPython File System</h2>
+<p>Like with standard Python, MicroPython supports reading and writing files from the file system. But what file system is there in a microcontroller board? In the case of the ESP8266 board, there is actually no file storage, so MicroPython allocates a portion of the flash memory and creates a virtual file system in it. The flash memory is also where the MicroPython firmware is stored. As you recall, in the previous chapter you used the <code>esptool.py</code> command to write the firmware to this memory. This type of memory preserves its contents even when it loses power, so it is perfect to also use as file storage. The ESP8266 development board that I recommended for this tutorial comes with 4MB of flash memory, which is enough to hold the MicroPython firmware plus a small file system.</p>
+<p>I want to note that you may find that for other microcontroller boards file storage might be implemented differently. For example, other boards supported by MicroPython include a micro-SD card slot, so then the file system comes from a card.</p>
+<p>You may wonder why I am talking about files. The reason is that there are two files that have special significance in MicroPython, with the names <code>boot.py</code> and <code>main.py</code>. As part of the normal start up procedure, MicroPython looks for files with these names in the internal file system, and if it finds them it executes them automatically. As you are going to see soon, the MicroPython firmware already provides a <code>boot.py</code> file, but it does not include <code>main.py</code>, which is left for us to provide. So to create an application that is preserved in the flash memory of the board, all that needs to be done is write it to the board as <code>main.py</code>.</p>
+<p>The <code>rshell</code> tool that is used to access the MicroPython REPL provides a set of file system functions. So let's connect the board to the computer with the USB cable, and then start <code>rshell</code>. If you need a refresher on how to start it, consult the previous chapter.</p>
+<p>When you are in the <code>rshell</code> prompt, type <code>help</code> to see all the commands it offers:</p>
+<pre><code>/Users/miguel/micropython-tutorial&gt; help
+
+Documented commands (type help &lt;topic&gt;):
+========================================
+args    cat  connect  echo  exit      filetype  ls     repl  rsync
+boards  cd   cp       edit  filesize  help      mkdir  rm    shell
+
+Use Control-D (or the exit command) to exit rshell.
+</code></pre>
+<p>If you want to know more about any of these commands, you can type <code>help &lt;command&gt;</code> to get additional documentation. The commands that are interesting in terms of file management are <code>ls</code>, <code>cat</code>, <code>cp</code>, <code>rm</code> and <code>mkdir</code>. If you have any experience with Unix-based tools you probably know these commands already. Here is a short summary of what each command does:</p>
+<ul>
+<li><code>ls</code>: show the contents of a directory (similar to <code>dir</code> on Windows)</li>
+<li><code>cat</code>: show the contents of a file (similar to <code>type</code> on Windows)</li>
+<li><code>cp</code>: copy a file (similar to <code>copy</code> on Windows)</li>
+<li><code>rm</code>: delete a file (similar to <code>del</code> on Windows)</li>
+<li><code>mkdir</code>: create a directory</li>
+</ul>
+<p>But these commands work in a very interesting way that allows you to work with the file system in your computer and the one in the board at the same time. You can refer to any files in your computer using their path and file names, but the special directory <code>/pyboard</code> is mapped to the MicroPython's file system.</p>
+<p>For example, the <code>ls /pyboard</code> command lists the contents of the root directory in your MicroPython board:</p>
+<pre><code>/Users/migue/micropython-tutorial&gt; ls /pyboard
+boot.py
+</code></pre>
+<p>And the <code>ls /</code> command lists the contents of the root directory on your computer:</p>
+<pre><code>/Users/miguel/micropython-tutorial&gt; ls /
+Applications/   System/         bin/            etc/            opt/            tmp/
+Library/        Users/          cores/          home/           private/        usr/
+Network/        Volumes/        dev/            net/            sbin/           var/
+</code></pre>
+<p>If you want to see the contents of <code>boot.py</code> in your board you can use <code>cat /pyboard/boot.py</code>:</p>
+<pre><code>/Users/miguel/micropython-tutorial&gt; cat /pyboard/boot.py
+# This file is executed on every boot (including wake-boot from deepsleep)
+#import esp
+#esp.osdebug(None)
+import uos, machine
+#uos.dupterm(None, 1) # disable REPL on UART(0)
+import gc
+#import webrepl
+#webrepl.start()
+gc.collect()
+</code></pre>
+<p>While there is nothing wrong with modifying and/or adding code to <code>boot.py</code>, I prefer to leave this file alone, since there are situations where MicroPython itself modifies this file. I prefer to do all my coding on <code>main.py</code> which is a file I can take complete ownership of.</p>
+<h2>Blinking Lights Application</h2>
+<p>To keep all your tutorial files organized, let's create a subdirectory that is going to hold the code for this chapter. So make sure your current directory is set to <code>micropython-tutorial</code> and create a <code>chapter3</code> subdirectory:</p>
+<pre><code>(venv) $ mkdir chapter3
+(venv) $ cd chapter3
+</code></pre>
+<p>Now use your favorite text editor to create <code>main.py</code>. For this first version I just copied the while-loop that I created in the previous chapter:</p>
+<pre><code class="language-python">import machine
+import time
+
+led = machine.Pin(2, machine.Pin.OUT)
+led2 = machine.Pin(16, machine.Pin.OUT)
+while True:
+    led.on()
+    led2.off()
+    time.sleep(0.5)
+    led.off()
+    led2.on()
+    time.sleep(0.5)
+</code></pre>
+<p>To upload this file to the microcontroller board, you can use the <code>cp</code> command. To avoid having to jump from the terminal prompt to the <code>rshell</code> prompt just so that you can type the <code>cp</code> command and then exit <code>rshell</code> again, this time let's run the <code>cp</code> command directly as part of the <code>rshell</code> invocation:</p>
+<pre><code>(venv) $ rshell --port &lt;board serial port name&gt; cp main.py /pyboard
+</code></pre>
+<p>Of course you need to remember to insert the correct serial port device name for your board. This command copies the file <code>main.py</code> from the current directory to the <code>/pyboard</code> directory, which is the root directory of the MicroPython file system. If everything went well, the lights on your board should start to blink as soon as the command ends, and the application will always run when you power your board up. You can even unplug it from your computer and plug it to a different power source, such as a cell phone charger you may have lying around, and the application will always run automatically.</p>
+<p>If you want to uninstall this application from your board, you can use the <code>rm</code> command to delete <code>main.py</code> from the internal file system:</p>
+<pre><code>(venv) $ rshell --port &lt;board serial port name&gt; rm /pyboard/main.py
+</code></pre>
+<p>Note that I reference this file as <code>/pyboard/main.py</code>, since I want the command to act on the board's file system. It is unfortunate that this is a likely source of mistakes, because if you were to enter this command as <code>rm main.py</code> it would be the original file on your computer that would get deleted! So be very careful with destructive commands such as <code>rm</code>.</p>
+<h2>Buttons</h2>
+<p>Something that you are going to find useful in the future when you build your own projects is having the microcontroller react to changes in the physical world. The best example of that would be to change the behavior of the application when a button is pressed. In this section I'm going to show you how to add a stop button, which as its name implies, will stop the blinking lights loop when pressed. In this chapter I'm going to present a fairly simple way to do this, but the topic of buttons is not over and will be revisited in future chapters.</p>
+<p>There are many kinds of buttons, but in general a button has two terminals or pins. When the button is in a pressed state, the two terminals are internally connected and current flows through the button. When the button is in a released state there is no connection, so electricity cannot pass. The buttons that I'm using have actually four pins and not two, to make it easier to mount them on a breadboard:</p>
+<p><img alt="Button" src="../static/images/micropython/ch03/button.jpg" /></p>
+<p>Assuming you are using the same kind of push buttons as I am, if you orient the button with two pins at the top and the other two at the bottom, then you should consider the two left-side pins as a group representing one of two button terminals, and the two right side pins as the other. Pressing the button connects the two groups of pins, and electricity flows from one side of the button to the other. When you connect the button you can pick any of the two pins on the left for one connection, and any of the pins on the right for the other, whichever are more convenient.</p>
+<h2>Input Pins</h2>
+<p>The high-level implementation to read the state of a button from MicroPython is to have one of the available GPIO pins connected to the button in such a way that the value of the pin changes between 0 and 1 as the button is pressed and released. Which state is associated with 0 and which with 1 does not really matter, all that matters is that 0 is mapped to one of the states and 1 is mapped to the other.</p>
+<p>Sounds pretty simple, right? Unfortunately, to help you understand how this works I'm going to need to explain a couple of basic electricity concepts, because as easy as it sounds, this needs to be done with care, as a mistake here can damage your microcontroller and we do not want that. So bear with me while I go over this. I promise that in the end, the solution to get the button working is indeed simple.</p>
+<p>As a general principle, if you want the input pin to read a value of 1, then you have to deliver current to it, and this is easy because there are pins with current available in the microcontroller. If you create a connection from a <code>3V3</code> pin to the left side of a button, and another from the right side to the GPIO pin, then when you press the button it will close the connection and the current will flow towards the pin and thus the pin will read as a 1.</p>
+<p>The problem occurs when the button is not pressed. In this situation, the GPIO pin is not connected to anything because the button in a released state keeps the circuit open. A pin that is not connected to anything is said to be in a "floating" state, and in this state, the value of the pin is unpredictable and can sometimes read as a 0 or as a 1 depending on how electricity flows through the rest of the circuit. If you want the pin to read a consistent 0, then it needs to be connected to a <code>GND</code> pin, which basically makes sure that any electricity that passes through the pin is immediately flushed away.</p>
+<p>In other words, the button needs to be wired such that it connects the GPIO pin to <code>3V3</code> when it is pressed, and to <code>GND</code> when it is not pressed, or viceversa, and this presents a bit of a problem because the button has only two terminals (two groups of two terminals actually, but effectively it's two usable connections) and there are three pins at play here, the GPIO pin, <code>3V3</code> and <code>GND</code>.</p>
+<h2>A Note on Short Circuits</h2>
+<p>The reason why there are current and ground connections is that electricity always wants to flow between these two. In general it is assumed that electricity flows towards the ground, but this is somewhat of an abstraction because in reality electrons flow in the reverse direction. The only way to force electricity to flow through a component is to connect it to current on one side, and to ground on the other. Without the ground connection, electricity does not flow.</p>
+<p>But what happens when you connect a <code>3V3</code> pin to a <code>GND</code> pin with no component in between? This is called a <a href="https://en.wikipedia.org/wiki/Short_circuit">short circuit</a> and it is bad! The electrical current will have no resistance at all, so it will flow uninterrupted and in large amounts, causing the circuit to just overheat if you are lucky, but most likely to burn your microcontroller. So under no circumstance you should create a direct connection between a pin that has current and a ground pin.</p>
+<p>This is a problem because a button isn't your typical component which receives an electric current and consumes it to perform a task. When you press a button, a direct connection between its two terminals is made, exactly as if the connection was made by a cable, or in other words, without nothing that consumes all that electricity flowing through it. So a badly connected button can cause a short circuit when pressed!</p>
+<p>To prevent short circuits, all connections from current to ground must have something in between that consumes the electricity that flows through the wire. If you don't have any component to use, then you have to use a <a href="https://en.wikipedia.org/wiki/Resistor">resistor</a>, which is a simple electrical component that doesn't do anything besides slowing down the flow of current that passes through it.</p>
+<h2>Pull-Up Resistors</h2>
+<p>With all the information about circuits, resistors and the flow of electricity in mind, I can now show you one possible way to connect a button to a GPIO pin so that the pin value maps to the button state. By now I'm sure you realize that this isn't as simple as it sounds, because the method by which the button is connected to the GPIO pin and to <code>3V3</code> and <code>GND</code> needs to take into account that the GPIO pin in question must never be left in a floating state, and also that there is never a risk of a short circuit. Take a look at the following diagram:</p>
+<p><img alt="Pull-up Resistor" src="../static/images/micropython/ch03/pull-up-resistor.png" /></p>
+<p>According to this diagram, when the button is pressed, a connection from <code>3V3</code> to <code>GND</code> is made, so electricity flows directly between these two. To avoid a short circuit, a resistor is placed between <code>3V3</code> and the button. The GPIO pin is connected in between the resistor and the button, so that when the button is pressed the GPIO pin has a direct connection to <code>GND</code>, which keeps its value at 0.</p>
+<p>You can argue that the GPIO pin is also connected to <code>3V3</code> with a resistor in between, and in fact it is, but when the button is pressed electricity will prefer to flow through the path that leads to the ground, so no electricity will enter the GPIO pin because ground is directly connected to it.</p>
+<p>When the button is released, a connection from <code>3V3</code> to <code>GND</code> does not exist, so electricity cannot flow through that path and has to find another way. The only other possible way is to take the path to the right into the GPIO pin, and this will make the pin read as a 1. The current that gets into the pin is going to be reduced by the resistor, but the size of the resistor is chosen specifically so that it still allows enough current to pass through to make the pin go to a high state while eliminating the possibility of a short circuit.</p>
+<p>So to summarize, using the wiring shown in the diagram above, if the GPIO pin reads as a 0 it means that the button is pressed, and if it reads as a 1 it means that the button is released. This is another case of a reverse wiring, somewhat similar to the on-board LEDs for which the "active" state is also 0. In this type of circuit the resistor is called a <em>pull-up resistor</em>, because it raises the pin to a value of 1 in the absence of any other input such as a button press.</p>
+<h2>Wiring of the Button</h2>
+<p>Are you worried or confused about working with these strange pull-up resistors? You don't need to be. The ESP8266 microcontroller comes equipped with programmable pull-up resistors for all the GPIO pins except <code>GPIO16</code>, so all you need to do is configure them from MicroPython!</p>
+<p>When you tell the microcontroller to enable the pull-up resistor on a given GPIO pin, it automatically makes an internal connection from <code>3V3</code> to the pin passing through the resistor. The part that needs to be made outside of the microcontroller is the connection to <code>GND</code>, which as you see in the wiring diagram from the previous section, passes through the button. Here is how I implemented that connection on the breadboard:</p>
+<p><img alt="Button Connected to a GPIO Pin" src="../static/images/micropython/ch03/esp8266-with-button.png" /></p>
+<p>Here I'm using pin <code>D5</code> / <code>GPIO14</code>. A connection is made from this pin into the right side of the push button with a jumper wire. A second jumper wire is then used to make a connection from the left side of the button to <code>GND</code>, which can be accessed from any hole in the second power strip row, assuming you have the power strips in your breadboard wired appropriately.</p>
+<p>If you need to see how this looks in real life, here are two views of my project:</p>
+<p><img alt="Button Connected to a GPIO Pin" src="../static/images/micropython/ch03/button-circuit-1.jpg" /></p>
+<p><img alt="Button Connected to a GPIO Pin" src="../static/images/micropython/ch03/button-circuit-2.jpg" /></p>
+<p>Let's jump into the REPL so that I can show you how to configure and read this button.</p>
+<pre><code>MicroPython v1.10-8-g8b7039d7d on 2019-01-26; ESP module with ESP8266
+Type &quot;help()&quot; for more information.
+&gt;&gt;&gt;
+&gt;&gt;&gt; import machine
+&gt;&gt;&gt; button = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
+&gt;&gt;&gt; button.value()
+1
+</code></pre>
+<p>The pin that is connected to the button is instantiated in a similar way to those that have LEDs, but this time the second argument is set to <code>IN</code> to indicate that this is a pin that is going to be read. The third argument enables the pull-up resistor logic that makes it possible to connect a button and read it reliably and safely.</p>
+<p>You can see above that when I asked for the value of the pin I obtained a 1. This was with the button released. Now I can press the button and read the pin again:</p>
+<pre><code>&gt;&gt;&gt; button.value()
+0
+</code></pre>
+<p>So there you have it, this is a button that can be easily read from Python code!</p>
+<p>Now let's add the button logic to the blinking light application. Here is a new version of this application that stops blinking the lights when the button is pressed:</p>
+<pre><code>import machine
+import time
+
+led = machine.Pin(2, machine.Pin.OUT)
+led2 = machine.Pin(16, machine.Pin.OUT)
+button = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
+while button.value():
+    led.on()
+    led2.off()
+    time.sleep(0.5)
+    led.off()
+    led2.on()
+    time.sleep(0.5)
+led.on()
+led2.on()
+</code></pre>
+<p>In this version I replaced the <code>while True</code> I used previously with a <code>while button.value()</code>, which will make the loop continue for as long as the value of the button is not zero. Effectively that means that the loop will continue to run until the button is pressed, which makes the value of the pin zero. And as a nice little detail, when the loop exits I'm turning both LEDs off, so that the board is left in a clean state without any LEDs on.</p>
+<p>To try this new version of the application, make sure you have assembled the circuit with the button, and then upload the <code>main.py</code> file to your board with <code>rshell</code>:</p>
+<pre><code>(venv) $ rshell --port &lt;board serial port name&gt; cp main.py /pyboard
+</code></pre>
+<p>After that, whenever you power the device the blinking lights will start, and as soon as you press the button they will stop!</p>
+<p>Something that I need to note here is that these button presses are not cached or buffered anywhere, so the button needs to be pressed at the exact moment the code is checking the state of the pin. Given that a loop cycle lasts for one second, it is possible, if you press and release the button very quickly, that the button press will be missed. For now I'm going to leave this limitation, so you should remember that the button needs to be kept pressed for up to a second to give the loop a chance to see it. Better button implementations are coming later in this tutorial.</p>
+<h2>Writing Better Code</h2>
+<p>I think this is a good time to begin a discussion on good software practices. Consider the little blinking lights application from above. Just by reading the code, it isn't very clear what the 2,  the 16  and the 14 mean, right? You know these are the GPIO numbers for some pins, but for anyone who isn't familiar with the project this is going to look a bit like magic, and in fact, numbers that appear in source code without any explanation or justification are often called <a href="https://en.wikipedia.org/wiki/Magic_number_(programming)">magic numbers</a> for that reason.</p>
+<p>What can be done to improve the readability of this program? A good practice is to always avoid magic numbers. Instead of writing these numbers directly, it is better to define constants that have self-explanatory names with those values. Here is the application from above with the magic numbers removed:</p>
+<pre><code class="language-python">import machine
+import time
+
+LED_PIN = 2  # D4
+LED2_PIN = 16  # D0
+BUTTON_PIN = 14  # D5
+
+led = machine.Pin(LED_PIN, machine.Pin.OUT)
+led2 = machine.Pin(LED2_PIN, machine.Pin.OUT)
+button = machine.Pin(BUTTON_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+while button.value():
+    led.on()
+    led2.off()
+    time.sleep(0.5)
+    led.off()
+    led2.on()
+    time.sleep(0.5)
+led.on()
+led2.on()
+</code></pre>
+<p>Do you see how this is much better? Now it is more clear that these three numbers correspond to pins that are connected to two LEDs and a button. Having each pin defined on its own line even allows me to write the "D" pin labels as comments!</p>
+<p>There is another little inconvenience with this application, which I'm going to show to you with an example. Make sure the <code>main.py</code> application is copied to your board and then enter the MicroPython REPL using <code>rshell</code>.</p>
+<p>Once you are in the Python prompt, you can start the application with:</p>
+<pre><code>&gt;&gt;&gt; import main
+</code></pre>
+<p>This command is going to block, because of the while-loop that runs for as long as you don't press the button. Press the button, and the loop will exit, and this will make the Python prompt appear again.</p>
+<p>Now, how do you start the lights again? If you run <code>import main</code> again, nothing  happens, you just get the prompt back. The problem is that <code>main.py</code> was already imported once, so it is cached by MicroPython. When you import a module that was already imported, there is an optimization that makes Python immediately return the cached copy without re-running the code.</p>
+<p>Really the only way to restart the lights at this point is to reset the board, either by pressing the physical reset button on the board, or by pressing Ctrl-D on the REPL, which triggers a soft reset.</p>
+<p>I hope you agree that it would be more convenient if there was a function that you can call to make the lights run as many times as you want, and without a direct relationship to an <code>import</code> statement, which only works the first time.</p>
+<p>The solution is actually simple. The blinking loop can be moved to a function, which I'm going to call <code>blink()</code>. Then in the last line of <code>main.py</code> the <code>blink()</code> function is invoked:</p>
+<pre><code class="language-python">import machine
+import time
+
+LED_PIN = 2  # D4
+LED2_PIN = 16  # D0
+BUTTON_PIN = 14  # D5
+
+def blink():
+    led = machine.Pin(LED_PIN, machine.Pin.OUT)
+    led2 = machine.Pin(LED2_PIN, machine.Pin.OUT)
+    button = machine.Pin(BUTTON_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+    while button.value():
+        led.on()
+        led2.off()
+        time.sleep(0.5)
+        led.off()
+        led2.on()
+        time.sleep(0.5)
+    led.on()
+    led2.on()
+
+blink()
+</code></pre>
+<p>This is equivalent to the previous version, but now the blinking logic can be invoked from the REPL as a function, and that call can be repeated as desired. When you run <code>import main</code> the lights will run as before, but once you break out of the while-loop with Ctrl-C or by pressing the button you can re-run the lights with:</p>
+<pre><code class="language-python">&gt;&gt;&gt; main.blink()
+</code></pre>
+<p>Each time you stop the lights you can repeat the above call to restart them.</p>
+<p>And, if having to type <code>main.blink()</code> to run the lights seems too long, you can import the <code>blink()</code> function as a top-level symbol with Python's <code>from ... import ...</code> syntax, and then invoke <code>blink()</code> directly:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from main import blink
+&gt;&gt;&gt; blink()
+</code></pre>
+<p>I think the application is now looking pretty good, but there's going to be more coding tips in the chapters that follow. In the next chapter I'm going to go over what is probably the most important feature of the ESP8266 microcontroller: its Wi-Fi support!</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application&amp;t=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20III%3A%20Building%20a%20MicroPython%20Application" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application&amp;resubmit=true&amp;title=MicroPython%20and%20the%20Internet%20of%20Things,%20Part%20III:%20Building%20a%20MicroPython%20Application" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20III%3A%20Building%20a%20MicroPython%20Application&amp;url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application&amp;title=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20III%3A%20Building%20a%20MicroPython%20Application&amp;summary=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20III%3A%20Building%20a%20MicroPython%20Application&amp;source=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=MicroPython%20and%20the%20Internet%20of%20Things%2C%20Part%20III%3A%20Building%20a%20MicroPython%20Application&amp;body=https%3A//blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application.html#comments">11 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8a55f4d3a0b4da6c58b58688e928aae3?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Luiz</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-07-22T02:13:52Z" data-function="fromNow" data-refresh="0" style="display: none">2019-07-22T02:13:52Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel. I read your entire book. I bought the ebook version in Amazon. It is very clear, well written and I did not have any problem to run all  examples. It lacks, however, the web server implementation. It can be a good idea for a second book. Or, maybe, a post on how to use the microdot step-by-step. But, a question: the webrepl could be good enough for simple tasks? Thanks</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-07-22T11:10:40Z" data-function="fromNow" data-refresh="0" style="display: none">2019-07-22T11:10:40Z</span>
+  </p>
+  <div>
+    <p>@Luiz: unfortunately at this time there is no robust way to build a web server using MicroPython. This is the reason why the course does not cover it. Microdot should fill this gap, I hope, but it needs some work still. Most important of all is to write the documentation, which is what I'm working on right now. In terms of learning how to use it, it is a mini version of Flask, so in general if you know Flask you should have no problem adapting your knowledge to Microdot. So I don't think there is enough material for another book, but definitely an article, maybe even a bonus chapter on this book that you read.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/c802f2cd79a026cf17440416c5ca7b6d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">Ghouse</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-15T19:30:10Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-15T19:30:10Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>I've purchased your course in teachable.<br>
+I tried to get the value "0" when button is pressed but i'm not getting value "0".</p>
+<p>I double checked all the connections and also i tried with two new esp8266 boards but no luck still not getting value "0" when button is pressed.</p>
+<p>I used below code.</p>
+<p>Entering REPL. Use Control-X to exit.</p>
+<blockquote>
+<p>MicroPython v1.11-8-g48dcbbe60 on 2019-05-29; ESP module with ESP8266<br>
+Type "help()" for more information.</p>
+<blockquote>
+<blockquote>
+<p>import machine<br>
+button = machine.Pin(14, <a href="http://machine.pin.in/" rel="nofollow">machine.Pin.IN</a>, machine.Pin.PULL_UP)<br>
+button.value()<br>
+1<br>
+button.value()<br>
+1<br>
+button.value()<br>
+1<br>
+button.value()<br>
+1<br>
+</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>Could you please help if i miss anything.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-15T19:48:14Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-15T19:48:14Z</span>
+  </p>
+  <div>
+    <p>@Ghouse: Could your button be defective? Connect a wire directly between D5 and GND and see if that makes the reading go to a 0. If it does, then the button is faulty.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/c802f2cd79a026cf17440416c5ca7b6d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-warning">Ghouse</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-16T05:20:15Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-16T05:20:15Z</span>
+  </p>
+  <div>
+    <p>Hi miguel,</p>
+<p>Even though i directly connect to GND i'm not getting button value "0".<br>
+finally i fixed the issue. </p>
+<p>Solution:<br>
+In your example breadboard has 30 holes in middle but my bread borad has 60 holes, so when i connected button to end of bread board at 60th holes button value not getting '0' but when i connected button at 30th hole i'm able to get button value '0'.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4ebc824bfdf0311067b717965870756e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-warning">Janio LIma</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-09-04T02:51:51Z" data-function="fromNow" data-refresh="0" style="display: none">2019-09-04T02:51:51Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel! Congrats for your blog, I discovered it when I'm reading your Flask Web Devolopment book! I'm so happy with this course, I had started last weeks because I'm waiting for same items do complete the exercises, but now that I receive it, I cant start Reading this and learn more at each day... Thanks for sharing your knowledge.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6622244c00a1d3edea045d1ac21f647c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#7</span> <span class="badge text-bg-warning">hpereira98</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-05-18T20:41:18Z" data-function="fromNow" data-refresh="0" style="display: none">2020-05-18T20:41:18Z</span>
+  </p>
+  <div>
+    <p>Hello Miguel!</p>
+<p>First of all, thanks for all your work! It's amazing!</p>
+<p>I am trying to follow your tutorial, but using an ESP32, which is much alike the ESP8266. I am using two breadboards, like you shown in chapter 2 of this course. Everything was working fine, but when I reached the button part, I am not being able to work with it: its value is always 1, except when I connect it directly to the GND pin of the breadboard. If I have a jumper connecting the GND and the "-" row of the breadboard, when I connect the button to the Pin I'm using (D19 = GPIO19), its value is always 1. Can you please help me? I've tried with another button and also tried using just one breadboard to see if the problem came from there. The code I'm using is similar to yours, but using the Pin 19.</p>
+<p>Thanks again for your great work!</p>
+<p>PS: I have also tried Ghouse suggestion, but still not working!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#8</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-05-18T22:06:44Z" data-function="fromNow" data-refresh="0" style="display: none">2020-05-18T22:06:44Z</span>
+  </p>
+  <div>
+    <p>@hpereira98: My only suggestion is that you double-check that the pin that you are using is the correct pin for GPIO19. Looking at this diagram: <a href="../../i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2018/08/esp32-pinout-chip-ESP-WROOM-32eb45.png?ssl=1" rel="nofollow">https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2018/08/esp32-pinout-chip-ESP-WROOM-32.png?ssl=1</a>, GPIO19 is the 8th pin on the right side of the board, counting from the top. Is that the pin you are connecting to the button?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6622244c00a1d3edea045d1ac21f647c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#9</span> <span class="badge text-bg-warning">hpereira98</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-05-23T18:59:24Z" data-function="fromNow" data-refresh="0" style="display: none">2020-05-23T18:59:24Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>I think I've figured it out! The Pin number was the right one, since I noticed it only worked sometimes. So, I tried to take out the breadboard and connected directly the Board and the Button using only female-female jumpers, and it worked perfectly! So the problem is either with the breadboard or the male-male jumpers.</p>
+<p>Thanks for your help!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/65373f56e228cfcf440c533c63a40fc1?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#10</span> <span class="badge text-bg-warning">leow</span> said
+    
+    <span class="flask-moment" data-timestamp="2024-04-16T10:18:02Z" data-function="fromNow" data-refresh="0" style="display: none">2024-04-16T10:18:02Z</span>
+  </p>
+  <div>
+    <p>hi <br>
+great job specially with the two led described - did not find it anywhere so excellent description</p>
+<p>maybe u have a clue on my problem<br>
+when using rshell to see the filestructure on 8266 i do the following<br>
+leo@leo-HP-ProBook-6560b:~$ rshell  -p /dev/ttyUSB0<br>
+Using buffer-size of 32<br>
+Connecting to /dev/ttyUSB0 (buffer-size 32)...<br>
+Trying to connect to REPL  connected<br>
+Retrieving sysname ... esp8266<br>
+Testing if ubinascii.unhexlify exists ... Y<br>
+Retrieving root directories ... /<a href="http://boot.py/" rel="nofollow">boot.py/</a> /<a href="http://example.py/" rel="nofollow">example.py/</a> /<a href="http://my_script.py/" rel="nofollow">my_script.py/</a> /<a href="http://webrepl_cfg.py/" rel="nofollow">webrepl_cfg.py/</a><br>
+Setting time ... Apr 16, 2024 12:16:30<br>
+Evaluating board_name ... pyboard<br>
+Retrieving time epoch ... Jan 01, 2000<br>
+Welcome to rshell. Use Control-D (or the exit command) to exit rshell.<br>
+/home/leo&gt; </p>
+<p>so it seems that iam now on the esp8266 but if i do ls   i still get the files from my laptop directory</p>
+<p>any idea ?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#11</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2024-04-17T22:43:41Z" data-function="fromNow" data-refresh="0" style="display: none">2024-04-17T22:43:41Z</span>
+  </p>
+  <div>
+    <p>@leow: this is covered above. The files that you have on your device appear under a virtual folder called <code>/pyboard</code>. Try <code>ls /pyboard</code> to list the contents of your device.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application/page/1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application/page/0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application/page/0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="micropython-and-the-internet-of-things-part-iii-building-a-micropython-application/page/0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdl2Q.dMWSlT5duJDEFKkKE32QF8iPD5Q">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  <div class="card-header">MicroPython for the Raspberry Pi Pico W</div>
+  <a class="card-book-cover" href="https://amzn.to/3Ugn6Ca">
+    <img src="../static/picow-book-small.png" alt="MicroPython for the Raspberry Pi Pico W">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you like my <a href="micropython-and-the-internet-of-things-part-i-welcome.html">MicroPython tutorial series</a> on this blog, you may also like my <a href="https://amzn.to/3Ugn6Ca">MicroPython for the Raspberry Pi Pico W</a> book.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3Ugn6Ca">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../static/prettify.js"></script>
+  <script src="../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/micropython-and-the-internet-of-things-part-iii-building-a-micropython-application by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:44:59 GMT -->
+</html>

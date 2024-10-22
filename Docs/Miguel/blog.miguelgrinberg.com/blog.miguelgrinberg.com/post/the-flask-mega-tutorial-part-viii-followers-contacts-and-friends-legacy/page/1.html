@@ -1,0 +1,1583 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy/page/1 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:09 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The Flask Mega-Tutorial, Part VIII: Followers, Contacts And Friends (2012) - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="python, programming, flask, web, tutorial, database, self referential, relationship">
+  
+  
+  <link rel="canonical" href="../../the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The Flask Mega-Tutorial, Part VIII: Followers, Contacts And Friends (2012)">
+    <meta property="og:description" content="(Great news! There is a new version of this tutorial!)This is the eighth article in the series in which I document my experience writing web applications in Python using the Flask microframework.The…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy">
+    <meta name="twitter:title" content="The Flask Mega-Tutorial, Part VIII: Followers, Contacts And Friends (2012)">
+    <meta name="twitter:description" content="(Great news! There is a new version of this tutorial!)This is the eighth article in the series in which I document my experience writing web applications in Python using the Flask microframework.The…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.html">The Flask Mega-Tutorial, Part VIII: Followers, Contacts And Friends (2012)</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2012-09-02T01:23:49Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2012-09-02T01:23:49Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p><em>(Great news! There is a <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">new version of this tutorial</a>!)</em></p>
+<p>This is the eighth article in the series in which I document my experience writing web applications in <a href="http://python.org/">Python</a> using the <a href="http://flask.pocoo.org/">Flask</a> microframework.</p>
+<p>The goal of the tutorial series is to develop a decently featured microblogging application that demonstrating total lack of originality I have decided to call <code>microblog</code>.</p>
+<p><strong>NOTE</strong>: This article was revised in September 2014 to be in sync with current versions of Python and Flask.</p>
+<p>Here is an index of all the articles in the series that have been published to date:</p>
+<ul>
+<li><a href="../../the-flask-mega-tutorial-part-i-hello-world-legacy.html">Part I: Hello, World!</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ii-templates-legacy.html">Part II: Templates</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iii-web-forms-legacy.html">Part III: Web Forms</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iv-database-legacy.html">Part IV: Database</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-v-user-logins-legacy.html">Part V: User Logins</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vi-profile-page-and-avatars-legacy.html">Part VI: Profile Page And Avatars</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vii-unit-testing-legacy.html">Part VII: Unit Testing</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.html">Part VIII: Followers, Contacts And Friends</a> (this article)</li>
+<li><a href="../../the-flask-mega-tutorial-part-ix-pagination-legacy.html">Part IX: Pagination</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-x-full-text-search-legacy.html">Part X: Full Text Search</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xi-email-support-legacy.html">Part XI: Email Support</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xii-facelift-legacy.html">Part XII: Facelift</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiii-dates-and-times-legacy.html">Part XIII: Dates and Times</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiv-i18n-and-l10n-legacy.html">Part XIV: I18n and L10n</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xv-ajax-legacy.html">Part XV: Ajax</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvi-debugging-testing-and-profiling-legacy.html">Part XVI: Debugging, Testing and Profiling</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvii-deployment-on-linux-even-on-the-raspberry-pi-legacy.html">Part XVII: Deployment on Linux (even on the Raspberry Pi!)</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xviii-deployment-on-the-heroku-cloud-legacy.html">Part XVIII: Deployment on the Heroku Cloud</a></li>
+</ul>
+<h2>Recap</h2>
+<p>Our <code>microblog</code> application has been growing little by little, and by now we have touched on most of the topics that are required to complete the application.</p>
+<p>Today we are going to work on our database some more. Each user of our application needs to be able to select which other users he or she wants to follow, so our database must be able to keep track of who is following who. All social applications have this feature in some form. Some call it Contacts, others Connections, Friends, Buddies or Followers. Other sites use this same idea to implement Allowed and Ignored user lists. We will call them Followers, but the implementation is the same regardless of the name.</p>
+<h2>Design of the 'Follower' feature</h2>
+<p>Before we start coding, let's think about  the functionality that we want to obtain from this feature.</p>
+<p>Let's start with the most obvious one. We want our users to easily maintain a list of <em>followed</em> people. </p>
+<p>Looking at it from the other side, for each user we want to know the list of its <em>followers</em>.</p>
+<p>We also want to have a way to query if a user <em>is following</em> or <em>is followed</em> by another user.</p>
+<p>Users will click a "follow" link in the profile page of any other user to begin following that user. Likewise, they'll click a "unfollow" link to stop following a user.</p>
+<p>The final requirement is that given a user we can easily query the database to obtain all the posts that belong to the followed users.</p>
+<p>So, if you thought this was going to be a quick and easy article, think again!</p>
+<h2>Database relationships</h2>
+<p>We said we wanted to have all users to have "followed" and "followers" lists. Unfortunately, a relational database does not have a <code>list</code> type, all we have are tables with records and relationships between records.</p>
+<p>We already have a table in our database to represent users, so what's left is to come up with the proper relationship type that can model the follower/followed link. This is a good time to review the three database relationship types:</p>
+<h3>One-to-many</h3>
+<p>We have already seen a one-to-many relationship in the <a href="../../the-flask-mega-tutorial-part-iv-database-legacy.html">previous database article</a>. Here is the diagram:</p>
+<p><img alt="one-to-many" src="../../../static/images/flask-mega-tutorial-part-iv-2.png" /></p>
+<p>The two entities associated with this relationship are <code>users</code> and <code>posts</code>. We say that a user has <em>many</em> posts, and a post has <em>one</em> user. The relationship is represented in the database with the use of a <em>foreign key</em> on the "many" side. In the above example the foreign key is the <code>user_id</code> field added to the <code>posts</code> table. This field links each post to the record of its author in the user table.</p>
+<p>It is pretty clear that the <code>user_id</code> field provides direct access to the author of a given post, but what about the reverse? For the relationship to be useful we should be able to get the list of posts written by a given user. Turns out the <code>user_id</code> field in the <code>posts</code> table is enough to answer this question, as databases have indexes that allow for efficient queries such us "retrieve all posts that have a user_id of X".</p>
+<h3>Many-to-many</h3>
+<p>A many-to-many relationship is a bit more complex. As an example, consider a database that has <code>students</code> and <code>teachers</code>. We can say that a student has <em>many</em> teachers, and a teacher has <em>many</em> students. It's like two overlapped one-to-many relationships from both ends.</p>
+<p>For a relationship of this type we should be able to query the database and obtain the list of teachers that teach a student, and the list of students in a teacher's class. Turns out this is pretty tricky to represent, it cannot be done by adding foreign keys to the existing tables.</p>
+<p>The representation of a many-to-many relationship requires the use of an auxiliary table called an <em>association table</em>. Here is how the database would look for the students and teachers example:</p>
+<p><img alt="many-to-many" src="../../../static/images/flask-mega-tutorial-part-viii-1.png" /></p>
+<p>While it may not seem straightforward, the association table with its two foreign keys is able to efficiently answer many types of queries, such as:</p>
+<ul>
+<li>Who are the teachers of student S?</li>
+<li>Who are the students of teacher T?</li>
+<li>How many students does teacher T have?</li>
+<li>How many teachers does student S have?</li>
+<li>Is teacher T teaching student S?</li>
+<li>Is student S in teacher T's class?</li>
+</ul>
+<h3>One-to-one</h3>
+<p>A one-to-one relationship is a special case of a one-to-many. The representation is similar, but a constrain is added to the database to prevent the "many" side to have more than one link.</p>
+<p>While there are cases in which this type of relationship is useful, it isn't as common as the other two types, since any time one record in a table maps to one record in another table it can be argued that it may make sense for these two tables to be merged into one.</p>
+<h2>Representing followers and followed</h2>
+<p>From the above relationships we can easily determine that the proper data model is the many-to-many relationship, because a user follows <em>many</em> users, and a user has <em>many</em> followers. But there is a twist. We want to represent users following other users, so we just have users. So what should we use as the second entity of the many-to-many relationship?</p>
+<p>Well, the second entity of the relationship is also the users. A relationship in which instances of an entity are linked to other instances of the same entity is called a <em>self-referential relationship</em>, and that is exactly what we need here.</p>
+<p>Here is a diagram of our many-to-many relationship:</p>
+<p><img alt="many-to-many" src="../../../static/images/flask-mega-tutorial-part-viii-2.png" /></p>
+<p>The <code>followers</code> table is our association table. The foreign keys are both pointing to the user table, since we are linking users to users. Each record in this table represents one link between a follower user and a followed user. Like the students and teachers example, a setup like this one allows our database to answer all the questions about followed and followers that we will need. Pretty neat.</p>
+<h2>Database model</h2>
+<p>The changes to our database model aren't that big. We start by adding the <code>followers</code> table (file <code>app/models.py</code>):</p>
+<pre><code>followers = db.Table('followers',
+    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
+)
+</code></pre>
+<p>This is a direct translation of the association table from our diagram. Note that we are not declaring this table as a model like we did for <code>users</code> and <code>posts</code>. Since this is an auxiliary table that has no data other than the foreign keys, we use the lower level APIs in flask-sqlalchemy to create the table without an associated model.</p>
+<p>Next we define the many-to-many relationship in the <code>users</code> table (file <code>app/models.py</code>):</p>
+<pre><code>class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nickname = db.Column(db.String(64), index=True, unique=True)
+    email = db.Column(db.String(120), index=True, unique=True)
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
+    about_me = db.Column(db.String(140))
+    last_seen = db.Column(db.DateTime)
+    followed = db.relationship('User', 
+                               secondary=followers, 
+                               primaryjoin=(followers.c.follower_id == id), 
+                               secondaryjoin=(followers.c.followed_id == id), 
+                               backref=db.backref('followers', lazy='dynamic'), 
+                               lazy='dynamic')
+</code></pre>
+<p>The setup of the relationship is non-trivial and requires some explanation. Like we did for the one-to-many relationship in the previous article, we are using the <code>db.relationship</code> function to define the relationship. We will be linking <code>User</code> instances to other <code>User</code> instances, so as a convention let's say that for a pair of linked users in this relationship the left side user is following the right side user. We define the relationship as seen from the left side entity with the name <code>followed</code>, because when we query this relationship from the left side we will get the list of followed users. Let's examine all the arguments to the <code>db.relationship()</code> call one by one:</p>
+<ul>
+<li><code>'User'</code> is the right side entity that is in this relationship (the left side entity is the parent class). Since we are defining a self-referential relationship we use the same class on both sides.</li>
+<li><code>secondary</code> indicates the association table that is used for this relationship.</li>
+<li><code>primaryjoin</code> indicates the condition that links the left side entity (the follower user) with the association table. Note that because the <code>followers</code> table is not a model there is a slightly odd syntax required to get to the field name.</li>
+<li><code>secondaryjoin</code> indicates the condition that links the right side entity (the followed user) with the association table.</li>
+<li><code>backref</code> defines how this relationship will be accessed from the right side entity. We said that for a given user the query named <code>followed</code> returns all the right side users that have the target user on the left side. The back reference will be called <code>followers</code> and will return all the left side users that are linked to the target user in the right side. The additional <code>lazy</code> argument indicates the execution mode for this query. A mode of <code>dynamic</code> sets up the query to not run until specifically requested. This is useful for performance reasons, and also because we will be able to take this query and modify it before it executes. More about this later.</li>
+<li><code>lazy</code> is similar to the parameter of the same name in the <code>backref</code>, but this one applies to the regular query instead of the back reference.</li>
+</ul>
+<p>Don't despair if this is hard to understand. We will see how to use these queries in a moment, and then everything will become clearer.</p>
+<p>Since we have made updates to the database, we now have to generate a new migration:</p>
+<pre><code>$ ./db_migrate.py
+</code></pre>
+<p>And with this we have completed the database changes. But we have quite a bit of coding left to do.</p>
+<h2>Adding and removing 'follows'</h2>
+<p>To promote reusability, we will implement the <code>follow</code> and <code>unfollow</code> functionality in the <code>User</code> model instead of doing it directly in view functions. That way we can use this feature for the actual application (invoking it from the view functions) and also from our unit testing framework. As a matter of principle, it is always best to move the logic of our application away from view functions and into models, because that simplifies the testing. You want to have your view functions be as simple as possible, because those are harder to test in an automated way.</p>
+<p>Below is the code to add and remove relationships, defined as methods of the <code>User</code> model (file <code>app/models.py</code>):</p>
+<pre><code>class User(db.Model):
+    #...
+    def follow(self, user):
+        if not self.is_following(user):
+            self.followed.append(user)
+            return self
+
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.followed.remove(user)
+            return self
+
+    def is_following(self, user):
+        return self.followed.filter(followers.c.followed_id == user.id).count() &gt; 0
+</code></pre>
+<p>These methods are amazingly simple, thanks to the power of sqlalchemy who does most of the work. We just add or remove items from the <code>followed</code> relationship and sqlalchemy takes care of managing the association table for us.</p>
+<p>The <code>follow</code> and <code>unfollow</code> methods are defined so that they return an object when they succeed or <code>None</code> when they fail. When an object is returned, this object has to be added to the database session and committed.</p>
+<p>The <code>is_following</code> method does a lot in its single line of code. We are taking the <code>followed</code> relationship query, which returns all the <code>(follower, followed)</code> pairs that have our user as the follower, and we filter it by the followed user. This is possible because the <code>followed</code> relationship has a lazy mode of <code>dynamic</code>, so instead of being the result of the query, this is the actual query object, before execution.</p>
+<p>The return from the <code>filter</code> call is the modified query, still without having executed. So we then call <code>count()</code> on this query, and now the query will execute and return the number of records found. If we get one, then we know a link between these two uses is already present. If we get none then we know a link does not exist.</p>
+<h2>Testing</h2>
+<p>Let's write a test for our unit testing framework that exercises all that we have built so far (file <code>tests.py</code>):</p>
+<pre><code>class TestCase(unittest.TestCase):
+    #...
+    def test_follow(self):
+        u1 = User(nickname='john', email='john@example.com')
+        u2 = User(nickname='susan', email='susan@example.com')
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.commit()
+        assert u1.unfollow(u2) is None
+        u = u1.follow(u2)
+        db.session.add(u)
+        db.session.commit()
+        assert u1.follow(u2) is None
+        assert u1.is_following(u2)
+        assert u1.followed.count() == 1
+        assert u1.followed.first().nickname == 'susan'
+        assert u2.followers.count() == 1
+        assert u2.followers.first().nickname == 'john'
+        u = u1.unfollow(u2)
+        assert u is not None
+        db.session.add(u)
+        db.session.commit()
+        assert not u1.is_following(u2)
+        assert u1.followed.count() == 0
+        assert u2.followers.count() == 0
+</code></pre>
+<p>After adding this test to the testing framework we can run the entire test suite with the following command:</p>
+<pre><code>./tests.py
+</code></pre>
+<p>And if everything works it should say that all our tests pass.</p>
+<h2>Database queries</h2>
+<p>Our current database model supports most of the requirements we listed at the start. The one we are missing is, in fact, the hardest. Our index page will show the posts written by all the people that are followed by the logged in user, so we need a query that returns all these posts.</p>
+<p>The most obvious solution is to run a query that gives us the list of followed users, which we can already do. Then for each of these returned users we run a query to get the posts. Once we have all the posts we merge them into a single list and sort them by date. Sounds good? Well, not really. </p>
+<p>This approach has a couple of problems. What happens if a user is following a thousand people? We need to execute a thousand database queries just to collect all the posts. And now we have the thousand lists in memory that we need to merge and sort. As a secondary problem, consider that our index page will (eventually) have pagination implemented, so we will not display all the available posts but just the first, say, fifty, with links to get the next or previous set of fifty. If we are going to display posts sorted by their date, how can we know which posts are the most recent fifty of all followed users combined, unless we get all the posts and sort them first? This is actually an awful solution that does not scale well.</p>
+<p>While this collecting and sorting work needs to be done somehow, us doing it results in a very inefficient process. This kind of work is what relational databases excel at. The database has indexes that allow it to perform the queries and the sorting in a much more efficient way that we can possibly do from our side.</p>
+<p>So what we really want is to come up with a single database query that expresses what information we want to get, and then we let the database figure out what is the most efficient way to obtain the data for us.</p>
+<p>To end the mystery, here is the query that achieves this. Unfortunately it is yet another heavily loaded one liner that we will add to the <code>User</code> model (file <code>app/models.py</code>):</p>
+<pre><code>class User(db.Model):
+    #...
+    def followed_posts(self):
+        return Post.query.join(followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
+</code></pre>
+<p>Let's try to decipher this query one piece at a time. There are three parts: the <em>join</em>, the <em>filter</em> and the <em>order_by</em>.</p>
+<h3>Joins</h3>
+<p>To understand what a join operation does, let's look at an example. Let's assume we have a <code>User</code> table with the following contents:</p>
+<table class="data">
+<tr><th colspan="2">User</th></tr>
+<tr><th>id</th><th>nickname</th></tr>
+<tr><td>1</td><td>john</td></tr>
+<tr><td>2</td><td>susan</td></tr>
+<tr><td>3</td><td>mary</td></tr>
+<tr><td>4</td><td>david</td></tr>
+</table>
+
+<p>There are some extra fields in the table that are not shown above just to simplify the example.</p>
+<p>Let's say that our <code>followers</code> association table says that user "john" is following users "susan" and "david", user "susan" is following "mary" and user "mary" is following "david". The data that represents the above is this:</p>
+<table class="data">
+<tr><th colspan="2">followers</th></tr>
+<tr><th>follower_id</th><th>followed_id</th></tr>
+<tr><td>1</td><td>2</td></tr>
+<tr><td>1</td><td>4</td></tr>
+<tr><td>2</td><td>3</td></tr>
+<tr><td>3</td><td>4</td></tr>
+</table>
+
+<p>And finally, our <code>Post</code> table contains one post from each user:</p>
+<table class="data">
+<tr><th colspan="3">Post</th></tr>
+<tr><th>id</th><th>text</th><th>user_id</th></tr>
+<tr><td>1</td><td>post from susan</td><td>2</td></tr>
+<tr><td>2</td><td>post from mary</td><td>3</td></tr>
+<tr><td>3</td><td>post from david</td><td>4</td></tr>
+<tr><td>4</td><td>post from john</td><td>1</td></tr>
+</table>
+
+<p>Here again there are some fields that are omitted to keep the example simple.</p>
+<p>Below is the join portion of our query, isolated from the rest of the query:</p>
+<pre><code>Post.query.join(followers, 
+    (followers.c.followed_id == Post.user_id))
+</code></pre>
+<p>The <code>join</code> operation is called on the <code>Post</code> table. There are two arguments, the first is another table, our <code>followers</code> table. The second argument to the join call is the join <em>condition</em>.</p>
+<p>What the join operation will do with all this is create a temporary new table with data from the <code>Post</code> and <code>followers</code> table, merged according to the given condition.</p>
+<p>In this example we want the field <code>followed_id</code> of the <code>followers</code> table to match the <code>user_id</code> field of the <code>Post</code> table.</p>
+<p>To perform this merge, we take each record from the <code>Post</code> table (the left side of the join) and append the fields from the records in the <code>followers</code> table (the right side of the join) that match the condition. If there is no match, then that post record is removed.</p>
+<p>The result of the join in our example results in this temporary table:</p>
+<table class="data">
+<tr><th colspan="3">Post</th><th colspan="2">followers</th></tr>
+<tr><th>id</th><th>text</th><th>user_id</th><th>follower_id</th><th>followed_id</th></tr>
+<tr><td>1</td><td>post from susan</td><td>2</td><td>1</td><td>2</td></tr>
+<tr><td>2</td><td>post from mary</td><td>3</td><td>2</td><td>3</td></tr>
+<tr><td>3</td><td>post from david</td><td>4</td><td>1</td><td>4</td></tr>
+<tr><td>3</td><td>post from david</td><td>4</td><td>3</td><td>4</td></tr>
+</table>
+
+<p>Note how the post with user_id=1 was removed from the join, because there is no record in the <code>followers</code> table that has a followed_id=1. Also note how the post with user_id=4 appears twice, because the <code>followers</code> table has two entries with a followed_id=4.</p>
+<h3>Filters</h3>
+<p>The join operation gave us a list of posts that are followed by someone, without specifying who is the follower. We are only interested in a subset of this list, we need just the posts that are followed by one specific user.</p>
+<p>So we will filter this table by the follower user. The filter portion of the query then is:</p>
+<pre><code>filter(followers.c.follower_id == self.id)
+</code></pre>
+<p>Remember that the query is executed in the context of our target user, because it is a method in the User class, so <code>self.id</code> in this context is the id of the user we are interested in. With this filter we are telling the database that we want to keep just the records from the joined table that have our user as a follower. So following our example, if the user we are asking about is the one with id=1, then we would end up with yet another temporary table:</p>
+<table class="data">
+<tr><th colspan="3">Post</th><th colspan="2">followers</th></tr>
+<tr><th>id</th><th>text</th><th>user_id</th><th>follower_id</th><th>followed_id</th></tr>
+<tr><td>1</td><td>post from susan</td><td>2</td><td>1</td><td>2</td></tr>
+<tr><td>3</td><td>post from david</td><td>4</td><td>1</td><td>4</td></tr>
+</table>
+
+<p>And these are exactly the posts that we want!</p>
+<p>Remember that the query was issued on the Post class, so even though we ended up with a temporary table that does not match any of our models, the result will be the posts that are included in this temporary table, without the extra columns added by the join operation.</p>
+<h3>Sorting</h3>
+<p>The final step of the process is to sort the results according to our criteria. The portion of the query that does that says:</p>
+<pre><code>order_by(Post.timestamp.desc())
+</code></pre>
+<p>Here we are saying that the results should be sorted by the timestamp field in descending order, so that the first result will be the most recent post.</p>
+<p>There is only one more minor detail that we can add to improve our query. When users  read their followed posts they will probably want to see their own posts inserted in the stream as well, so it would be nice to have those included in the query results.</p>
+<p>And turns out there is a very simple way to achieve this that doesn't require any changes! We will just make sure that each user is added as a follower of him/herself in the database, and that will take care of this little problem for us.</p>
+<p>To conclude our long discussion on queries, let's write a unit test for our query (file <code>tests.py</code>):</p>
+<pre><code>#...
+from datetime import datetime, timedelta
+from app.models import User, Post
+#...
+class TestCase(unittest.TestCase):
+    #...
+    def test_follow_posts(self):
+        # make four users
+        u1 = User(nickname='john', email='john@example.com')
+        u2 = User(nickname='susan', email='susan@example.com')
+        u3 = User(nickname='mary', email='mary@example.com')
+        u4 = User(nickname='david', email='david@example.com')
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.add(u3)
+        db.session.add(u4)
+        # make four posts
+        utcnow = datetime.utcnow()
+        p1 = Post(body="post from john", author=u1, timestamp=utcnow + timedelta(seconds=1))
+        p2 = Post(body="post from susan", author=u2, timestamp=utcnow + timedelta(seconds=2))
+        p3 = Post(body="post from mary", author=u3, timestamp=utcnow + timedelta(seconds=3))
+        p4 = Post(body="post from david", author=u4, timestamp=utcnow + timedelta(seconds=4))
+        db.session.add(p1)
+        db.session.add(p2)
+        db.session.add(p3)
+        db.session.add(p4)
+        db.session.commit()
+        # setup the followers
+        u1.follow(u1)  # john follows himself
+        u1.follow(u2)  # john follows susan
+        u1.follow(u4)  # john follows david
+        u2.follow(u2)  # susan follows herself
+        u2.follow(u3)  # susan follows mary
+        u3.follow(u3)  # mary follows herself
+        u3.follow(u4)  # mary follows david
+        u4.follow(u4)  # david follows himself
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.add(u3)
+        db.session.add(u4)
+        db.session.commit()
+        # check the followed posts of each user
+        f1 = u1.followed_posts().all()
+        f2 = u2.followed_posts().all()
+        f3 = u3.followed_posts().all()
+        f4 = u4.followed_posts().all()
+        assert len(f1) == 3
+        assert len(f2) == 2
+        assert len(f3) == 2
+        assert len(f4) == 1
+        assert f1 == [p4, p2, p1]
+        assert f2 == [p3, p2]
+        assert f3 == [p4, p3]
+        assert f4 == [p4]
+</code></pre>
+<p>This test has a lot of setup code but the actual test is pretty short. We first check that the number of followed posts returned for each user is the expected one. Then for each user we check that the correct posts were returned and that they came in the correct order (note that we inserted the posts with timestamps that are guaranteed to always order in the same way).</p>
+<p>Note the usage of the <code>followed_posts()</code> method. This method returns a query object, not the results. This is similar to how relationships with <code>lazy = 'dynamic'</code> work. It is always a good idea to return query objects instead of results, because that gives the caller the choice of adding more clauses to the query before it is executed.</p>
+<p>There are several methods in the query object that trigger the query execution. We've seen that <code>count()</code> runs the query and returns the number of results (throwing the actual results away). We have also used <code>first()</code> to return the first result and throw away the rest, if any. In this test we are using the <code>all()</code> method to get an array with all the results.</p>
+<h2>Possible improvements</h2>
+<p>We now have implemented all the required features of our 'follower' feature, but there are ways to improve our design and make it more flexible.</p>
+<p>All the social networks that we love to hate support similar ways to connect users, but they have more options to control the sharing of information.</p>
+<p>For example, we have not elected to support the ability to block users. This would add one more layer of complexity to our queries, since now we not only need to grab the posts of the users we follow, but we need to filter out those from users that decided to block us. How would you implement this? Simple, one more many-to-many self-referential relationship to record who's blocking who, and one more join+filter in the query that returns the followed posts.</p>
+<p>Another popular feature in social networks is the ability to group followers into custom lists, and then sharing content only with specific groups. This is also implemented with additional relationships and added complexity to the queries.</p>
+<p>We will not have these features in <code>microblog</code>, but if there is enough interest I would be happy to write an article on the topic. Let me know in the comments!</p>
+<h2>Tying up loose ends</h2>
+<p>We have made an impressive amount of progress today. But while we have solved all the problems related to database setup and querying, we have not enabled the new functionality through our application.</p>
+<p>Luckily for us, there aren't any challenges in doing this. We just need to fix view functions and templates to call the new methods in the <code>User</code> model when appropriate. So let's do that before we close this session.</p>
+<h3>Being your own follower</h3>
+<p>We decided that we were going to mark all users as followers of themselves, so that they can see their own posts in their post stream.</p>
+<p>We are going to do that at the point where users are getting their accounts setup, in the <code>after_login</code> handler for OpenID (file 'app/views.py'):</p>
+<pre><code>@oid.after_login
+def after_login(resp):
+    if resp.email is None or resp.email == "":
+        flash('Invalid login. Please try again.')
+        return redirect(url_for('login'))
+    user = User.query.filter_by(email=resp.email).first()
+    if user is None:
+        nickname = resp.nickname
+        if nickname is None or nickname == "":
+            nickname = resp.email.split('@')[0]
+        nickname = User.make_unique_nickname(nickname)
+        user = User(nickname=nickname, email=resp.email)
+        db.session.add(user)
+        db.session.commit()
+        # make the user follow him/herself
+        db.session.add(user.follow(user))
+        db.session.commit()
+    remember_me = False
+    if 'remember_me' in session:
+        remember_me = session['remember_me']
+        session.pop('remember_me', None)
+    login_user(user, remember=remember_me)
+    return redirect(request.args.get('next') or url_for('index'))
+</code></pre>
+<h3>Follow and Unfollow links</h3>
+<p>Next, we will define view functions that follow and unfollow a user (file <code>app/views.py</code>):</p>
+<pre><code>@app.route('/follow/&lt;nickname&gt;')
+@login_required
+def follow(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    if user is None:
+        flash('User %s not found.' % nickname)
+        return redirect(url_for('index'))
+    if user == g.user:
+        flash('You can\'t follow yourself!')
+        return redirect(url_for('user', nickname=nickname))
+    u = g.user.follow(user)
+    if u is None:
+        flash('Cannot follow ' + nickname + '.')
+        return redirect(url_for('user', nickname=nickname))
+    db.session.add(u)
+    db.session.commit()
+    flash('You are now following ' + nickname + '!')
+    return redirect(url_for('user', nickname=nickname))
+
+@app.route('/unfollow/&lt;nickname&gt;')
+@login_required
+def unfollow(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    if user is None:
+        flash('User %s not found.' % nickname)
+        return redirect(url_for('index'))
+    if user == g.user:
+        flash('You can\'t unfollow yourself!')
+        return redirect(url_for('user', nickname=nickname))
+    u = g.user.unfollow(user)
+    if u is None:
+        flash('Cannot unfollow ' + nickname + '.')
+        return redirect(url_for('user', nickname=nickname))
+    db.session.add(u)
+    db.session.commit()
+    flash('You have stopped following ' + nickname + '.')
+    return redirect(url_for('user', nickname=nickname))
+</code></pre>
+<p>These should be self-explanatory, but note how there is error checking all around, to prevent unexpected problems and try to provide a message to the user and a redirection when a problem has occurred.</p>
+<p>Now we have the view functions, so we can hook them up. The links to follow and unfollow a user will appear in the profile page of each user (file <code>app/templates/user.html</code>):</p>
+<pre><code>&lt;!-- extend base layout --&gt;
+{% extends "base.html" %}
+
+{% block content %}
+  &lt;table&gt;
+      &lt;tr valign="top"&gt;
+          &lt;td&gt;&lt;img src="{{ user.avatar(128) }}"&gt;&lt;/td&gt;
+          &lt;td&gt;
+              &lt;h1&gt;User: {{ user.nickname }}&lt;/h1&gt;
+              {% if user.about_me %}&lt;p&gt;{{ user.about_me }}&lt;/p&gt;{% endif %}
+              {% if user.last_seen %}&lt;p&gt;&lt;i&gt;Last seen on: {{ user.last_seen }}&lt;/i&gt;&lt;/p&gt;{% endif %}
+              &lt;p&gt;{{ user.followers.count() }} followers | 
+              {% if user.id == g.user.id %}
+                  &lt;a href="{{ url_for('edit') }}"&gt;Edit your profile&lt;/a&gt;
+              {% elif not g.user.is_following(user) %}
+                  &lt;a href="{{ url_for('follow', nickname=user.nickname) }}"&gt;Follow&lt;/a&gt;
+              {% else %}
+                  &lt;a href="{{ url_for('unfollow', nickname=user.nickname) }}"&gt;Unfollow&lt;/a&gt;
+              {% endif %}
+              &lt;/p&gt;
+          &lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/table&gt;
+  &lt;hr&gt;
+  {% for post in posts %}
+      {% include 'post.html' %}
+  {% endfor %}
+{% endblock %}
+</code></pre>
+<p>In the line we had the "Edit" link we now show the number of followers the user has, followed by one of three possible links:</p>
+<ul>
+<li>if the user profile belongs to the logged in user, then the "Edit" link shows.</li>
+<li>else, if the user is not currently followed a "Follow" link shows.</li>
+<li>else, a "Unfollow" link shows.</li>
+</ul>
+<p>At this point you can run the application, create a few users by logging in with different OpenID accounts and play with following and unfollowing users.</p>
+<p>All that is left is to show posts of the followed users in the <code>index</code> page, but we are still missing an important piece of the puzzle before we can do that, so this will have to wait until the next chapter.</p>
+<h2>Final words</h2>
+<p>We have implemented a core piece of our application today. The topic of database relationships and queries is a pretty complex one, so if there are any questions about the material presented above you are welcome to send your questions in the comments below.</p>
+<p>In the next installment we will be looking at the fascinating world of pagination, and we will be finally hooking up posts from the database to our application.</p>
+<p>For those of you that are lazy typists (or lazy copy-pasters), below is the updated <code>microblog</code> application:</p>
+<p>Download <a href="https://github.com/miguelgrinberg/microblog-2012/archive/version-0.8.zip">microblog-0.8.zip</a>.</p>
+<p>As always, the above zip file does not include a database or the flask virtual environment. Previous articles explain how to regenerate these.</p>
+<p>Thanks again for following my tutorial. See you next time!</p>
+<p>Miguel</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy&amp;t=The%20Flask%20Mega-Tutorial%2C%20Part%20VIII%3A%20Followers%2C%20Contacts%20And%20Friends%20%282012%29" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy&amp;resubmit=true&amp;title=The%20Flask%20Mega-Tutorial,%20Part%20VIII:%20Followers,%20Contacts%20And%20Friends%20(2012)" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20Flask%20Mega-Tutorial%2C%20Part%20VIII%3A%20Followers%2C%20Contacts%20And%20Friends%20%282012%29&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy&amp;title=The%20Flask%20Mega-Tutorial%2C%20Part%20VIII%3A%20Followers%2C%20Contacts%20And%20Friends%20%282012%29&amp;summary=The%20Flask%20Mega-Tutorial%2C%20Part%20VIII%3A%20Followers%2C%20Contacts%20And%20Friends%20%282012%29&amp;source=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20Flask%20Mega-Tutorial%2C%20Part%20VIII%3A%20Followers%2C%20Contacts%20And%20Friends%20%282012%29&amp;body=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.html#comments">154 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/1701489242e4ac7f6f85dfc12ab8b7c8?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Matt</span> said
+    
+    <span class="flask-moment" data-timestamp="2012-09-19T03:14:12Z" data-function="fromNow" data-refresh="0" style="display: none">2012-09-19T03:14:12Z</span>
+  </p>
+  <div>
+    <p>This tutorial has really helped a lot, thanks!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/e8fd9bde8da5c9489e67771b4aab7caa?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-warning">sh4k</span> said
+    
+    <span class="flask-moment" data-timestamp="2012-09-20T16:23:19Z" data-function="fromNow" data-refresh="0" style="display: none">2012-09-20T16:23:19Z</span>
+  </p>
+  <div>
+    <p>This is a great tutorial series. Keep up the great work. :)</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/110b30a978c33ff4802bc119b47a1122?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">Siros</span> said
+    
+    <span class="flask-moment" data-timestamp="2012-10-08T11:20:03Z" data-function="fromNow" data-refresh="0" style="display: none">2012-10-08T11:20:03Z</span>
+  </p>
+  <div>
+    <p>Thank you so much , i love the relational database design part.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8d7dd06bd18b8fce6a4c04dfede7f616?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-warning">drew</span> said
+    
+    <span class="flask-moment" data-timestamp="2012-12-28T19:40:36Z" data-function="fromNow" data-refresh="0" style="display: none">2012-12-28T19:40:36Z</span>
+  </p>
+  <div>
+    <p>Is the primaryjoin and Secondary join are necessary because otherwise its ambiguous which type of User (follwer/followed) were referring to?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2012-12-31T17:49:25Z" data-function="fromNow" data-refresh="0" style="display: none">2012-12-31T17:49:25Z</span>
+  </p>
+  <div>
+    <p>@drew: yes, since the association table maps users to users, there is no way for the framework to figure out which users are followers and which are followed. The primary/secondary joins establish the proper links so that you have follower on the left side of the link and followed on the right.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6e5f833944a27be2f84427a88e299c0c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-warning">Tian Siyuan</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-06T08:06:47Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-06T08:06:47Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>It took me a while to figure out that:</p>
+<p>After adding the follow oneself function, it does not work for users in the database; it works for new users.</p>
+<p>Cheers,</p>
+<p>Tian</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/bafafefac4abe76b1218317d841e167b?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#7</span> <span class="badge text-bg-warning">Dogukan Tufekci</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-07T18:00:23Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-07T18:00:23Z</span>
+  </p>
+  <div>
+    <p>@Miguel this mega-tutorial has been priceless for me to see a lot of different aspects of not only Flask but also Python. I can't thank you enough. </p>
+<p>You stated above: "For example, we have not elected to support the ability to block users. This would add one more layer of complexity to our queries, since now we not only need to grab the posts of the users we follow, but we need to filter out those from users that decided to block us. How would you implement this? Simple, one more many-to-many self-referential relationship to record who's blocking who, and one more join+filter in the query that returns the followed posts."</p>
+<p>I would be very interested in seeing how you code the block feature. Thanks for all your efforts! Please attach a 'donate' button so we can at least buy you a coffee.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#8</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-08T06:22:27Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-08T06:22:27Z</span>
+  </p>
+  <div>
+    <p>@Dogukan: Thanks. The implementation of user blocks is pretty much identical to that of followers. You need to add another auxiliary table like the 'followers' table, let's call it 'blocks', to support one more many-to-many relationship from users to other users. The table will have two fields, blocker_id and blocked_id, same as with the followers. The final query to get all the followers minus the blocked ones will look something like this: Post.query.join(followers, (followers.c.followed_id == Post.user_id)).outerjoin(blocks, (blocks.c.blocker_id == Post.user_id)).filter(followers.c.follower_id == <a href="http://self.id/" rel="nofollow">self.id</a>).filter(blocks.c.blocked_id != <a href="http://self.id/" rel="nofollow">self.id</a>).filter(blocks.c.blocked_id != <a href="http://self.id/" rel="nofollow">self.id</a>).order_by(Post.timestamp.desc()).</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#9</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-08T06:24:36Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-08T06:24:36Z</span>
+  </p>
+  <div>
+    <p>(continued) note that in this enhanced query there is an extra join that merges the blocks table (really an outerjoin which also matches entries in the left table that don't have any hits on the right table, which is necessary to not lose any posts from users that have no blocks). Then there is an extra filter to only choose the posts that are not blocked.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/995d242b7f21e0bb4e5be6af30ffd155?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#10</span> <span class="badge text-bg-warning">sh4nks</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-17T22:32:08Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-17T22:32:08Z</span>
+  </p>
+  <div>
+    <p>Hey Miguel!<br>
+Thanks for your great tutorial!<br>
+I still don't get it from where the "c" is? (in e.q. followers.<strong>c</strong>.follower_id ). It would be nice if you can explain that to me :)</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#11</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-18T03:51:32Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-18T03:51:32Z</span>
+  </p>
+  <div>
+    <p>@sh4nks: sqlalchemy puts the fields of the auxiliary table inside a variable named "c", which is short for "columns". See the following page for the documentation: <a href="http://docs.sqlalchemy.org/en/rel_0_8/core/schema.html#accessing-tables-and-columns" rel="nofollow">http://docs.sqlalchemy.org/en/rel_0_8/core/schema.html#accessing-tables-and-columns</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/394c479ebb1727a4d1dcddd903a5ccca?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#12</span> <span class="badge text-bg-warning">Robert</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-23T17:10:33Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-23T17:10:33Z</span>
+  </p>
+  <div>
+    <p>Thanks great tutorial still trying to wrap my head around it.  Could you use a similar self referencing technique for a hierarchy structure in a single table.  For example.  Buildings have many units, units have many leases, lease have many tenants.  Instead of having tables for each link in a nested relationship could this be done in a single table to simplify it.  This db relationship stuff gets murky quickly but something in tutorial sparked the thought that this concept is doable and possiblly simpler than a nested hierarchy.  However I'm not sure how you would implement it.  Thanks again.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#13</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-23T17:53:26Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-23T17:53:26Z</span>
+  </p>
+  <div>
+    <p>@Robert: No, not really.What you are trying to do is to combine different entities in a single table. You can do that, but not with references. Let's simplify your example and consider just buildings and units. To have both in a single table you have to have the data for the building and the data for the unit all as columns of one table. The problem with this approach is that if you have a building that has 20 units you have to duplicate the building information in 20 rows, where each row varies just in the unit information. Even if you agree to do that, consider what would happen when you need to update one of the columns that describe the building, let's say the address. You would need to go update 20 rows in the database with the same change! So this isn't an approach that scale well, if you have a buildings table and a units table and you make relationship between them the same data can be represented without duplication. I hope this helps!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b77950b2df18f14c08012bccb4ddfa43?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#14</span> <span class="badge text-bg-warning">Joe</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-27T17:17:27Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-27T17:17:27Z</span>
+  </p>
+  <div>
+    <p>Thanks for the tutorials Miguel, they are great!</p>
+<p>It seems like there is a lot of duplication in the follow/unfollow views. Would it be worthwhile to make it a toggle follow view? I can see the error messages may take some more thinking but otherwise they are almost identical.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89ba47db665cbc5a7a31f0338f8144aa?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#15</span> <span class="badge text-bg-warning">Andreas</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-27T19:52:13Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-27T19:52:13Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>thanks for the great tutorial. I think the snippets posted here contain two small errors or changes from the previous posts, which then introduce errors.<br>
+1) you removed the call to make_unique_nickname in the @oid.after_login handler<br>
+2) you changed the backref for the posts property of the User class to user from author. This breaks the previous unit test.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#16</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-28T05:55:45Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-28T05:55:45Z</span>
+  </p>
+  <div>
+    <p>@Joe: You could find a way to combine these two view functions and save a few lines of code, but that would make the code more complex, as you would need to check if you are doing a follow or an unfollow every time an error message needs to be produced, or when the actual change is performed on the model (unless you also make the model handle this as a toggle, I guess). It's really a matter of preference, these functions are pretty short and simple anyway, so I don't really mind having some duplicated lines of code if that makes the code a bit more readable.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#17</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-28T05:59:52Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-28T05:59:52Z</span>
+  </p>
+  <div>
+    <p>@Andreas: you are correct on both, I have updated the code snippets above. Thanks!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/960d5573486805d81a3f590119a81e45?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#18</span> <span class="badge text-bg-warning">minutiae</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-02-28T19:28:38Z" data-function="fromNow" data-refresh="0" style="display: none">2013-02-28T19:28:38Z</span>
+  </p>
+  <div>
+    <p>Thanks for this excellent series. I'm interested in developing a "favorite" friends feature, so in addition to a friends, you could toggle certain friends as favorites, which would then float to the top in queries by virtue of sorting on that field first. Is this something that can be accomplished by extending your example, or would a different approach be best? Thanks</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#19</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-03-01T05:37:45Z" data-function="fromNow" data-refresh="0" style="display: none">2013-03-01T05:37:45Z</span>
+  </p>
+  <div>
+    <p>@minutiae: this is a bit more advanced than the examples I presented in the article. Association tables can have extra fields besides the id fields create the mappings of the the many-to-many relationship. You could add a field to the 'followers' association table that indicates if a relationship is a favorite or not. You can then use that field to sort the posts results.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/2c02c167f88ee80d03aa6d3b489ca935?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#20</span> <span class="badge text-bg-warning">George Mabley</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-03-03T01:49:11Z" data-function="fromNow" data-refresh="0" style="display: none">2013-03-03T01:49:11Z</span>
+  </p>
+  <div>
+    <p>I have come to one of my final features of the project I have been working on, and it requires a many-many relationship between two different classes.  I'm pretty sure I understand how the followers function and all of its links work, but I can't transfer it to what I need.  I have the User class, which will like many different artists in the Artist class.  This is what I have so far, and if you could tell me what I am doing wrong I would really appreciate it.  Thanks! <a href="http://pastebin.com/L68RWXeG" rel="nofollow">http://pastebin.com/L68RWXeG</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#21</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-03-03T02:19:43Z" data-function="fromNow" data-refresh="0" style="display: none">2013-03-03T02:19:43Z</span>
+  </p>
+  <div>
+    <p>@George: I haven't tried it, and you don't say what's the error that you get, but I think the secondary join expression needs to be (likes.c.artistliked == <a href="http://artist.id/" rel="nofollow">Artist.id</a>). You are saying just "id" on the right side which is interpreted as <a href="http://user.id/" rel="nofollow">User.id</a> because you are in the context of the User class. Also note that when you are doing a many-to-many between two pretty standard models like yours you do not need to specify primary and secondary join expressions, those are automatically determined by SQLAlchemy. See "<a href="http://pythonhosted.org/Flask-SQLAlchemy/models.html#many-to-many-relationships" rel="nofollow">http://pythonhosted.org/Flask-SQLAlchemy/models.html#many-to-many-relationships</a>" for an example.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/2c02c167f88ee80d03aa6d3b489ca935?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#22</span> <span class="badge text-bg-warning">George Mabley</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-03-03T05:04:06Z" data-function="fromNow" data-refresh="0" style="display: none">2013-03-03T05:04:06Z</span>
+  </p>
+  <div>
+    <p>Removing the joins worked, but things are still getting caught up at the is_liking function.  When it reaches that point, it brings up the error " (OperationalError) no such table: likes u'SELECT count(*) AS count_1 \nFROM (SELECT <a href="http://artist.id/" rel="nofollow">artist.id</a> AS artist_id, <a href="http://artist.name/" rel="nofollow">artist.name</a> AS artist_name \nFROM artist, likes \nWHERE ? = likes.userlikes AND <a href="http://artist.id/" rel="nofollow">artist.id</a> = likes.artistliked AND likes.artistliked = ?) AS anon_1' (1, 3)".  I'm not sure where to begin looking for this problem.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#23</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-03-03T05:40:41Z" data-function="fromNow" data-refresh="0" style="display: none">2013-03-03T05:40:41Z</span>
+  </p>
+  <div>
+    <p>George, have you regenerated (or migrated) your database after adding the "likes" table? The error is just saying that the table does not exist.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/2c02c167f88ee80d03aa6d3b489ca935?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#24</span> <span class="badge text-bg-warning">George Mabley</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-03-03T05:44:37Z" data-function="fromNow" data-refresh="0" style="display: none">2013-03-03T05:44:37Z</span>
+  </p>
+  <div>
+    <p>Well now I feel like a fool.  At least the I thought code looked like it should work because it actually did.  Thanks again for putting up with all my questions.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/bca26582877a44d20f0c5ce7d9efa2fd?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#25</span> <span class="badge text-bg-warning">Manuel</span> said
+    
+    <span class="flask-moment" data-timestamp="2013-03-07T15:15:36Z" data-function="fromNow" data-refresh="0" style="display: none">2013-03-07T15:15:36Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel.  Thanks for this site, it is really helping a lot.  Is there a way to filter a User query to only have users that you and another person are following?</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="2.html#comments">&raquo;</a></li>
+    <li class="page-item"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdmmA.FCXzuUz6wlXYANO6WSom03dEEus">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  
+  <div class="card-header">
+    <div class="row">
+      <div class="col">The Flask Mega-Tutorial</div>
+      <div class="col text-end">
+        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
+          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <a class="card-book-cover" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">
+    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy/page/1 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:09 GMT -->
+</html>

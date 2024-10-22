@@ -1,0 +1,1693 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:45 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The React Mega-Tutorial, Chapter 6: Building an API Client - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="javascript, react, jsx, rest, fetch, async">
+  
+  
+  <link rel="canonical" href="../../the-react-mega-tutorial-chapter-6-building-an-api-client.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The React Mega-Tutorial, Chapter 6: Building an API Client">
+    <meta property="og:description" content="In Chapter 5, the Posts component was modified to make an API call that gets data from the server. The way it was done, however, does not scale very well, because as the application continues to…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-react-mega-tutorial-chapter-6-building-an-api-client.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client">
+    <meta name="twitter:title" content="The React Mega-Tutorial, Chapter 6: Building an API Client">
+    <meta name="twitter:description" content="In Chapter 5, the Posts component was modified to make an API call that gets data from the server. The way it was done, however, does not scale very well, because as the application continues to…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-react-mega-tutorial-chapter-6-building-an-api-client.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../the-react-mega-tutorial-chapter-6-building-an-api-client.html">The React Mega-Tutorial, Chapter 6: Building an API Client</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2022-06-15T11:48:42Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2022-06-15T11:48:42Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>In <a href="../../the-react-mega-tutorial-chapter-5-connecting-to-a-back-end.html">Chapter 5</a>, the <code>Posts</code> component was modified to make an API call that gets data from the server. The way it was done, however, does not scale very well, because as the application continues to grow, there's going to be other components that will also need to make their API calls, and having to repeat the API calling logic in several places will be difficult to manage, especially considering that these calls are going to become more complex once authentication and pagination are implemented.</p>
+<p>The complete course, including videos for every chapter is available to order from my <a href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">courses site</a>. Ebook and paperback versions of this course are also available from <a href="https://www.amazon.com/dp/B09YPBXMMY/ref=nosim?tag=thirdwish-20">Amazon</a>. Thank you for your support!</p>
+<p>For your reference, here is the complete list of articles in this series:</p>
+<ul>
+<li><a href="introducing-the-react-mega-tutorial.html">Introducing the React Mega-Tutorial</a></li>
+<li><a href="the-react-mega-tutorial-chapter-1-modern-javascript.html">Chapter 1: Modern JavaScript</a></li>
+<li><a href="the-react-mega-tutorial-chapter-2-hello-react.html">Chapter 2: Hello, React!</a></li>
+<li><a href="the-react-mega-tutorial-chapter-3-working-with-components.html">Chapter 3: Working with Components</a></li>
+<li><a href="the-react-mega-tutorial-chapter-4-routing-and-page-navigation.html">Chapter 4: Routing and Page Navigation</a></li>
+<li><a href="the-react-mega-tutorial-chapter-5-connecting-to-a-back-end.html">Chapter 5: Connecting to a Back End</a></li>
+<li><a href="the-react-mega-tutorial-chapter-6-building-an-api-client.html">Chapter 6: Building an API Client</a> (this article)</li>
+<li><a href="the-react-mega-tutorial-chapter-7-forms-and-validation.html">Chapter 7: Forms and Validation</a></li>
+<li><a href="the-react-mega-tutorial-chapter-8-authentication.html">Chapter 8: Authentication</a></li>
+<li><a href="the-react-mega-tutorial-chapter-9-application-features.html">Chapter 9: Application Features</a></li>
+<li><a href="the-react-mega-tutorial-chapter-10-memoization.html">Chapter 10: Memoization</a></li>
+<li><a href="the-react-mega-tutorial-chapter-11-automated-testing.html">Chapter 11: Automated Testing</a></li>
+<li><a href="the-react-mega-tutorial-chapter-12-production-builds.html">Chapter 12: Production Builds</a></li>
+</ul>
+<p>In this chapter you are going to learn how to provide API access to any component that needs it, without having to duplicate code. As part of this effort, you will learn how to use React contexts and how to implement custom hook functions.</p>
+<h2>What is an API Client?</h2>
+<p>Having each component call <code>fetch()</code> directly when it needs to make an API call is far from ideal, because it leads to code duplication. A better solution is to have all the logic that deals with making API requests in a single place. For this project the code that makes API calls is going to be encapsulated in a JavaScript class.</p>
+<p>Consider the following way in which a client class for this API might be used:</p>
+<pre><code class="language-javascript">const api = new MicroblogApiClient();
+const response = await api.get('/feed');
+if (response.ok) {
+  setPosts(response.body.data);
+}
+else {
+  setPosts(null);
+}
+</code></pre>
+<p>The <code>MicroblogApiClient</code> class will encapsulate all the knowledge about the API, including:</p>
+<ul>
+<li>The domain and port where the server is deployed</li>
+<li>The common portion of the path for all API endpoints (<em>/api</em>)</li>
+<li>How to pass arguments in the query string (which will be needed for pagination)</li>
+<li>How to catch and handle errors and exceptions</li>
+<li>How to parse the JSON in the response</li>
+<li>How to authenticate</li>
+</ul>
+<h2>A Simple Client Class for Microblog API</h2>
+<p>The listing below shows a first implementation of a Microblog API client class. Put this code in a file named <em>src/MicroblogApiClient.js</em>.</p>
+<p class="code_title"><em>src/MicroblogApiClient.js</em>: An API client class</p>
+
+<pre><code class="language-javascript">const BASE_API_URL = process.env.REACT_APP_BASE_API_URL;
+
+export default class MicroblogApiClient {
+  constructor() {
+    this.base_url =  BASE_API_URL + '/api';
+  }
+
+  async request(options) {
+    let query = new URLSearchParams(options.query || {}).toString();
+    if (query !== '') {
+      query = '?' + query;
+    }
+
+    let response;
+    try {
+      response = await fetch(this.base_url + options.url + query, {
+        method: options.method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        body: options.body ? JSON.stringify(options.body) : null,
+      });
+    }
+    catch (error) {
+      response = {
+        ok: false,
+        status: 500,
+        json: async () =&gt; { return {
+          code: 500,
+          message: 'The server is unresponsive',
+          description: error.toString(),
+        }; }
+      };
+    }
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      body: response.status !== 204 ? await response.json() : null
+    };
+  }
+
+  async get(url, query, options) {
+    return this.request({method: 'GET', url, query, ...options});
+  }
+
+  async post(url, body, options) {
+    return this.request({method: 'POST', url, body, ...options});
+  }
+
+  async put(url, body, options) {
+    return this.request({method: 'PUT', url, body, ...options});
+  }
+
+  async delete(url, options) {
+    return this.request({method: 'DELETE', url, ...options});
+  }
+}
+</code></pre>
+<p>The class constructor stores the common part of the URL that is used for all endpoints in the <code>base_url</code> attribute. This includes the base URL obtained from the <code>REACT_APP_BASE_API_URL</code> environment variable, and the <em>/api</em> path prefix.</p>
+<p>The actual request making logic, which is a slightly more elaborate version of the <code>fetch()</code> code used in the <code>Posts</code> component, is in the <code>request()</code> method. To make this class easier to use, there are shortcut methods for <code>get()</code>, <code>post()</code>, <code>put()</code> and <code>delete()</code> requests that invoke <code>request()</code> with appropriate settings.</p>
+<p>Let's review the <code>request()</code> method in detail. This method takes all of its arguments from an <code>options</code> object. The <code>method</code> and <code>url</code> keys in this object are set by the <code>get()</code>, <code>post()</code>, <code>put()</code> and <code>delete()</code> helper methods, from its input arguments. The <code>body</code> key is set by <code>post()</code> and <code>put()</code>. Any additional options that the caller might need, such as custom headers or query string parameters, are accepted as a last argument on the four helper methods, and passed through.</p>
+<p>The <code>request()</code> method starts by looking for the <code>query</code> key in the options, which allows the caller to specify query string arguments as an object, for convenience and readability. The <code>URLSearchParams</code> class available in the browser is used to render the object in the proper query string format.</p>
+<p>When the server is down or unresponsive, the <code>fetch()</code> call raises an exception. For that reason, the <code>fetch()</code> call is made inside a <code>try</code>/<code>catch</code> block that handles this condition. This application handles fetch errors in the same way as if the server had returned a response with a 500 status code. The <code>catch</code> block builds a response object similar to that of fetch, but preloaded with the 500 status code response. The <code>body</code> in this error response is formatted in the same style as actual API errors returned by the Microblog API service.</p>
+<p>The actual <code>fetch()</code> call is similar to the one in <code>Posts</code>, but generalized to work with the <code>method</code>, <code>url</code>, <code>query</code>, <code>body</code> and <code>headers</code> options that are passed in. Some common options are automatically added in this method. For example, a JSON content type, which is needed for <code>POST</code> and <code>PUT</code> requests that have a body, is automatically added. Also, the <code>body</code> argument is automatically rendered as a JSON object so that the caller doesn't have to worry about this detail.</p>
+<p>The <code>ok</code>, <code>status</code> and <code>body</code> keys returned in the <code>fetch()</code> response are used to generate a simpler response object for the caller that has the JSON payload already decoded to an object. Responses from this API client will have three attributes:</p>
+<ul>
+<li><code>ok</code>: a value of <code>true</code> or <code>false</code> that indicates the success or failure of the request.</li>
+<li><code>status</code>: the numeric HTTP status code of the server response.</li>
+<li><code>body</code>: an object with the payload returned in the body of the response, when available.</li>
+</ul>
+<h2>Sharing the API Client through a Context</h2>
+<p>The first way one may consider incorporating the <code>MicroblogApiClient</code> class into the application is to create an instance of the class in each component that needs API access. The problem with this approach is that it is inefficient when many components need to make API calls.</p>
+<p>A better solution is to create a single instance that is shared among all the components that need to use the API. In <a href="../../the-react-mega-tutorial-chapter-3-working-with-components.html">Chapter 3</a> you learned that components can share data by passing props, but doing this would add a lot of boilerplate code as the API client instance would have to be passed down from high-level components down to low-level components through all the levels in between.</p>
+<p>For cases when something needs to be shared with many components in different levels of the tree, React provides <em>contexts</em>.</p>
+<p>A React context is created with the <code>createContext()</code> function from the React library:</p>
+<pre><code class="language-javascript">import { createContext } from 'react';
+const MyDataContext = createContext();
+</code></pre>
+<p>Once the context is created, it has to be inserted in the component hierarchy, high enough so that it is a parent to all the components that will use data shared through it. Here is an example of how this is done:</p>
+<pre><code class="language-jsx">export default function MyApp() {
+  return (
+    &lt;Container&gt;
+      &lt;Header /&gt;
+      &lt;MyDataContext.Provider value={'data-to-share'}&gt;
+        &lt;Sidebar /&gt;
+        &lt;Content /&gt;
+      &lt;/MyDataContext.Provider&gt;
+    &lt;/Container&gt;
+  );
+}
+</code></pre>
+<p>Here the <code>MyApp</code> component inserts a context into its JSX tree. This is done by using the <code>Provider</code> attribute of the context object that was created with the <code>createContext()</code> function.</p>
+<p>In the above example, the <code>Sidebar</code> and <code>Content</code> components, along with all of its children, will be able to gain access to the <code>value</code> prop set in the context provider component. The <code>Header</code> component will not be able to use the context, because it is not a child of the context provider element.</p>
+<p>To access the value of a context, the child component can use the <code>useContext</code> hook as follows:</p>
+<pre><code class="language-jsx">import { useContext } from 'react';
+import { MyDataContext } from './MyDataContext';
+
+export default function Sidebar() {
+  const myData = useContext(MyDataContext);
+  // ...
+}
+</code></pre>
+<p>However, in practice, this leads to code that is not very clear to read, because the components that want to use the context need to import this strange context object only to be able to pass it to the <code>useContext()</code> hook.</p>
+<p>An approach that is preferable is to create a <em>custom hook</em> function that returns the encapsulates the <code>useContext()</code> call. A custom hook is a function that starts with the word <code>use</code>. As previously discussed, hook functions are considered special by React. In particular, they are the only functions outside of component render functions that can call other hooks. Here is an example custom hook for the above context:</p>
+<pre><code class="language-javascript">import { useContext } from 'react';
+
+export function useMyData() {
+  return useContext(MyDataContext);
+}
+</code></pre>
+<p>The custom hook can be added in the same source file as the context object. Child components of the context then only need to import the hook function to access the context, leading to code that is more readable.</p>
+<pre><code class="language-javascript">import { useMyData } from './MyDataContext';
+
+export default function Sidebar() {
+  const myData = useMyData();
+  // ...
+}
+</code></pre>
+<p>Ready to implement a context and a custom hook for the Microblog API client? Begin by creating a <em>src/contexts</em> subdirectory, where all the contexts of this application will be stored:</p>
+<pre><code class="language-bash">mkdir src/contexts
+</code></pre>
+<p>Add an <code>ApiProvider</code> component in <em>src/contexts/ApiProvider.js</em> that implements an API context, along with a <code>useApi()</code> custom hook.</p>
+<p class="code_title"><em>src/contexts/ApiProvider.js</em>: An API context</p>
+
+<pre><code class="language-jsx">import { createContext, useContext } from 'react';
+import MicroblogApiClient from '../MicroblogApiClient';
+
+const ApiContext = createContext();
+
+export default function ApiProvider({ children }) {
+  const api = new MicroblogApiClient();
+
+  return (
+    &lt;ApiContext.Provider value={api}&gt;
+      {children}
+    &lt;/ApiContext.Provider&gt;
+  );
+}
+
+export function useApi() {
+  return useContext(ApiContext);
+}
+</code></pre>
+<p>First, notice how this source file has two exported functions. The <code>ApiProvider</code> component function is exported as the default symbol for the module, as with all other React components, but now there is also the custom hook <code>useApi()</code>, which has to be exported so that other components can use it.</p>
+<p>The component renders the context's <code>ApiContext.Provider</code>, and puts its own children inside it. This effectively enables all the child components to access the context.</p>
+<p>It is safe to assume that many of the application's components will need API access, so it makes sense to add this context high in the component hierarchy. Below you can see how it is added in the <code>App</code> component.</p>
+<p class="code_title"><em>src/App.js</em>: Add the API context to the application</p>
+
+<pre><code class="language-jsx">import Container from 'react-bootstrap/Container';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ApiProvider from './contexts/ApiProvider';
+import Header from './components/Header';
+import FeedPage from './pages/FeedPage';
+import ExplorePage from './pages/ExplorePage';
+import UserPage from './pages/UserPage';
+import LoginPage from './pages/LoginPage';
+
+export default function App() {
+  return (
+    &lt;Container fluid className=&quot;App&quot;&gt;
+      &lt;BrowserRouter&gt;
+        &lt;ApiProvider&gt;
+          &lt;Header /&gt;
+          &lt;Routes&gt;
+            &lt;Route path=&quot;/&quot; element={&lt;FeedPage /&gt;} /&gt;
+            &lt;Route path=&quot;/explore&quot; element={&lt;ExplorePage /&gt;} /&gt;
+            &lt;Route path=&quot;/user/:username&quot; element={&lt;UserPage /&gt;} /&gt;
+            &lt;Route path=&quot;/login&quot; element={&lt;LoginPage /&gt;} /&gt;
+            &lt;Route path=&quot;*&quot; element={&lt;Navigate to=&quot;/&quot; /&gt;} /&gt;
+          &lt;/Routes&gt;
+        &lt;/ApiProvider&gt;
+      &lt;/BrowserRouter&gt;
+    &lt;/Container&gt;
+  );
+}
+</code></pre>
+<p>The context is added as the child of the <code>BrowserRouter</code> component from React-Router, with all the remaining components as its children. Since all the application components are children of this context, they are all able to use the <code>useApi()</code> hook to obtain access to the API client when they need to.</p>
+<p>Now the <code>Posts</code> component can take advantage of the new hook to make its API call.</p>
+<p class="code_title"><em>src/components/Posts.js</em>: Using the <code>useApi()</code> hook</p>
+
+<pre><code class="language-jsx">import { useState, useEffect } from 'react';
+import Spinner from 'react-bootstrap/Spinner';
+import { useApi } from '../contexts/ApiProvider';
+import Post from './Post';
+
+export default function Posts() {
+  const [posts, setPosts] = useState();
+  const api = useApi();
+
+  useEffect(() =&gt; {
+    (async () =&gt; {
+      const response = await api.get('/feed');
+      if (response.ok) {
+        setPosts(response.body.data);
+      }
+      else {
+        setPosts(null);
+      }
+    })();
+  }, [api]);
+
+  ... // &lt;-- no changes in the rest of the function
+}
+</code></pre>
+<p>Thanks to the <code>useApi()</code> hook function, the code in this component is now very clear, but there are a couple of interesting changes to pay attention to. First, note how the <code>useApi()</code> function is imported. Since this function was declared as a non-default export in <em>ApiProvider.js</em>, it has to be imported using a destructuring assignment.</p>
+<p>The second argument to the <code>useEffect()</code> hook used to be an empty array, but is now <code>[api]</code>. As you already learned, this array is used to tell React what are the dependencies of the side effect function. With an empty array, the function only ran during the first render of the component. When dependencies are given, a change in a dependency will make React call the side effect function again, so that the component is always up-to-date.</p>
+<p>The React build process analyzes your code, and one of the things it looks for is possible dependency omissions. If you forget to include <code>api</code> in the dependency array of the side effect function, the build generates a warning to alert you that this variable is used inside the function, which is a strong indicator that it should be treated as a dependency.</p>
+<h2>The User Profile Page</h2>
+<p>The <code>Post</code> component renders the author of each blog post as a link that points to the <em>/user/{username}</em> page, defined within the React application. A placeholder for this page is implemented in the <code>UserPage</code> component. In this section this component will be enhanced to request user information from the API and render it to the page.</p>
+<p>In Microblog API, you can get information about a user by sending a request to <em>/api/users/{username}</em>. If you want to see what is the response for this endpoint, consult the API documentation by going to the root URL of your API service (for example, <em>http://localhost:5000</em>) and looking up the "Retrieve a user by username" endpoint.</p>
+<p>The approach to construct the profile page is largely similar to that of the post feed, and it involves the following:</p>
+<ul>
+<li>Create a state variable for the data that needs to be requested from the API</li>
+<li>Obtain the API client object with the <code>useApi()</code> hook</li>
+<li>Define a side effect function that makes the API request and updates the state variable when the data is received</li>
+<li>Render a spinner while the state variable on the first render, then show the data from the state variable on the re-render</li>
+</ul>
+<p>You can see the complete implementation of <code>UserPage</code> below.</p>
+<p class="code_title"><em>src/pages/UserPage.js</em>: User profile page</p>
+
+<pre><code class="language-jsx">import { useState, useEffect } from 'react';
+import Stack from 'react-bootstrap/Stack';
+import Image from 'react-bootstrap/Image';
+import Spinner from 'react-bootstrap/Spinner';
+import { useParams } from 'react-router-dom';
+import Body from '../components/Body';
+import TimeAgo from '../components/TimeAgo';
+import { useApi } from '../contexts/ApiProvider';
+
+export default function UserPage() {
+  const { username } = useParams();
+  const [user, setUser] = useState();
+  const api = useApi();
+
+  useEffect(() =&gt; {
+    (async () =&gt; {
+      const response = await api.get('/users/' + username);
+      setUser(response.ok ? response.body : null);
+    })();
+  }, [username, api]);
+
+  return (
+    &lt;Body sidebar&gt;
+      {user === undefined ?
+        &lt;Spinner animation=&quot;border&quot; /&gt;
+      :
+        &lt;&gt;
+          {user === null ?
+            &lt;p&gt;User not found.&lt;/p&gt;
+          :
+            &lt;Stack direction=&quot;horizontal&quot; gap={4}&gt;
+              &lt;Image src={user.avatar_url + '&amp;s=128'} roundedCircle /&gt;
+              &lt;div&gt;
+                &lt;h1&gt;{user.username}&lt;/h1&gt;
+                {user.about_me &amp;&amp; &lt;h5&gt;{user.about_me}&lt;/h5&gt;}
+                &lt;p&gt;
+                  Member since: &lt;TimeAgo isoDate={user.first_seen} /&gt;
+                  &lt;br /&gt;
+                  Last seen: &lt;TimeAgo isoDate={user.last_seen} /&gt;
+                &lt;/p&gt;
+              &lt;/div&gt;
+            &lt;/Stack&gt;
+          }
+        &lt;/&gt;
+      }
+    &lt;/Body&gt;
+  );
+}
+</code></pre>
+<p>As in the original placeholder page, the user to render is obtained from the URL, using the <code>useParams()</code> hook from React-Router. The <code>user</code> state variable is then defined to hold the user information, and the <code>useApi()</code> hook is used to gain access to the API client instance.</p>
+<p>The side effect function makes the API request, and calls <code>setUser()</code> to update the state variable with the response. As in the <code>Posts</code> component, the state variable starts with an <code>undefined</code> value, and once the request returns it is updated to the user information when the request succeeds, or to <code>null</code> if the request fails.</p>
+<p>If you leave the dependency array for the side effect function empty, the React build warns that both <code>api</code> and <code>username</code> are dependencies, so both should be included, so that the component updates when they change. Making the <code>username</code> variable a dependency is extremely important, as it would cause the user information to be refreshed whenever the user changes.</p>
+<p>The render code uses the <code>Body</code> component and includes the sidebar. Inside the body, if the <code>user</code> state variable is <code>undefined</code> a spinner is rendered to indicate that the data is being retrieved.</p>
+<p>If the <code>user</code> state variable is <code>null</code>, which indicates a request error, an empty content area is shown. Recall that a centralized error handling solution for API errors will be built later.</p>
+<p>When the <code>user</code> state variable is set to the user's information, a page for the user is built using many of the user attributes included in the response.</p>
+<p>To create a nice layout for the profile page, a horizontal <code>Stack</code> component is used to create two sections for a large avatar (configured with a size of 128x128 pixels) on the left, and the username, user description and timestamps on the right. The <code>TimeAgo</code> component used for the blog post timestamps is also used here for the <code>member_since</code> and <code>last_seen</code> attributes.</p>
+<p>With these changes, you can click on any username in the feed page to access their profile page. This is shown in <a href="#fig6-1">Figure 6.1</a>.</p>
+<div id="fig6-1"></div>
+<p><center><img alt="Figure 6.1: User profile page" src="../../../static/images/react-mega-tutorial/06-userpage.png" /></center></p>
+<h2>Making Components Reusable Through Props</h2>
+<p>One small detail that would make the user profile page much more interesting is to include a list of the user's blog posts below the user details. This would be similar to the list rendered in the feed page, but restricted to only show the posts from the user being viewed. And the Explore page, which is still a placeholder, also needs to render a list of posts, this time all the posts in the system. So there are already three pages in the application that need to render lists of posts.</p>
+<p>The <code>Posts</code> component already knows how to list a collection of blog posts, and it does it nicely, but it only renders the user's feed. To avoid building two nearly identical components that render the posts of a user in the user page, and all the posts in the explore page, the <code>Posts</code> component can be extended to render different lists of posts, depending on what the parent component wants.</p>
+<p>To make this component more flexible, a <code>content</code> prop can be added to it. If this prop is not given, or if it is set to the string <code>feed</code>, then the user's feed is displayed as before. If the prop is set to <code>explore</code>, then all the available blog posts are rendered. Finally, if the <code>content</code> prop is set to any other value, it is assumed to be a user ID, and then the posts that are displayed are those of the user with the requested ID.</p>
+<p>See below the changes to the <code>Posts</code> component to implement this.</p>
+<p class="code_title"><em>src/components/Posts.js</em>: Configure post content to display</p>
+
+<pre><code class="language-jsx">... // &lt;-- no changes to imports
+
+export default function Posts({ content }) {
+  const [posts, setPosts] = useState();
+  const api = useApi();
+
+  let url;
+  switch (content) {
+    case 'feed':
+    case undefined:
+      url = '/feed';
+      break;
+    case 'explore':
+      url = '/posts';
+      break
+    default:
+      url = `/users/${content}/posts`;
+      break;
+  }
+
+  useEffect(() =&gt; {
+    (async () =&gt; {
+      const response = await api.get(url);
+      if (response.ok) {
+        setPosts(response.body.data);
+      }
+      else {
+        setPosts(null);
+      }
+    })();
+  }, [api, url]);
+
+  ... // &lt;-- no changes in the rest of the function
+}
+</code></pre>
+<p>In the previous version of this component, the URL for the API request was hardcoded to <em>/feed</em>. Now a <code>switch</code> statement is used to determine what URL to request based on the value of the <code>content</code> prop:</p>
+<ul>
+<li>for <code>feed</code>, or if <code>content</code> prop is not defined, the <em>/feed</em> URL is requested as before</li>
+<li>for <code>explore</code>, the <em>/posts</em> URL is requested</li>
+<li>for any other value, string interpolation is used to request the <em>/users/{content}/posts</em> URL</li>
+</ul>
+<p>All these URLs return lists of blog posts, and they all use the same response format. But each URL returns a different list. Remember that you can review the documentation for the endpoints in the documentation site provided by Microblog API.</p>
+<p>The dependencies of the side effect function have been expanded one more time. Now <code>url</code> is also in the list, because it is a variable from outside that is used in the effect function, and consequently, whenever it changes the effect needs to run again to refresh the list of posts and keep it consistent with the state of the component.</p>
+<p>The user profile page now can include a list of posts by the user being viewed. The changes to <code>UserPage</code> are below.</p>
+<p class="code_title"><em>src/pages/UserPage.js</em>: Show user's blog posts in profile page</p>
+
+<pre><code class="language-jsx">... // &lt;-- no changes to existing imports
+import Posts from '../components/Posts';
+
+export default function UserPage() {
+  ... // &lt;-- no changes in the main logic of the function
+
+  return (
+    &lt;Body sidebar&gt;
+      {user === undefined ?
+        &lt;Spinner animation=&quot;border&quot; /&gt;
+      :
+        &lt;&gt;
+          {user === null ?
+            &lt;p&gt;Could not retrieve blog posts.&lt;/p&gt;
+          :
+            &lt;&gt;
+              &lt;Stack direction=&quot;horizontal&quot; gap={4}&gt;
+                ... // &lt;-- no changes to user details
+              &lt;/Stack&gt;
+              &lt;Posts content={user.id} /&gt;
+            &lt;/&gt;
+          }
+        &lt;/&gt;
+      }
+    &lt;/Body&gt;
+  );
+}
+</code></pre>
+<p>This change just wraps the <code>Stack</code> component in <code>&lt;&gt;</code> and <code>&lt;/&gt;</code>, so that a <code>Posts</code> component can be added after it, while keeping a single parent in the JSX tree. The <code>Posts</code> component in this case has the <code>content</code> prop set to <code>user.id</code>, to request that only the posts from the user in question are rendered.</p>
+<p>The updated user profile page is shown in <a href="#fig6-2">Figure 6.2</a>.</p>
+<div id="fig6-2"></div>
+<p><center><img alt="Figure 6.2: User profile page with blog posts" src="../../../static/images/react-mega-tutorial/06-userpage2.png" /></center></p>
+<p>The <code>Posts</code> component is now also able to render posts in the Explore page, when the <code>content</code> prop is set to <code>explore</code>. The <code>ExplorePage</code> placeholder can be updated to display real content, as shown below.</p>
+<p class="code_title"><em>src/pages/ExplorePage.js</em>: the Explore page</p>
+
+<pre><code class="language-jsx">import Body from '../components/Body';
+import Posts from '../components/Posts';
+
+export default function ExplorePage() {
+  return (
+    &lt;Body sidebar&gt;
+      &lt;Posts content=&quot;explore&quot; /&gt;
+    &lt;/Body&gt;
+  );
+}
+</code></pre>
+<p>This is the perfect example of how good component reuse techniques help reduce code complexity. With just three lines of JSX code, a brand-new page was added to the application!</p>
+<h2>Pagination</h2>
+<p>The lists of blog posts returned by Microblog API are <em>paginated</em>, which means that for a given request, the server returns the first few items, up to a configurable maximum (25 with default settings).</p>
+<p>You've seen that the <code>data</code> attribute in the response payload contains the list of requested items. The server includes a second attribute in all the responses that include lists called <code>pagination</code>, which provides details about the portion of the complete list that was returned. Below you can see an example JSON payload, including pagination details:</p>
+<pre><code class="language-json">{
+  &quot;data&quot;: [
+
+  ],
+  &quot;pagination&quot;: {
+    &quot;count&quot;: 25,
+    &quot;limit&quot;: 25,
+    &quot;offset&quot;: 0,
+    &quot;total&quot;: 124
+  }
+}
+</code></pre>
+<p>Here <code>data</code> includes an array of 25 elements. This is reported in the <code>pagination</code> attribute under <code>count</code>. The <code>limit</code> key indicates what is the maximum page size that can be returned. The <code>offset</code> key reports the zero-based index of the first element returned, and <code>total</code> reports the size of the entire list.</p>
+<p>Using these pagination details and a bit of math, it is possible to determine if there are more elements in the list following the ones that were returned. For the example above, the index of the last returned element is <code>offset + count - 1</code>, or 24. Since <code>total</code> is 124, the index of the last element of the list is 123, indicating that the user should be given the option to retrieve more elements if desired.</p>
+<p>To let the user add for more elements, a "More" button is going to be displayed at the bottom of the list, when there are more elements available. Clicking the button will trigger a new request to be issued for more items.</p>
+<p>Let's begin by implementing a generic <code>More</code> component, which displays a button to load more items when appropriate.</p>
+<p class="code_title"><em>src/components/More.js</em>: A pagination button</p>
+
+<pre><code class="language-jsx">import Button from 'react-bootstrap/Button';
+
+export default function More({ pagination, loadNextPage }) {
+  let thereAreMore = false;
+  if (pagination) {
+    const { offset, count, total } = pagination;
+    thereAreMore = offset + count &lt; total;
+  }
+
+  return (
+    &lt;div className=&quot;More&quot;&gt;
+      {thereAreMore &amp;&amp;
+        &lt;Button variant=&quot;outline-primary&quot; onClick={loadNextPage}&gt;
+          More &amp;raquo;
+        &lt;/Button&gt;
+      }
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<p>The <code>More</code> component has two props. The <code>pagination</code> prop receives a pagination object extracted from a Microblog API response, including the four attributes discussed above. The <code>loadNextPage</code> prop is a handler that the parent component must provide, used to load the next page of items when the More button is clicked. Requiring the parent component to provide the logic to load the next page allows this component to be fully generic, instead of being tied to a specific part of the application.</p>
+<p>The <code>thereAreMore</code> local variable uses the keys in the <code>pagination</code> prop to determine if there are more items to retrieve, and in that case, it displays the button. When <code>thereAreMore</code> has a <code>false</code> value, the button is not displayed, since there wouldn't be any items left to retrieve from the server.</p>
+<p>The button is wrapped in a <code>&lt;div&gt;</code> element that is assigned the <code>More</code> class. This class can be added to <em>index.css</em> to provide minor styling details to the component.</p>
+<p class="code_title"><em>src/index.css</em>: Pagination button styling</p>
+
+<pre><code class="language-css">... // &lt;-- no changes to existing styles
+
+.More {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: right;
+}
+</code></pre>
+<p>To support pagination in all the pages that show lists of posts, the <code>Posts</code> component can be expanded to use the <code>More</code> button, as shown below.</p>
+<p class="code_title"><em>src/components/Posts.js</em>: Post pagination</p>
+
+<pre><code class="language-jsx">... // &lt;-- no changes to existing imports
+import More from './More';
+
+export default function Posts({ content = 'feed' }) {
+  const [posts, setPosts] = useState();
+  const [pagination, setPagination] = useState();
+  const api = useApi();
+
+  ... // &lt;-- no changes to how url is determined
+
+  useEffect(() =&gt; {
+    (async () =&gt; {
+      const response = await api.get(url);
+      if (response.ok) {
+        setPosts(response.body.data);
+        setPagination(response.body.pagination);
+      }
+      else {
+        setPosts(null);
+      }
+    })();
+  }, [api, url]);
+
+  const loadNextPage = async () =&gt; {
+    // TODO
+  };
+
+  return (
+    &lt;&gt;
+      {posts === undefined ?
+        &lt;Spinner animation=&quot;border&quot; /&gt;
+      :
+        &lt;&gt;
+          {posts === null ?
+            &lt;p&gt;Could not retrieve blog posts.&lt;/p&gt;
+          :
+            &lt;&gt;
+              {posts.length === 0 ?
+                &lt;p&gt;There are no blog posts.&lt;/p&gt;
+              :
+                posts.map(post =&gt; &lt;Post key={post.id} post={post} /&gt;)
+              }
+              &lt;More pagination={pagination} loadNextPage={loadNextPage} /&gt;
+            &lt;/&gt;
+          }
+        &lt;/&gt;
+      }
+    &lt;/&gt;
+  );
+}
+</code></pre>
+<p>There are a few changes in this component:</p>
+<ul>
+<li>The <code>More</code> component is imported at the top.</li>
+<li>A new <code>pagination</code> state variable is included.</li>
+<li>When the response to the server request is received, the <code>posts</code> state variable is assigned the data, and the <code>pagination</code> state variable is assigned the pagination details.</li>
+<li>A <code>loadNextPage</code> function is defined as an inner function in the component, for now as a placeholder.</li>
+<li>The <code>More</code> component is added right after the list of blog posts is rendered. The <code>pagination</code> state variable and the <code>loadNextPage</code> function are passed as props.</li>
+</ul>
+<p>With these changes, you should see the More button after the blog posts. If you don't see it, then the list of posts that you are looking at does not have additional data. With the initial randomized data that is initialized with Microblog API, the Explore page should have enough posts to require pagination, but the Feed page may not. <a href="#fig6-3">Figure 6.3</a> shows how the pagination button looks like.</p>
+<div id="fig6-3"></div>
+<p><center><img alt="Figure 6.3: Pagination button" src="../../../static/images/react-mega-tutorial/06-more.png" /></center></p>
+<p>What's left to do now is to implement the logic in the <code>loadNextPage()</code> function. If you review the Microblog API documentation for any of the requests that return a list of blog posts, you'll notice that they all accept three optional query parameters, <code>limit</code>, <code>offset</code> and <code>after</code>.</p>
+<p>The <code>limit</code> option is used to change the size of the returned page. This application does not need to do this, the client is happy to accept the default page size used by the server, so this option does not need to be used in this pagination implementation.</p>
+<p>The <code>offset</code> option can be used to request items starting at a specific offset. For example, if the feed page is displaying the first 25 blog posts, passing <code>offset=25</code> to the same request URL would return blog posts 25 to 49 of that same list.</p>
+<p>The <code>after</code> option can also be used to request additional items, but it works differently than <code>offset</code>. For <code>after</code>, the argument needs to be the <code>timestamp</code> value of the last post being displayed, so for example, it could be <code>after=posts[posts.length - 1].timestamp</code>. The server then returns items starting right after the provided time.</p>
+<p>Which of <code>offset</code> and <code>after</code> is better? This really depends on each particular case. One disadvantage of <code>offset</code> is that it only works well for lists that have new items added at the end, because items added in any other position would alter the indexes assigned to existing elements. The blog posts returned by Microblog API are sorted by their publication date, but in descending order, so new posts are always inserted at the start of the list, pushing older items down. On the other side, <code>after</code> works well only for lists that have a well-defined ordering.</p>
+<p>Below you can see the implementation of the <code>loadNextPage()</code> function for the <code>Posts</code> component, using the <code>after</code> query parameter.</p>
+<p class="code_title"><em>src/components/Posts.js</em>: Load the next page of posts</p>
+
+<pre><code class="language-javascript">  const loadNextPage = async () =&gt; {
+    const response = await api.get(url, {
+      after: posts[posts.length - 1].timestamp
+    });
+    if (response.ok) {
+      setPosts([...posts, ...response.body.data]);
+      setPagination(response.body.pagination);
+    }
+  };
+</code></pre>
+<p>The function makes a request on the same <code>url</code> as before, but this time the second argument for the <code>api.get()</code> call is added with the <code>after</code> query parameter.</p>
+<p>When the response is received, the <code>posts</code> state variable is updated to a combined list of old and new blog posts, using the <code>...</code> spread operator. The <code>pagination</code> state variable is also updated with the new details received in the paginated request. The change to these two state variables will cause the <code>Posts</code> component to render again, which in turn will make the new blog posts appear at the bottom of the list.</p>
+<p>After the new posts are displayed, the <code>More</code> component will remain at the bottom, so the updated pagination state will be used again to determine if there are even more items waiting in the server, and in that case the button will continue to be visible. After the last batch of items are retrieved, the <code>More</code> component will not display the button anymore.</p>
+<h2>Chapter Summary</h2>
+<ul>
+<li>Write the back end calling logic in a single place, for example in an API client class.</li>
+<li>To share a data item with a subcomponent, pass it down with a prop. To share a data item with many subcomponents across several levels, use a context.</li>
+<li>Use a custom hook function to make the code that uses a context more readable.</li>
+<li>Use props to make a component more generic, and facilitate its reuse.</li>
+</ul></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client&amp;t=The%20React%20Mega-Tutorial%2C%20Chapter%206%3A%20Building%20an%20API%20Client" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client&amp;resubmit=true&amp;title=The%20React%20Mega-Tutorial,%20Chapter%206:%20Building%20an%20API%20Client" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20React%20Mega-Tutorial%2C%20Chapter%206%3A%20Building%20an%20API%20Client&amp;url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client&amp;title=The%20React%20Mega-Tutorial%2C%20Chapter%206%3A%20Building%20an%20API%20Client&amp;summary=The%20React%20Mega-Tutorial%2C%20Chapter%206%3A%20Building%20an%20API%20Client&amp;source=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20React%20Mega-Tutorial%2C%20Chapter%206%3A%20Building%20an%20API%20Client&amp;body=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../the-react-mega-tutorial-chapter-6-building-an-api-client.html#comments">23 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/0902a1e578963a2fcb9cafd8421b422a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Russ GIbson</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-06-17T02:53:38Z" data-function="fromNow" data-refresh="0" style="display: none">2022-06-17T02:53:38Z</span>
+  </p>
+  <div>
+    <p>When I first followed this, I accidentally used "isodate" instead of "isoDate" in the Member since: and Last seen: lines of UserData.js.  This caused the rendering to fail, with a blank page, and all navigation to fail as well (e.g. back button didn't cause page to rerender where it came from). </p>
+<p>What concerns me is that I received no error message or indication of what caused the problem.  It wasn't until I created a tmp.js with the contents of UserData.js from above and did a diff between the that and my version that I was able to determine what I screwed up.  I thought one of the useful features of react was that it would warn me on stupid bugs like this?  Up until this specific issue, that has always been the case.  Is this a corner case, or do I misunderstand that feature of react?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-06-17T10:02:01Z" data-function="fromNow" data-refresh="0" style="display: none">2022-06-17T10:02:01Z</span>
+  </p>
+  <div>
+    <p>@Russ: this should have been reported in the browser's console as an error. Did you look there? That's the first place you should look for clues when the application works in a strange way.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/9b43effcdd612e5782cdabbf3cec4778?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">Kevyn</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-06-19T13:07:31Z" data-function="fromNow" data-refresh="0" style="display: none">2022-06-19T13:07:31Z</span>
+  </p>
+  <div>
+    <p>In this example you stated that the Explore page should be able to show the 'More' button, but I do not believe we have done anything with that page besides create it.</p>
+<p>Perhaps I missed something?</p>
+<p>I did update my local to import Posts passing in the explore param for content, I do see post and the button works as intended.  I am following along via the book and double checking here so just wanted to make sure I did not miss anything.</p>
+<p>Thanks for writing this as it has been very easy to follow and understand.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-06-19T14:00:08Z" data-function="fromNow" data-refresh="0" style="display: none">2022-06-19T14:00:08Z</span>
+  </p>
+  <div>
+    <p>@Kevyn: At the end of the section titled "Making Components Reusable Through Props" I show the complete implementation of the Explore page. It is just a handful of lines! The page inherits the behavior of the More button from the <code>Posts</code> component.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/1aa41b3aa15d15269d29ef7f1b1f843e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-warning">Tomas</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-07-12T17:19:25Z" data-function="fromNow" data-refresh="0" style="display: none">2022-07-12T17:19:25Z</span>
+  </p>
+  <div>
+    <p>Hi @Miguel, another quick question if that's ok. I understand passing <code>api</code> as a dependency to <code>useEffect</code>. However I can't think of an instance where the <code>api</code> would 'change' causing the component to re-render. Do you have any examples or scenarios?</p>
+<p>On a similar note, would it be possible to define <code>const api = useApi()</code> inside the useEffect() function?</p>
+<p>Many thanks</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-07-14T16:32:05Z" data-function="fromNow" data-refresh="0" style="display: none">2022-07-14T16:32:05Z</span>
+  </p>
+  <div>
+    <p>@Tomas: This is covered later in the tutorial, as it is an advanced topic that would be difficult to understand at this early point.</p>
+<p>Also, it is not possible to use hooks inside side effect functions, they can only be used inside the main body of component functions.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/ce3cdaeebc5f62bee17c7ec98d9bf1b5?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#7</span> <span class="badge text-bg-warning">Daniel Hernandez</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-08-08T06:46:53Z" data-function="fromNow" data-refresh="0" style="display: none">2022-08-08T06:46:53Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, I completed the Flask Megatutorial and started the React megatutorial.  The API is covered as overview in Flask one but your MicroblogApi changed so much and for sure it required other ebook/course too.<br>
+It is more robust and secure for projects in React than customize Flask API section. <br>
+I am the first happily to enroll on it.  Please evaluate,  it is probably a natural step to apply the knowledge acquiring in React Mega Tutorial.</p>
+<p>Saludos y muchas gracias.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#8</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-08-08T07:16:39Z" data-function="fromNow" data-refresh="0" style="display: none">2022-08-08T07:16:39Z</span>
+  </p>
+  <div>
+    <p>@Daniel: You can learn about the back end by studying the source code, which is fully available on GitHub. Maybe I will write a course about it, but don't let that prevent you from learning how it works on your own!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a564aa5c04640357a5ac907527e8b2b1?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#9</span> <span class="badge text-bg-warning">JM</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-09-12T13:10:07Z" data-function="fromNow" data-refresh="0" style="display: none">2022-09-12T13:10:07Z</span>
+  </p>
+  <div>
+    <p>What a great collection of articles! Thank you very much Miguel.<br>
+I am using my own API and this just works great.</p>
+<p>By default you have the application/json header to be sent on every request with your MicroblogApiClient class, regardless of the type of request. I had to comment this header because otherwise I was getting the following error: <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSDidNotSucceed" rel="nofollow">https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSDidNotSucceed</a>. I am using my own API and the responses carry the "Access-Control-Allow-Origin": "*" header. I would like to ask you whether I should be able to make a get request even with the application/json header that I had to comment or not just to check whether I have to tune further my backend.</p>
+<p>Thank you again for your time and effort,</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#10</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-09-12T13:56:04Z" data-function="fromNow" data-refresh="0" style="display: none">2022-09-12T13:56:04Z</span>
+  </p>
+  <div>
+    <p>@JM: Not 100% sure, but my guess is that you need to add the <code>Content-Type</code> header to your safe list by including it in the <code>Access-Control-Request-Headers</code>. Responding with a <code>*</code> for origins is not ideal, but I think that is not the problem here.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/97776b51de8cb2a7cc92e79fa104a00b?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#11</span> <span class="badge text-bg-warning">Daniel Rocha</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-10-14T20:39:57Z" data-function="fromNow" data-refresh="0" style="display: none">2022-10-14T20:39:57Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel! First of all, thank you for this tutorial and specially for your work in Flask. It's great!</p>
+<p>I have a question: should we implement the API client logic with a function instead of a class, would it still be better to use it through context, or would it be fine then to just import the function and use it normally?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#12</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-10-14T22:23:07Z" data-function="fromNow" data-refresh="0" style="display: none">2022-10-14T22:23:07Z</span>
+  </p>
+  <div>
+    <p>@Daniel: if your function does not need to hold any state, then you can just import it and use it.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/5d6128c28174457bc1c95aed31b4c071?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#13</span> <span class="badge text-bg-warning">George Moore</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-01T17:55:25Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-01T17:55:25Z</span>
+  </p>
+  <div>
+    <p>Thanks for all your work on tutorials.  It was my goto for Flask and now with React it too is very well done.</p>
+<p>I am stuck with the Client API.  Everything works except when I added Posts to the User profile.  I get the following error.  </p>
+<p>Access to fetch at 'http://127.0.0.1:5000/api/user/$%7Bcontent%7D/posts' from origin 'http://localhost:3000' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: It does not have HTTP ok status.</p>
+<p>Can't track down what could be going wrong.</p>
+<p>Thanks again for all your help</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#14</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-01T20:19:27Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-01T20:19:27Z</span>
+  </p>
+  <div>
+    <p>@George: Are you using your own back end? The back end must have CORS configured to allow the front end to make API requests. This is configured in the Microblog API project referenced in this tutorial.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/5d6128c28174457bc1c95aed31b4c071?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#15</span> <span class="badge text-bg-warning">George Moore</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-01T20:34:04Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-01T20:34:04Z</span>
+  </p>
+  <div>
+    <p>No,  I pulled your flask backend and ran it locally.  Thought i followed the few setup steps but will double-check.  Thanks for such a quick response.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#16</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-01T23:59:16Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-01T23:59:16Z</span>
+  </p>
+  <div>
+    <p>@George: I just noticed that the URL mentioned in the CORS error is incorrect. When you URL decode it, the URL is <code>http://127.0.0.1:5000/api/user/${content}/posts</code>, which means that variables aren't being replaced, probably because you defined the string as a normal string with quotes, instead of as a template string with back ticks.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/5d6128c28174457bc1c95aed31b4c071?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#17</span> <span class="badge text-bg-warning">George Moore</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-02T15:26:15Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-02T15:26:15Z</span>
+  </p>
+  <div>
+    <p>That was it.  Should have picked it up too.  Thanks again for your help!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/94446c5ed18e8ef108fa837c400ead58?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#18</span> <span class="badge text-bg-warning">Joe T</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-16T21:39:42Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-16T21:39:42Z</span>
+  </p>
+  <div>
+    <p>Thanks for another great tutorial! I have been going through this to help me as I separate a React front end I've built from its Flask backend (based on the structure you presented in your Flask tutorial). </p>
+<p>I've implemented the React application exactly as you have instructed up through this API client chapter. I've noticed that the front end makes each API call twice every time. This is observable in Dev Tools in the browser and the back end trace reflects it as well. This is a concern for my own application as it operates in an environment where outbound data transfer is metered. Have I missed a detail? Any thoughts?</p>
+<p>Thanks in advance!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#19</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-16T22:55:14Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-16T22:55:14Z</span>
+  </p>
+  <div>
+    <p>@Joe: The side effect functions run twice when using React 18 in development mode. This does not occur when you use the production built version of the application. This is documented in the official React docs: <a href="https://reactjs.org/docs/strict-mode.html#ensuring-reusable-state" rel="nofollow">https://reactjs.org/docs/strict-mode.html#ensuring-reusable-state</a>. If this bothers you, you can downgrade to React 17, which didn't do this. I've also seen some hacks that disable this behavior in React 18, but I frankly don't see a need, since this only happens during development.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/94446c5ed18e8ef108fa837c400ead58?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#20</span> <span class="badge text-bg-warning">Joe T</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-11-17T19:00:47Z" data-function="fromNow" data-refresh="0" style="display: none">2022-11-17T19:00:47Z</span>
+  </p>
+  <div>
+    <p>@Miguel, thanks again! I am able to see the redundant call go away with a production build. Your expertise is much appreciated as always.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4a515560472b1b92f54011bac8f58de2?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#21</span> <span class="badge text-bg-warning">marcus kamure</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-12-09T04:04:47Z" data-function="fromNow" data-refresh="0" style="display: none">2022-12-09T04:04:47Z</span>
+  </p>
+  <div>
+    <p>can you kindly explain, looking for query string  used in the api especially the (options,query || {}) part of it because am a bit lost here</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#22</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-12-09T11:27:22Z" data-function="fromNow" data-refresh="0" style="display: none">2022-12-09T11:27:22Z</span>
+  </p>
+  <div>
+    <p>@marcus: you can pass query string values in the <code>options</code> object. For example:</p>
+<pre><code>const response = await api.get('/foo', {query: {page: 1, per_page: 10}});
+</code></pre>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4a515560472b1b92f54011bac8f58de2?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#23</span> <span class="badge text-bg-warning">marcus kamure</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-12-10T02:45:45Z" data-function="fromNow" data-refresh="0" style="display: none">2022-12-10T02:45:45Z</span>
+  </p>
+  <div>
+    <p>Thanks Miguel for the effort you put in to produce work that has a great impact on people,  i really appreciate that</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdmxg.Zz7m545IC_GEmCHHi0PSJJ3njrc">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  
+  <div class="card-header">The React Mega-Tutorial</div>
+  <a class="card-book-cover" href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">
+    <img src="../../../static/react-book-small.png">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you would you like to support my <a href="../../introducing-the-react-mega-tutorial.html">React Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial in book and/or video formats, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3LK7Skg">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3LK7Skg">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">Click here to get the Video Course!</a>
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-6-building-an-api-client/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:45 GMT -->
+</html>

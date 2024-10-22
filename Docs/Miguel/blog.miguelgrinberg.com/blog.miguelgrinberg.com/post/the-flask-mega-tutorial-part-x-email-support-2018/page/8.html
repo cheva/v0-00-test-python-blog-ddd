@@ -1,0 +1,1630 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018/page/8 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:44 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The Flask Mega-Tutorial Part X: Email Support (2018) - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="Programming, Python, Flask, Email, Flask-Mail, Gmail">
+  
+  
+  <link rel="canonical" href="../../the-flask-mega-tutorial-part-x-email-support-2018.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The Flask Mega-Tutorial Part X: Email Support (2018)">
+    <meta property="og:description" content="(Great news! There is a new version of this tutorial!)This is the tenth installment of the Flask Mega-Tutorial series, in which I&#39;m going to tell you how your application can send emails to your…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-x-email-support-2018.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018">
+    <meta name="twitter:title" content="The Flask Mega-Tutorial Part X: Email Support (2018)">
+    <meta name="twitter:description" content="(Great news! There is a new version of this tutorial!)This is the tenth installment of the Flask Mega-Tutorial series, in which I&#39;m going to tell you how your application can send emails to your…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-x-email-support-2018.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../the-flask-mega-tutorial-part-x-email-support-2018.html">The Flask Mega-Tutorial Part X: Email Support (2018)</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2018-02-06T15:11:28Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2018-02-06T15:11:28Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p><em>(Great news! There is a <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">new version of this tutorial</a>!)</em></p>
+<p>This is the tenth installment of the Flask Mega-Tutorial series, in which I'm going to tell you how your application can send emails to your users, and how to build a password recovery feature on top of the email support.</p>
+<p>For your reference, below is a list of the articles in this series.</p>
+<ul>
+<li><a href="../../the-flask-mega-tutorial-part-i-hello-world-2018.html">Chapter 1: Hello, World!</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ii-templates-2018.html">Chapter 2: Templates</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iii-web-forms-2018.html">Chapter 3: Web Forms</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iv-database-2018.html">Chapter 4: Database</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-v-user-logins-2018.html">Chapter 5: User Logins</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vi-profile-page-and-avatars-2018.html">Chapter 6: Profile Page and Avatars</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vii-error-handling-2018.html">Chapter 7: Error Handling</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-viii-followers-2018.html">Chapter 8: Followers</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ix-pagination-2018.html">Chapter 9: Pagination</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-x-email-support-2018.html">Chapter 10: Email Support</a> (this article)</li>
+<li><a href="../../the-flask-mega-tutorial-part-xi-facelift-2018.html">Chapter 11: Facelift</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xii-dates-and-times-2018.html">Chapter 12: Dates and Times</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiii-i18n-and-l10n-2018.html">Chapter 13: I18n and L10n</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiv-ajax-2018.html">Chapter 14: Ajax</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xv-a-better-application-structure-2018.html">Chapter 15: A Better Application Structure</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvi-full-text-search-2018.html">Chapter 16: Full-Text Search</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvii-deployment-on-linux-2018.html">Chapter 17: Deployment on Linux</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xviii-deployment-on-heroku-2018.html">Chapter 18: Deployment on Heroku</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xix-deployment-on-docker-containers-2018.html">Chapter 19: Deployment on Docker Containers</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xx-some-javascript-magic-2018.html">Chapter 20: Some JavaScript Magic</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xxi-user-notifications-2018.html">Chapter 21: User Notifications</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xxii-background-jobs-2018.html">Chapter 22: Background Jobs</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xxiii-application-programming-interfaces-apis-2018.html">Chapter 23: Application Programming Interfaces (APIs)</a></li>
+</ul>
+<p>The application is doing pretty well on the database front now, so in this chapter I want to depart from that topic and add another important piece that most web applications need, which is the sending of emails.</p>
+<p>Why does an application need to email its users? There are many reasons, but one common one is to solve authentication related problems. In this chapter I'm going to add a password reset feature for users that forget their password. When a user requests a password reset, the application will send an email with a specially crafted link. The user then needs to click that link to have access to a form in which to set a new password.</p>
+<p><em>The GitHub links for this chapter are: <a href="https://github.com/miguelgrinberg/microblog/tree/v0.10">Browse</a>, <a href="https://github.com/miguelgrinberg/microblog-2018/archive/v0.10.zip">Zip</a>, <a href="https://github.com/miguelgrinberg/microblog/compare/v0.9...v0.10">Diff</a>.</em></p>
+<h2>Introduction to Flask-Mail</h2>
+<p>As far as the actual sending of emails, Flask has a popular extension called <a href="https://pythonhosted.org/Flask-Mail/">Flask-Mail</a> that can make the task very easy. As always, this extension is installed with pip:</p>
+<pre><code>(venv) $ pip install flask-mail
+</code></pre>
+<p>The password reset links will have a secure token in them. To generate these tokens, I'm going to use <a href="https://jwt.io/">JSON Web Tokens</a>, which also have a popular Python package:</p>
+<pre><code>(venv) $ pip install pyjwt
+</code></pre>
+<p>The Flask-Mail extension is configured from the <code>app.config</code> object. Remember when in <a href="../../the-flask-mega-tutorial-part-vii-error-handling-2018.html">Chapter 7</a> I added the email configuration for sending yourself an email whenever an error occurred in production? I did not tell you this then, but my choice of configuration variables was modeled after Flask-Mail's requirements, so there isn't really any additional work that is needed, the configuration variables are already in the application.</p>
+<p>Like most Flask extensions, you need to create an instance right after the Flask application is created. In this case this is an object of class <code>Mail</code>:</p>
+<p class="code_title"><i>app/__init__.py</i>: Flask-Mail instance.</p>
+
+<pre><code class="language-python"># ...
+from flask_mail import Mail
+
+app = Flask(__name__)
+# ...
+mail = Mail(app)
+</code></pre>
+<p>If you are planning to test sending of emails you have the same options I mentioned in <a href="../../the-flask-mega-tutorial-part-vii-error-handling-2018.html">Chapter 7</a>. If you want to use an emulated email server, Python provides one that is very handy that you can start in a second terminal with the following command:</p>
+<pre><code>(venv) $ python -m smtpd -n -c DebuggingServer localhost:8025
+</code></pre>
+<p>To configure for this server you will need to set two environment variables:</p>
+<pre><code class="language-bash">(venv) $ export MAIL_SERVER=localhost
+(venv) $ export MAIL_PORT=8025
+</code></pre>
+<p>If you prefer to have emails sent for real, you need to use a real email server. If you have one, then you just need to set the <code>MAIL_SERVER</code>, <code>MAIL_PORT</code>, <code>MAIL_USE_TLS</code>, <code>MAIL_USERNAME</code> and <code>MAIL_PASSWORD</code> environment variables for it. If you want a quick solution, you can use a Gmail account to send email, with the following settings:</p>
+<pre><code class="language-bash">(venv) $ export MAIL_SERVER=smtp.googlemail.com
+(venv) $ export MAIL_PORT=587
+(venv) $ export MAIL_USE_TLS=1
+(venv) $ export MAIL_USERNAME=&lt;your-gmail-username&gt;
+(venv) $ export MAIL_PASSWORD=&lt;your-gmail-password&gt;
+</code></pre>
+<p>If you are using Microsoft Windows, you need to replace <code>export</code> with <code>set</code> in each of the <code>export</code> statements above.</p>
+<p>Remember that the security features in your Gmail account may prevent the application from sending emails through it unless you explicitly allow "less secure apps" access to your Gmail account. You can read about this <a href="https://support.google.com/accounts/answer/6010255?hl=en">here</a>, and if you are concerned about the security of your account, you can create a secondary account that you configure just for testing emails, or you can enable less secure apps only temporarily to run your tests and then revert back to the more secure default.</p>
+<p>If you'd like to use a real email server, but don't want to complicate yourself with the Gmail configuration, <a href="https://sendgrid.com/">SendGrid</a> is a good option that gives you 100 emails per day using a free account.</p>
+<h2>Flask-Mail Usage</h2>
+<p>To learn how Flask-Mail works, I'll show you how to send an email from a Python shell. So fire up Python with <code>flask shell</code>, and then run the following commands:</p>
+<pre><code class="language-python">&gt;&gt;&gt; from flask_mail import Message
+&gt;&gt;&gt; from app import mail
+&gt;&gt;&gt; msg = Message('test subject', sender=app.config['ADMINS'][0],
+... recipients=['your-email@example.com'])
+&gt;&gt;&gt; msg.body = 'text body'
+&gt;&gt;&gt; msg.html = '&lt;h1&gt;HTML body&lt;/h1&gt;'
+&gt;&gt;&gt; mail.send(msg)
+</code></pre>
+<p>The snippet of code above will send an email to a list of email addresses that you put in the <code>recipients</code> argument. I put the sender as the first configured admin (I've added the <code>ADMINS</code> configuration variable in <a href="../../the-flask-mega-tutorial-part-vii-error-handling-2018.html">Chapter 7</a>). The email will have plain text and HTML versions, so depending on how your email client is configured you may see one or the other.</p>
+<p>So as you see, this is pretty simple. Now let's integrate emails into the application.</p>
+<h2>A Simple Email Framework</h2>
+<p>I will begin by writing a helper function that sends an email, which is basically a generic version of the shell exercise from the previous section. I will put this function in a new module called <code>app/email.py</code>:</p>
+<p class="code_title"><i>app/email.py</i>: Email sending wrapper function.</p>
+
+<pre><code class="language-python">from flask_mail import Message
+from app import mail
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    mail.send(msg)
+</code></pre>
+<p>Flask-Mail supports some features that I'm not utilizing here such as Cc and Bcc lists. Be sure to check the <a href="https://pythonhosted.org/Flask-Mail/">Flask-Mail Documentation</a> if you are interested in those options.</p>
+<h2>Requesting a Password Reset</h2>
+<p>As I mentioned above, I want users to have the option to request their password to be reset. For this purpose I'm going to add a link in the login page:</p>
+<p class="code_title"><i>app/templates/login.html</i>: Password reset link in login form.</p>
+
+<pre><code class="language-html">    &lt;p&gt;
+        Forgot Your Password?
+        &lt;a href=&quot;{{ url_for('reset_password_request') }}&quot;&gt;Click to Reset It&lt;/a&gt;
+    &lt;/p&gt;
+</code></pre>
+<p>When the user clicks the link, a new web form will appear that requests the user's email address as a way to initiate the password reset process. Here is the form class:</p>
+<p class="code_title"><i>app/forms.py</i>: Reset password request form.</p>
+
+<pre><code class="language-python">class ResetPasswordRequestForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
+</code></pre>
+<p>And here is the corresponding HTML template:</p>
+<p class="code_title"><i>app/templates/reset_password_request.html</i>: Reset password request template.</p>
+
+<pre><code class="language-html">{% extends &quot;base.html&quot; %}
+
+{% block content %}
+    &lt;h1&gt;Reset Password&lt;/h1&gt;
+    &lt;form action=&quot;&quot; method=&quot;post&quot;&gt;
+        {{ form.hidden_tag() }}
+        &lt;p&gt;
+            {{ form.email.label }}&lt;br&gt;
+            {{ form.email(size=64) }}&lt;br&gt;
+            {% for error in form.email.errors %}
+            &lt;span style=&quot;color: red;&quot;&gt;[{{ error }}]&lt;/span&gt;
+            {% endfor %}
+        &lt;/p&gt;
+        &lt;p&gt;{{ form.submit() }}&lt;/p&gt;
+    &lt;/form&gt;
+{% endblock %}
+</code></pre>
+<p>I also need a view function to handle this form:</p>
+<p class="code_title"><i>app/routes.py</i>: Reset password request view function.</p>
+
+<pre><code class="language-python">from app.forms import ResetPasswordRequestForm
+from app.email import send_password_reset_email
+
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            send_password_reset_email(user)
+        flash('Check your email for the instructions to reset your password')
+        return redirect(url_for('login'))
+    return render_template('reset_password_request.html',
+                           title='Reset Password', form=form)
+</code></pre>
+<p>This view function is fairly similar to others that process a form. I start by making sure the user is not logged in. If the user is logged in, then there is no point in using the password reset functionality, so I redirect to the index page.</p>
+<p>When the form is submitted and valid, I look up the user by the email provided by the user in the form. If I find the user, I send a password reset email. The <code>send_password_reset_email()</code> helper function performs this task. I will show you this function below.</p>
+<p>After the email is sent, I flash a message directing the user to look for the email for further instructions, and then redirect back to the login page. You may notice that the flashed message is displayed even if the email provided by the user is unknown. This is so that clients cannot use this form to figure out if a given user is a member or not.</p>
+<h2>Password Reset Tokens</h2>
+<p>Before I implement the <code>send_password_reset_email()</code> function, I need to have a way to generate a password request link. This is going to be the link that is sent to the user via email. When the link is clicked, a page where a new password can be set is presented to the user. The tricky part of this plan is to make sure that only valid reset links can be used to reset an account's password.</p>
+<p>The links are going to be provisioned with a <em>token</em>, and this token will be validated before allowing the password change, as proof that the user that requested the email has access to the email address on the account. A very popular token standard for this type of process is the JSON Web Token, or JWT. The nice thing about JWTs is that they are self contained. You can send a token to a user in an email, and when the user clicks the link that feeds the token back into the application, it can be verified on its own.</p>
+<p>How do JWTs work? Nothing better than a quick Python shell session to understand them:</p>
+<pre><code class="language-python">&gt;&gt;&gt; import jwt
+&gt;&gt;&gt; token = jwt.encode({'a': 'b'}, 'my-secret', algorithm='HS256')
+&gt;&gt;&gt; token
+'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhIjoiYiJ9.dvOo58OBDHiuSHD4uW88nfJik_sfUHq1mDi4G0'
+&gt;&gt;&gt; jwt.decode(token, 'my-secret', algorithms=['HS256'])
+{'a': 'b'}
+</code></pre>
+<p>The <code>{'a': 'b'}</code> dictionary is an example payload that is going to be written into the token. To make the token secure, a secret key needs to be provided to be used in creating a cryptographic signature. For this example I have used the string <code>'my-secret'</code>, but with the application I'm going to use the <code>SECRET_KEY</code> from the configuration. The <code>algorithm</code> argument specifies how the token is to be generated. The <code>HS256</code> algorithm is the most widely used.</p>
+<p>As you can see the resulting token is a long sequence of characters. But do not think that this is an encrypted token. The contents of the token, including the payload, can be decoded easily by anyone (don't believe me? Copy the above token and then enter it in the <a href="https://jwt.io/#debugger-io">JWT debugger</a> to see its contents). What makes the token secure is that the payload is <em>signed</em>. If somebody tried to forge or tamper with the payload in a token, then the signature would be invalidated, and to generate a new signature the secret key is needed. When a token is verified, the contents of the payload are decoded and returned back to the caller. If the token's signature was validated, then the payload can be trusted as authentic.</p>
+<p>The payload that I'm going to use for the password reset tokens is going to have the format <code>{'reset_password': user_id, 'exp': token_expiration}</code>. The <code>exp</code> field is standard for JWTs and if present it indicates an expiration time for the token. If a token has a valid signature, but it is past its expiration timestamp, then it will also be considered invalid. For the password reset feature, I'm going to give these tokens 10 minutes of life.</p>
+<p>When the user clicks on the emailed link, the token is going to be sent back to the application as part of the URL, and the first thing the view function that handles this URL will do is to verify it. If the signature is valid, then the user can be identified by the ID stored in the payload. Once the user's identity is known, the application can ask for a new password and set it on the user's account.</p>
+<p>Since these tokens belong to users, I'm going to write the token generation and verification functions as methods in the <code>User</code> model:</p>
+<p class="code_title"><i>app/models.py</i>: Reset password token methods.</p>
+
+<pre><code class="language-python">from time import time
+import jwt
+from app import app
+
+class User(UserMixin, db.Model):
+    # ...
+
+    def get_reset_password_token(self, expires_in=600):
+        return jwt.encode(
+            {'reset_password': self.id, 'exp': time() + expires_in},
+            app.config['SECRET_KEY'], algorithm='HS256')
+
+    @staticmethod
+    def verify_reset_password_token(token):
+        try:
+            id = jwt.decode(token, app.config['SECRET_KEY'],
+                            algorithms=['HS256'])['reset_password']
+        except:
+            return
+        return User.query.get(id)
+</code></pre>
+<p>The <code>get_reset_password_token()</code> function returns a JWT token as a string, which is generated directly by the <code>jwt.encode()</code> function.</p>
+<p>The <code>verify_reset_password_token()</code> is a static method, which means that it can be invoked directly from the class. A static method is similar to a class method, with the only difference that static methods do not receive the class as a first argument. This method takes a token and attempts to decode it by invoking PyJWT's <code>jwt.decode()</code> function. If the token cannot be validated or is expired, an exception will be raised, and in that case I catch it to prevent the error, and then return <code>None</code> to the caller. If the token is valid, then the value of the <code>reset_password</code> key from the token's payload is the ID of the user, so I can load the user and return it.</p>
+<h2>Sending a Password Reset Email</h2>
+<p>The <code>send_password_reset_email()</code> function relies on the <code>send_email()</code> function I wrote above to generate the password reset emails. </p>
+<p class="code_title"><i>app/email.py</i>: Send password reset email function.</p>
+
+<pre><code class="language-python">from flask import render_template
+from app import app
+
+# ...
+
+def send_password_reset_email(user):
+    token = user.get_reset_password_token()
+    send_email('[Microblog] Reset Your Password',
+               sender=app.config['ADMINS'][0],
+               recipients=[user.email],
+               text_body=render_template('email/reset_password.txt',
+                                         user=user, token=token),
+               html_body=render_template('email/reset_password.html',
+                                         user=user, token=token))
+</code></pre>
+<p>The interesting part in this function is that the text and HTML content for the emails is generated from templates using the familiar <code>render_template()</code> function. The templates receive the user and the token as arguments, so that a personalized email message can be generated. Here is the text template for the reset password email:</p>
+<p class="code_title"><i>app/templates/email/reset_password.txt</i>: Text for password reset email.</p>
+
+<pre><code>Dear {{ user.username }},
+
+To reset your password click on the following link:
+
+{{ url_for('reset_password', token=token, _external=True) }}
+
+If you have not requested a password reset simply ignore this message.
+
+Sincerely,
+
+The Microblog Team
+</code></pre>
+<p>And here is the nicer HTML version of the same email:</p>
+<p class="code_title"><i>app/templates/email/reset_password.html</i>: HTML for password reset email.</p>
+
+<pre><code class="language-html">&lt;p&gt;Dear {{ user.username }},&lt;/p&gt;
+&lt;p&gt;
+    To reset your password
+    &lt;a href=&quot;{{ url_for('reset_password', token=token, _external=True) }}&quot;&gt;
+        click here
+    &lt;/a&gt;.
+&lt;/p&gt;
+&lt;p&gt;Alternatively, you can paste the following link in your browser's address bar:&lt;/p&gt;
+&lt;p&gt;{{ url_for('reset_password', token=token, _external=True) }}&lt;/p&gt;
+&lt;p&gt;If you have not requested a password reset simply ignore this message.&lt;/p&gt;
+&lt;p&gt;Sincerely,&lt;/p&gt;
+&lt;p&gt;The Microblog Team&lt;/p&gt;
+</code></pre>
+<p>The <code>reset_password</code> route that is referenced in the <code>url_for()</code> call in these two email templates does not exist yet, this will be added in the next section. The <code>_external=True</code> argument that I included in the <code>url_for()</code> calls in both templates is also new. The URLs that are generated by <code>url_for()</code> by default are relative URLs that only include the path portion of the URL. This is normally sufficient for links that are generated in web pages, because the web browser completes the URL by taking the missing parts from the URL in the address bar. When sending a URL by email however, that context does not exist, so fully qualified URLs need to be used. When <code>_external=True</code> is passed as an argument, complete URLs are generated, so the previous example would return <em>http://localhost:5000/user/susan</em>, or the appropriate URL when the application is deployed on a domain name.</p>
+<h2>Resetting a User Password</h2>
+<p>When the user clicks on the email link, a second route associated with this feature is triggered. Here is the password request view function:</p>
+<p class="code_title"><i>app/routes.py</i>: Password reset view function.</p>
+
+<pre><code class="language-python">from app.forms import ResetPasswordForm
+
+@app.route('/reset_password/&lt;token&gt;', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    user = User.verify_reset_password_token(token)
+    if not user:
+        return redirect(url_for('index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your password has been reset.')
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', form=form)
+</code></pre>
+<p>In this view function I first make sure the user is not logged in, and then I determine who the user is by invoking the token verification method in the <code>User</code> class. This method returns the user if the token is valid, or <code>None</code> if not. If the token is invalid I redirect to the home page.</p>
+<p>If the token is valid, then I present the user with a second form, in which the new password is requested. This form is processed in a way similar to previous forms, and as a result of a valid form submission, I invoke the <code>set_password()</code> method of <code>User</code> to change the password, and then redirect to the login page, where the user can now login.</p>
+<p>Here is the <code>ResetPasswordForm</code> class:</p>
+<p class="code_title"><i>app/forms.py</i>: Password reset form.</p>
+
+<pre><code class="language-python">class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField(
+        'Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Request Password Reset')
+</code></pre>
+<p>And here is the corresponding HTML template:</p>
+<p class="code_title"><i>app/templates/reset_password.html</i>: Password reset form template.</p>
+
+<pre><code class="language-html">{% extends &quot;base.html&quot; %}
+
+{% block content %}
+    &lt;h1&gt;Reset Your Password&lt;/h1&gt;
+    &lt;form action=&quot;&quot; method=&quot;post&quot;&gt;
+        {{ form.hidden_tag() }}
+        &lt;p&gt;
+            {{ form.password.label }}&lt;br&gt;
+            {{ form.password(size=32) }}&lt;br&gt;
+            {% for error in form.password.errors %}
+            &lt;span style=&quot;color: red;&quot;&gt;[{{ error }}]&lt;/span&gt;
+            {% endfor %}
+        &lt;/p&gt;
+        &lt;p&gt;
+            {{ form.password2.label }}&lt;br&gt;
+            {{ form.password2(size=32) }}&lt;br&gt;
+            {% for error in form.password2.errors %}
+            &lt;span style=&quot;color: red;&quot;&gt;[{{ error }}]&lt;/span&gt;
+            {% endfor %}
+        &lt;/p&gt;
+        &lt;p&gt;{{ form.submit() }}&lt;/p&gt;
+    &lt;/form&gt;
+{% endblock %}
+</code></pre>
+<p>The password reset feature is now complete, so make sure you try it.</p>
+<h2>Asynchronous Emails</h2>
+<p>If you are using the simulated email server that Python provides you may not have noticed this, but sending an email slows the application down considerably. All the interactions that need to happen when sending an email make the task slow, it usually takes a few seconds to get an email out, and maybe more if the email server of the addressee is slow, or if there are multiple addressees.</p>
+<p>What I really want is for the <code>send_email()</code> function to be <em>asynchronous</em>. What does that mean? It means that when this function is called, the task of sending the email is scheduled to happen in the background, freeing the <code>send_email()</code> to return immediately so that the application can continue running concurrently with the email being sent.</p>
+<p>Python has support for running asynchronous tasks, actually in more than one way. The <code>threading</code> and <code>multiprocessing</code> modules can both do this. Starting a background thread for email being sent is much less resource intensive than starting a brand new process, so I'm going to go with that approach:</p>
+<p class="code_title"><i>app/email.py</i>: Send emails asynchronously.</p>
+
+<pre><code class="language-python">from threading import Thread
+# ...
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    Thread(target=send_async_email, args=(app, msg)).start()
+</code></pre>
+<p>The <code>send_async_email</code> function now runs in a background thread, invoked via the <code>Thread</code> class in the last line of <code>send_email()</code>. With this change, the sending of the email will run in the thread, and when the process completes the thread will end and clean itself up. If you have configured a real email server, you will definitely notice a speed improvement when you press the submit button on the password reset request form.</p>
+<p>You probably expected that only the <code>msg</code> argument would be sent to the thread, but as you can see in the code, I'm also sending the application instance. When working with threads there is an important design aspect of Flask that needs to be kept in mind. Flask uses <em>contexts</em> to avoid having to pass arguments across functions. I'm not going to go into a lot of detail on this, but know that there are two types of contexts, the <em>application context</em> and the <em>request context</em>. In most cases, these contexts are automatically managed by the framework, but when the application starts custom threads, contexts for those threads may need to be manually created.</p>
+<p>There are many extensions that require an application context to be in place to work, because that allows them to find the Flask application instance without it being passed as an argument. The reason many extensions need to know the application instance is because they have their configuration stored in the <code>app.config</code> object. This is exactly the situation with Flask-Mail. The <code>mail.send()</code> method needs to access the configuration values for the email server, and that can only be done by knowing what the application is. The application context that is created with the <code>with app.app_context()</code> call makes the application instance accessible via the <code>current_app</code> variable from Flask.</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018&amp;t=The%20Flask%20Mega-Tutorial%20Part%20X%3A%20Email%20Support%20%282018%29" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018&amp;resubmit=true&amp;title=The%20Flask%20Mega-Tutorial%20Part%20X:%20Email%20Support%20(2018)" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20Flask%20Mega-Tutorial%20Part%20X%3A%20Email%20Support%20%282018%29&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018&amp;title=The%20Flask%20Mega-Tutorial%20Part%20X%3A%20Email%20Support%20%282018%29&amp;summary=The%20Flask%20Mega-Tutorial%20Part%20X%3A%20Email%20Support%20%282018%29&amp;source=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20Flask%20Mega-Tutorial%20Part%20X%3A%20Email%20Support%20%282018%29&amp;body=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../the-flask-mega-tutorial-part-x-email-support-2018.html#comments">319 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#176</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-08T17:26:08Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-08T17:26:08Z</span>
+  </p>
+  <div>
+    <p>@Hassan: all the browser tabs share the same cookie repository, you cannot have two tabs with different logged in users. Try using two different web browsers, or a private and a normal window of a single browser.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a0dc2d2b62f76f8a1e8f506f2c2e0257?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#177</span> <span class="badge text-bg-warning">Marek</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-23T06:45:34Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-23T06:45:34Z</span>
+  </p>
+  <div>
+    <p>Hi,<br>
+I have a strange issue with async email sending. It seems that mail.send(msg) call hangs until I restart the app service.</p>
+<p>Here's the code:<br>
+def send_async_email(app, msg):<br>
+    <a href="http://app.logger.info/" rel="nofollow">app.logger.info</a>('send_async_email:before_context')<br>
+    with app.app_context():<br>
+        <a href="http://app.logger.info/" rel="nofollow">app.logger.info</a>('send_async_email:in_context:before_email')<br>
+        mail.send(msg)<br>
+        <a href="http://app.logger.info/" rel="nofollow">app.logger.info</a>('send_async_email:in_context:after_email')</p>
+<p>def send_email(subject:str, text_body:Optional[str]=None, html_body:Optional[str]=None) -&gt; None:<br>
+    msg      = Message(subject, sender=current_app.config['SENDER'], recipients=[current_app.config['RECEIVER']])<br>
+    msg.body = text_body<br>
+    msg.html = html_body<br>
+    Thread(target=send_async_email, args=(current_app._get_current_object(), msg)).start()</p>
+<p>Here are the app logs - you can see the 36s jump in timestamp from before to after sending email - that's how long I waited to restart the service:<br>
+2020-01-23 07:34:07,299 INFO: send_async_email:before_context [in ./app/newsletter/<a href="http://email_utils.py:8/" rel="nofollow">email_utils.py:8</a>]<br>
+2020-01-23 07:34:07,347 INFO: send_async_email:in_context:before_email [in ./app/newsletter/<a href="http://email_utils.py:10/" rel="nofollow">email_utils.py:10</a>]<br>
+2020-01-23 07:34:43,897 INFO: send_async_email:in_context:after_email [in ./app/newsletter/<a href="http://email_utils.py:12/" rel="nofollow">email_utils.py:12</a>]<br>
+2020-01-23 07:34:45,172 INFO: service startup [in ./app/<strong>init</strong>.py:41]</p>
+<p>Here are the postfix logs - you can see the same timestamp jump between the first and the second lines:<br>
+Jan 23 07:34:07 x0z13 postfix/smtpd[28080]: connect from localhost[::1]<br>
+Jan 23 07:34:43 x0z13 postfix/smtpd[28080]: C7A52BD000F0: client=localhost[::1]<br>
+Jan 23 07:34:43 x0z13 postfix/cleanup[28227]: C7A52BD000F0: message-id=<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#49;&#53;&#55;&#57;&#55;&#54;&#49;&#50;&#52;&#55;&#50;&#57;&#46;&#50;&#55;&#57;&#50;&#48;&#46;&#49;&#52;&#53;&#49;&#55;&#53;&#55;&#50;&#53;&#56;&#53;&#55;&#48;&#54;&#52;&#57;&#54;&#52;&#55;&#54;&#64;&#67;&#69;&#78;&#83;&#79;&#82;&#69;&#68;" rel="nofollow">&amp;#49;&amp;#53;&amp;#55;&amp;#57;&amp;#55;&amp;#54;&amp;#49;&amp;#50;&amp;#52;&amp;#55;&amp;#50;&amp;#57;&amp;#46;&amp;#50;&amp;#55;&amp;#57;&amp;#50;&amp;#48;&amp;#46;&amp;#49;&amp;#52;&amp;#53;&amp;#49;&amp;#55;&amp;#53;&amp;#55;&amp;#50;&amp;#53;&amp;#56;&amp;#53;&amp;#55;&amp;#48;&amp;#54;&amp;#52;&amp;#57;&amp;#54;&amp;#52;&amp;#55;&amp;#54;&amp;#64;&amp;#67;&amp;#69;&amp;#78;&amp;#83;&amp;#79;&amp;#82;&amp;#69;&amp;#68;</a><br>
+Jan 23 07:34:43 x0z13 postfix/qmgr[2970]: C7A52BD000F0: from=<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#108;&#111;&#103;&#103;&#101;&#114;&#64;&#120;&#48;&#122;&#49;&#51;&#46;&#99;&#111;&#109;" rel="nofollow">&amp;#108;&amp;#111;&amp;#103;&amp;#103;&amp;#101;&amp;#114;&amp;#64;&amp;#120;&amp;#48;&amp;#122;&amp;#49;&amp;#51;&amp;#46;&amp;#99;&amp;#111;&amp;#109;</a>, size=529, nrcpt=1 (queue active)<br>
+Jan 23 07:34:43 x0z13 postfix/smtpd[28080]: disconnect from localhost[::1] ehlo=1 mail=1 rcpt=1 data=1 quit=1 commands=5<br>
+Jan 23 07:34:46 x0z13 postfix/smtp[28228]: C7A52BD000F0: to=<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#67;&#69;&#78;&#83;&#79;&#82;&#69;&#68;&#64;&#112;&#114;&#111;&#116;&#111;&#110;&#109;&#97;&#105;&#108;&#46;&#99;&#104;" rel="nofollow">&amp;#67;&amp;#69;&amp;#78;&amp;#83;&amp;#79;&amp;#82;&amp;#69;&amp;#68;&amp;#64;&amp;#112;&amp;#114;&amp;#111;&amp;#116;&amp;#111;&amp;#110;&amp;#109;&amp;#97;&amp;#105;&amp;#108;&amp;#46;&amp;#99;&amp;#104;</a>, relay=<a href="http://mail.protonmail.ch/" rel="nofollow">mail.protonmail.ch</a>[185.70.40.103]:25, delay=2.9, delays=0.13/0.07/1.5/1.1, dsn=2.0.0, status=sent (250 2.0.0 Ok: queued as 8CC41401007D)<br>
+Jan 23 07:34:46 x0z13 postfix/qmgr[2970]: C7A52BD000F0: removed</p>
+<p>The email is received, but it seems that I need to restart the service for the sending to get unstuck and finalise the transaction.</p>
+<p>Any ideas what is going on?</p>
+<p>BR, Marek</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a0dc2d2b62f76f8a1e8f506f2c2e0257?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#178</span> <span class="badge text-bg-warning">Marek</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-23T16:45:00Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-23T16:45:00Z</span>
+  </p>
+  <div>
+    <p>The issue was resolved by adding enable_threads = True in the project's ini file. It turns out that without it uwsgi will stop all threads when a handling of a request ends (vide <a href="https://github.com/unbit/uwsgi/issues/1141" rel="nofollow">https://github.com/unbit/uwsgi/issues/1141</a>)</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/73adf32453b82a6fdd8e79e0d416e78c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#179</span> <span class="badge text-bg-warning">Jhon</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-15T06:32:51Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-15T06:32:51Z</span>
+  </p>
+  <div>
+    <p>Hi<br>
+Thanks by the Mega-tutorial</p>
+<p>I have a problem at try send email:</p>
+<p>flask smtplib.SMTPServerDisconnected: please run connect() first site:<a href="http://stackoverflow.com/" rel="nofollow">stackoverflow.com</a></p>
+<p>In localhost work very fine, but in producction never...</p>
+<p>any sugestions<br>
+Thanks</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#180</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-15T07:56:19Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-15T07:56:19Z</span>
+  </p>
+  <div>
+    <p>@Jhon: there is no difference between a development or production servers in terms of sending email. Your email settings must be wrong in your server, or your production email server needs a different configuration than the one you are using.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/f4b444c5d256c15d87cd598c4b135032?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#181</span> <span class="badge text-bg-warning">Roman</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-20T09:40:32Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-20T09:40:32Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel! </p>
+<p>First of all thanks for the tutorial.</p>
+<p>I have a trouble with getting the ResetPasswordForm form. When I click the generated link, that I receive by email, I'm just redirected to login page all the time. Here how it logs it:<br>
+"<br>
+127.0.0.1 - - [20/Feb/2020 11:37:28] "?[32mGET /reset_password/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNldCBwYXNzd29yZCI6OSwiZXhwIjoxNTgyMTkyMDM3LjIxMDQzMTh9.nNQSPKt1PLqre1AeLIHI9wmSwkBn4JGwuXFMEIKouaI HTTP/1.1?[0m" 302 -<br>
+127.0.0.1 - - [20/Feb/2020 11:37:28] "?[32mGET /index HTTP/1.1?[0m" 302 -<br>
+127.0.0.1 - - [20/Feb/2020 11:37:28] "?[37mGET /login?next=%2Findex HTTP/1.1?[0m" 200 -<br>
+"<br>
+I've tried to even copy-paste all the changes done in this chapter, but that didn't help anyway. Maybe you could help with it? Thanks.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#182</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-20T18:34:26Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-20T18:34:26Z</span>
+  </p>
+  <div>
+    <p>@Roman: you will need to debug this. Add print statements in the view function that receives the reset password token, so that you can determine where it is breaking. My guess is that for some reason the token isn't validated, but I'm not sure why.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/47f6d51a7bb97ca1f406c0c74eefeab9?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#183</span> <span class="badge text-bg-warning">Aliaksei</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-25T16:38:49Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-25T16:38:49Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel!<br>
+Quote: <code>Regarding (a), the email module in microblog is inside the app package, so it does not collide with the email package from the Python standard library.</code><br>
+It's reproducible on windows platform in case of:</p>
+<p>Directory Structure:<br>
+pack/<strong>init</strong>.py<br>
+pack/<a href="http://email.py/" rel="nofollow">email.py</a><br>
+pack/<a href="http://test_module.py/" rel="nofollow">test_module.py</a></p>
+<p>Content of <strong>init</strong>.py:</p>
+<pre><code>import email
+</code></pre>
+<p>Content of <a href="http://test_module.py/" rel="nofollow">test_module.py</a></p>
+<pre><code>import email
+from http import server
+</code></pre>
+<p>I got an exception:<br>
+Traceback (most recent call last):<br>
+  File "pack/<a href="http://module_test.py/" rel="nofollow">module_test.py</a>", line 5, in &lt;module&gt;<br>
+    from http import server<br>
+  File "python3/Lib/http/<a href="http://server.py/" rel="nofollow">server.py</a>", line 92, in &lt;module&gt;<br>
+    import email.utils<br>
+ModuleNotFoundError: No module named 'email.utils'; 'email' is not a package</p>
+<p>The case shows <a href="http://server.py/" rel="nofollow">server.py</a> imports email.utils, but it is placed at system packages. In case of Flask tutorial application uses werkzeug <strong>version</strong> = "1.0.0" and werkzeug package includes BaseHHTPRequestHandler with email module.</p>
+<p>Best regards!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#184</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-25T22:20:15Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-25T22:20:15Z</span>
+  </p>
+  <div>
+    <p>the python import path in your example includes the directory where <a href="http://email.py/" rel="nofollow">email.py</a> is, that's why it fails.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4107faa3eabc1e8bfa0dcc95702f8d09?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#185</span> <span class="badge text-bg-warning">Jeffrey Lozano</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-21T05:00:33Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-21T05:00:33Z</span>
+  </p>
+  <div>
+    <p>I'm having issues in sending a confirmation email, on the registration process of my flasky app. A SMTPSenderRefused appears on my terminal whenever a registering user tries to send/resend a confirmation email.</p>
+<p>The debugger recommended to follow a link at google support, so I did. I configured my email accordingly as shown:<br>
+- IMAP: enabled<br>
+- Access to less secure apps: ON</p>
+<p>And it works! I was able to receive a confirmation email on my gmail account inbox by directly inputting my gmail username and password, on the 2nd argument of MAIL_USERNAME and MAIL_PASSWORD respectively, as shown below:</p>
+<p><a href="http://config.py/" rel="nofollow">config.py</a><br>
+MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'example@gmail.com')<br>
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'examplepassword')</p>
+<p>However, I need to integrate this in my application, in order that users can receive a confirmation email during their registration process on the flasky app, so I tried to replace my direct email &amp; password input, with the corresponding attributes from auth/<a href="http://forms.py/" rel="nofollow">forms.py</a>:</p>
+<p><a href="http://config.py/" rel="nofollow">config.py</a><br>
+MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'email')<br>
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'password')</p>
+<p>It did not work! so tried replacing it with:</p>
+<p><a href="http://config.py/" rel="nofollow">config.py</a><br>
+MAIL_USERNAME = os.environ.get('MAIL_USERNAME', 'Email')<br>
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', 'Password')</p>
+<p>It still did not work!</p>
+<p>Again, it's already proven to be working with a direct email &amp; password input, wherein I was able to receive an email confirmation from my gmail account, and was also able to successfully confirm my account registration on the flasky app.(As a whole, the code-wise functionality is in good working order!)</p>
+<p>It appears that the narrowed-down root problem is the 2nd argument for both the MAIL_USERNAME and MAIL_PASSWORD; wherein, it seems that a very specific argument needs to be written down.</p>
+<p>What is this specific keyword that I need to write for both my 2nd argument? In accordance to the user input in both the email StringField and PasswordField?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#186</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-21T23:59:52Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-21T23:59:52Z</span>
+  </p>
+  <div>
+    <p>@Jeffrey: I don't understand what you are doing. Are you following this tutorial or implementing your own solution? There shouldn't be a second argument on those os.environ.get() calls, that's totally insecure. Set your credentials in the environment variables as indicated in this article.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/fcde6e849fc18f5239e465a531377b13?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#187</span> <span class="badge text-bg-warning">Pratik</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-30T23:41:07Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-30T23:41:07Z</span>
+  </p>
+  <div>
+    <p>Any thoughts around using flask-mail vs smtplib? smtplib seems pretty straightforward as well, why to use another wrapper? Thanks</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#188</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-31T09:31:23Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-31T09:31:23Z</span>
+  </p>
+  <div>
+    <p>@Pratik: I have no thoughts on that. If you like smtplib you should by all means use that. You'll have to implement some sort of configuration pattern on your own though, Flask-Mail does that for you.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/5be9e3020983d0f403ad43f2f0ca5c30?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#189</span> <span class="badge text-bg-warning">AR</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-02T04:40:32Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-02T04:40:32Z</span>
+  </p>
+  <div>
+    <p>Hi,<br>
+ Is there a way in flask-mail to check whether an email was opened by the recipient or not, and things like which links were clicked within the email body, ?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#190</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-02T14:13:59Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-02T14:13:59Z</span>
+  </p>
+  <div>
+    <p>@AR: Not unless you implement it yourself. You may want to consider using a commercial email service if you require that kind of feature, for example SendGrid.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/de88cc7b60cbb8744eae47f108d8c88c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#191</span> <span class="badge text-bg-warning">sam</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-05T22:50:35Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-05T22:50:35Z</span>
+  </p>
+  <div>
+    <p>Awesome tutorial Miguel.</p>
+<p>I have success up until the part of the password reset.</p>
+<p>I had a similar issue to Anthony which I "think" I fixed by declaring</p>
+<p>conn = mail.connect()<br>
+conn.send(msg)</p>
+<p>in the send_message() function from <a href="http://email.py/" rel="nofollow">email.py</a></p>
+<p>now I am getting this...</p>
+<p>[2020-04-05 15:40:25,093] ERROR in app: Exception on /reset_password_request [POST]<br>
+Traceback (most recent call last):<br>
+  File "c:\users\sam\documents\lpthw\microblog\venv\lib\site-packages\flask\<a href="http://app.py/" rel="nofollow">app.py</a>", line 2447, in wsgi_app<br>
+    response = self.full_dispatch_request()<br>
+  File "c:\users\sam\documents\lpthw\microblog\venv\lib\site-packages\flask\<a href="http://app.py/" rel="nofollow">app.py</a>", line 1952, in full_dispatch_request<br>
+    rv = self.handle_user_exception(e)<br>
+  File "c:\users\sam\documents\lpthw\microblog\venv\lib\site-packages\flask\<a href="http://app.py/" rel="nofollow">app.py</a>", line 1821, in handle_user_exception<br>
+    reraise(exc_type, exc_value, tb)<br>
+  File "c:\users\sam\documents\lpthw\microblog\venv\lib\site-packages\<a href="http://flask_compat.py/" rel="nofollow">flask_compat.py</a>", line 39, in reraise<br>
+    raise value<br>
+  File "c:\users\sam\documents\lpthw\microblog\venv\lib\site-packages\flask\<a href="http://app.py/" rel="nofollow">app.py</a>", line 1950, in full_dispatch_request<br>
+    rv = self.dispatch_request()<br>
+  File "c:\users\sam\documents\lpthw\microblog\venv\lib\site-packages\flask\<a href="http://app.py/" rel="nofollow">app.py</a>", line 1936, in dispatch_request<br>
+    return self.view_functions<a href="__req.html" rel="nofollow">rule.endpoint</a><br>
+  File "C:\Users\Sam\Documents\lpthw\microblog\app\<a href="http://routes.py/" rel="nofollow">routes.py</a>", line 154, in reset_password_request<br>
+    send_password_reset_email(user)<br>
+  File "C:\Users\Sam\Documents\lpthw\microblog\app\<a href="http://email.py/" rel="nofollow">email.py</a>", line 23, in send_password_reset_email<br>
+    user=user, token=token))<br>
+  File "C:\Users\Sam\Documents\lpthw\microblog\app\<a href="http://email.py/" rel="nofollow">email.py</a>", line 13, in send_email<br>
+    conn.send(msg)<br>
+  File "c:\users\sam\documents\lpthw\microblog\venv\lib\site-packages\<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 187, in send<br>
+    if self.host:<br>
+AttributeError: 'Connection' object has no attribute 'host'<br>
+127.0.0.1 - - [05/Apr/2020 15:40:25] "?[35m?[1mPOST /reset_password_request HTTP/1.1?[0m" 500 -</p>
+<p>I have tried many different configurations as well</p>
+<p>Thanks in advance for your help</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#192</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-06T22:34:50Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-06T22:34:50Z</span>
+  </p>
+  <div>
+    <p>@sam: if I understand the Flask-Mail issue, this only happens when the email server drops the connection. So even if you address the crash you will still have an email server that does not want to talk to you. So maybe the solution is to try another email server?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/5882d0ce28d8bf30f725b057b33ddc0c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#193</span> <span class="badge text-bg-warning">Phil</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-13T08:59:57Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-13T08:59:57Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, if you're still updating this, Gmail has changed their service to disallow less secure apps to connect through regular login. Instead, you can generate a 16 character 'app password', which you use in place of your own in the variable. All other steps are the same.</p>
+<p>Great work with this guide!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#194</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-14T12:54:49Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-14T12:54:49Z</span>
+  </p>
+  <div>
+    <p>@Phil: both methods are supported as far as I'm aware. You can enable the less secure apps setting or use an app password. If your account has 2-factor authentication enabled, then they only allow app passwords to be used.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/fa0a01bdee77ffbba509a3918cca2fb3?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#195</span> <span class="badge text-bg-warning">Daniel</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-16T18:03:52Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-16T18:03:52Z</span>
+  </p>
+  <div>
+    <p>Just a comment for those who did not manage to get the email configuration working, having an error like "Username and Password not accepted".  You need to tell Gmail to allow access to your account to less secure apps: <br>
+<a href="https://www.google.com/settings/security/lesssecureapps" rel="nofollow">https://www.google.com/settings/security/lesssecureapps</a></p>
+<p>@Miguel, thanks a lot for this amazing tutorial, all so crystal clear and complete.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/e34970097c2c3c18fa32e6d7968fc1cf?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#196</span> <span class="badge text-bg-warning">sandy</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-18T19:59:15Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-18T19:59:15Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,<br>
+               I'm trying to send an email message as you have explained,but I keep getting this error.What could be the cause of this? I have done everything as you have mentioned. Here is the log of the error message.</p>
+<p>(venv) C:\Users\vinay\microblog&gt;flask shell<br>
+[2020-04-19 01:13:24,542] INFO in <strong>init</strong>: Microblog startup<br>
+Python 2.7.12 (v2.7.12:d33e0cf91556, Jun 27 2016, 15:19:22) [MSC v.1500 32 bit (Intel)] on win32<br>
+App: app [production]<br>
+Instance: C:\Users\vinay\microblog\instance</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>from flask_mail import Message<br>
+from app import mail<br>
+msg = Message('test subject', sender=app.config['ADMINS'][0],<br>
+...     recipients=['your-email@example.com'])<br>
+msg.body = 'text body'<br>
+msg.html = '&lt;h1&gt;HTML body&lt;/h1&gt;'<br>
+mail.send(msg)<br>
+Traceback (most recent call last):<br>
+  File "&lt;console&gt;", line 1, in &lt;module&gt;<br>
+  File "c:\users\vinay\microblog\venv\lib\site-packages\<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 492, in send<br>
+    message.send(connection)<br>
+  File "c:\users\vinay\microblog\venv\lib\site-packages\<a href="http://flask_mail.py/" rel="nofollow">flask_mail.py</a>", line 152, in <strong>exit</strong><br>
+    self.host.quit()<br>
+  File "c:\python27\lib\<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 772, in quit<br>
+    res = self.docmd("quit")<br>
+  File "c:\python27\lib\<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 393, in docmd<br>
+    self.putcmd(cmd, args)<br>
+  File "c:\python27\lib\<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 341, in putcmd<br>
+    self.send(str)<br>
+  File "c:\python27\lib\<a href="http://smtplib.py/" rel="nofollow">smtplib.py</a>", line 333, in send<br>
+    raise SMTPServerDisconnected('please run connect() first')<br>
+SMTPServerDisconnected: please run connect() first<br>
+</p>
+</blockquote>
+</blockquote>
+</blockquote>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#197</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-18T21:56:42Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-18T21:56:42Z</span>
+  </p>
+  <div>
+    <p>@sandy: my only guess is that your settings are incorrect for your mail server.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b614a2db3bd6874f2f2508f2e3e2f644?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#198</span> <span class="badge text-bg-warning">E_Gr</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-19T08:00:21Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-19T08:00:21Z</span>
+  </p>
+  <div>
+    <p>@Anthony Brown<br>
+For the benefit of anyone reading this now, I had the same problem with the connect() error.<br>
+Turns out the configuration was indeed the problem. Watch out for spaces when setting environment variables (Windows at least is sensitive to this).<br>
+set MAIL_SERVER=localhost<br>
+and not<br>
+set MAIL_SERVER = localhost</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b614a2db3bd6874f2f2508f2e3e2f644?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#199</span> <span class="badge text-bg-warning">E_Gr</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-19T12:27:28Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-19T12:27:28Z</span>
+  </p>
+  <div>
+    <p>@Miguel Grinberg<br>
+Regarding the broad "except" you wrote when decoding the token, wouldn't it be better to use jwt.exceptions.InvalidTokenError? According to their API, this is the base exception of all decode exceptions.</p>
+<p><a href="https://pyjwt.readthedocs.io/en/latest/api.html" rel="nofollow">https://pyjwt.readthedocs.io/en/latest/api.html</a></p>
+<p>I was taught that using a broad "except" is bad practice because unintended errors could be swallowed in it and create unexpected behaviors.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#200</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-19T14:24:05Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-19T14:24:05Z</span>
+  </p>
+  <div>
+    <p>@E_Gr: using catch-all exception handlers is almost always a bad idea. There is one exception that I consider a valid use though. If you are invoking a third-party function and you want to make sure that regardless of what happens in that call you don't crash, then it is warranted to do a catch-all, in my opinion.</p>
+<p>Imagine the pyjwt library has a bug that causes it to raise a ValueError or similar, so it is not one of the documented exceptions they'll normally raise. I prefer that this type of issue in dependencies, which I have no control, do not make my application crash.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="7.html#comments">&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="9.html#comments">&raquo;</a></li>
+    <li class="page-item"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdnnA._23tXqEmadHsiWXBTWVvzmQMsns">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  
+  <div class="card-header">
+    <div class="row">
+      <div class="col">The Flask Mega-Tutorial</div>
+      <div class="col text-end">
+        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
+          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <a class="card-book-cover" href="https://amzn.to/3MQffrm">
+    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support-2018/page/8 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:44 GMT -->
+</html>

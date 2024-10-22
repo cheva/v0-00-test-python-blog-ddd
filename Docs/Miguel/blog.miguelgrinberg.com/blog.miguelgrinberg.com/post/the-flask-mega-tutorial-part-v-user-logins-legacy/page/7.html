@@ -1,0 +1,1373 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy/page/7 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:19 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The Flask Mega-Tutorial, Part V: User Logins (2012) - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="python, programming, flask, web, tutorial, database, sqlalchemy">
+  
+  
+  <link rel="canonical" href="../../the-flask-mega-tutorial-part-v-user-logins-legacy.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The Flask Mega-Tutorial, Part V: User Logins (2012)">
+    <meta property="og:description" content="(Great news! There is a new version of this tutorial!)This is the fifth article in the series in which I document my experience writing web applications in Python using the Flask microframework.The…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-v-user-logins-legacy.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy">
+    <meta name="twitter:title" content="The Flask Mega-Tutorial, Part V: User Logins (2012)">
+    <meta name="twitter:description" content="(Great news! There is a new version of this tutorial!)This is the fifth article in the series in which I document my experience writing web applications in Python using the Flask microframework.The…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-flask-mega-tutorial-part-v-user-logins-legacy.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../the-flask-mega-tutorial-part-v-user-logins-legacy.html">The Flask Mega-Tutorial, Part V: User Logins (2012)</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2012-06-09T06:44:24Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2012-06-09T06:44:24Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p><em>(Great news! There is a <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">new version of this tutorial</a>!)</em></p>
+<p>This is the fifth article in the series in which I document my experience writing web applications in <a href="http://python.org/">Python</a> using the <a href="http://flask.pocoo.org/">Flask</a> microframework.</p>
+<p>The goal of the tutorial series is to develop a decently featured microblogging application that demonstrating total lack of originality I have decided to call <code>microblog</code>.</p>
+<p><strong>NOTE</strong>: This article was revised in September 2014 to be in sync with current versions of Python and Flask.</p>
+<p>Here is an index of all the articles in the series that have been published to date:</p>
+<ul>
+<li><a href="../../the-flask-mega-tutorial-part-i-hello-world-legacy.html">Part I: Hello, World!</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ii-templates-legacy.html">Part II: Templates</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iii-web-forms-legacy.html">Part III: Web Forms</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-iv-database-legacy.html">Part IV: Database</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-v-user-logins-legacy.html">Part V: User Logins</a> (this article)</li>
+<li><a href="../../the-flask-mega-tutorial-part-vi-profile-page-and-avatars-legacy.html">Part VI: Profile Page And Avatars</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-vii-unit-testing-legacy.html">Part VII: Unit Testing</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-viii-followers-contacts-and-friends-legacy.html">Part VIII: Followers, Contacts And Friends</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-ix-pagination-legacy.html">Part IX: Pagination</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-x-full-text-search-legacy.html">Part X: Full Text Search</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xi-email-support-legacy.html">Part XI: Email Support</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xii-facelift-legacy.html">Part XII: Facelift</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiii-dates-and-times-legacy.html">Part XIII: Dates and Times</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xiv-i18n-and-l10n-legacy.html">Part XIV: I18n and L10n</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xv-ajax-legacy.html">Part XV: Ajax</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvi-debugging-testing-and-profiling-legacy.html">Part XVI: Debugging, Testing and Profiling</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xvii-deployment-on-linux-even-on-the-raspberry-pi-legacy.html">Part XVII: Deployment on Linux (even on the Raspberry Pi!)</a></li>
+<li><a href="../../the-flask-mega-tutorial-part-xviii-deployment-on-the-heroku-cloud-legacy.html">Part XVIII: Deployment on the Heroku Cloud</a></li>
+</ul>
+<h2>Recap</h2>
+<p>In the previous chapter of the series we created our database and learned how to populate it with users and posts, but we haven't hooked up any of that into our app yet. And two chapters ago we've seen how to create web forms and left with a fully implemented login form.</p>
+<p>In this article we are going to build on what we learned about web forms and databases and write our user login system. At the end of this tutorial our little application will register new users and log them in and out.</p>
+<p>To follow this chapter along you need to have the <code>microblog</code> app as we left it at the end of the previous chapter. Please make sure the app is installed and running.</p>
+<h2>An Update Regarding the State of OpenID</h2>
+<p>It's been more than three years ago that I wrote this article. Back then OpenID seemed like a nice authentication method that was gaining a lot of traction, but in 2015 there are better alternatives, and OpenID is not as widely deployed as it used to be.</p>
+<p>I do not have plans to update this tutorial in the near future, as I have written extensively about other authentication methods elsewhere. When you follow this tutorial keep in mind that Google, which was the most prominent OpenID provider in 2012, has dropped support for this protocol completely. My recommendation is to use a Yahoo account to test OpenID in this tutorial. I have a few personal projects that still use OpenID and I use Yahoo as a provider with good results.</p>
+<p>As far as real-world authentication, I do not think it is a good idea to use OpenID, given the lack of support. I have a few resources for you that can help you create a more modern authentication experience:</p>
+<ul>
+<li>My <a href="http://flaskbook.com/">Flask book</a> covers a traditional username and password implementation, complete with user registration, password reminders and resets.</li>
+<li>My <a href="../../oauth-authentication-with-flask.html">OAuth Authentication with Flask</a> blog article describes in detail how to implement OAuth authentication, which has much wider support than OpenID. With this method you can implement "Login with Facebook" type functionality. The article demonstrates how to login with Facebook and Twitter. Others, such as Google, LinkedIn, etc. can be implemented easily with the same technique.</li>
+</ul>
+<h2>Configuration</h2>
+<p>As in previous chapters, we start by configuring the Flask extensions that we will use. For the login system we will use two extensions, Flask-Login and Flask-OpenID. Flask-Login will handle our users logged in state, while Flask-OpenID will provide authentication. These extensions are configured as follows (file <code>app/__init__.py</code>):</p>
+<pre><code>import os
+from flask_login import LoginManager
+from flask_openid import OpenID
+from config import basedir
+
+lm = LoginManager()
+lm.init_app(app)
+oid = OpenID(app, os.path.join(basedir, 'tmp'))
+</code></pre>
+<p>The Flask-OpenID extension requires a path to a temp folder where files can be stored. For this we provide the location of our <code>tmp</code> folder.</p>
+<h2>Python 3 Compatiblity</h2>
+<p>Unfortunately version 1.2.1 of Flask-OpenID (the current official version) does not work well with Python 3. Check what version you have by running the following command:</p>
+<pre><code>$ flask/bin/pip freeze
+</code></pre>
+<p>If you have a version newer than 1.2.1 then the problem is likely resolved, but if you have 1.2.1 and are following this tutorial on Python 3 then you have to install the development version from GitHub:</p>
+<pre><code>$ flask/bin/pip uninstall flask-openid
+$ flask/bin/pip install git+git://github.com/mitsuhiko/flask-openid.git
+</code></pre>
+<p>Note that you need to have <code>git</code> installed for this to work.</p>
+<h2>Revisiting our User model</h2>
+<p>The Flask-Login extension expects certain properties and methods to be implemented in our <code>User</code> class. Outside of these there are no requirements for how the class has to be implemented.</p>
+<p>Below is our Flask-Login friendly <code>User</code> class (file <code>app/models.py</code>):</p>
+<pre><code>class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nickname = db.Column(db.String(64), index=True, unique=True)
+    email = db.Column(db.String(120), index=True, unique=True)
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        try:
+            return unicode(self.id)  # python 2
+        except NameError:
+            return str(self.id)  # python 3
+
+    def __repr__(self):
+        return '&lt;User %r&gt;' % (self.nickname)
+</code></pre>
+<p>The <code>is_authenticated</code> property has a misleading name. In general this method should just return <code>True</code> unless the object represents a user that should not be allowed to authenticate for some reason.</p>
+<p>The <code>is_active</code> property should return True for users unless they are inactive, for example because they have been banned.</p>
+<p>The <code>is_anonymous</code> property should return True only for fake users that are not supposed to log in to the system.</p>
+<p>Finally, the <code>get_id</code> method should return a unique identifier for the user, in unicode format. We use the unique id generated by the database layer for this. Note that due to the differences in unicode handling between Python 2 and 3 we have to provide two alternative versions of this method.</p>
+<h2>User loader callback</h2>
+<p>Now we are ready to start implementing the login system using the Flask-Login and Flask-OpenID extensions.</p>
+<p>First, we have to write a function that loads a user from the database. This function will be used by Flask-Login (file <code>app/views.py</code>):</p>
+<pre><code>@lm.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+</code></pre>
+<p>Note how this function is registered with Flask-Login through the <code>lm.user_loader</code> decorator. Also remember that user ids in Flask-Login are always unicode strings, so a conversion to an integer is necessary before we can send the id to Flask-SQLAlchemy.</p>
+<h2>The login view function</h2>
+<p>Next let's update our login view function (file <code>app/views.py</code>):</p>
+<pre><code>from flask import render_template, flash, redirect, session, url_for, request, g
+from flask_login import login_user, logout_user, current_user, login_required
+from app import app, db, lm, oid
+from .forms import LoginForm
+from .models import User
+
+@app.route('/login', methods=['GET', 'POST'])
+@oid.loginhandler
+def login():
+    if g.user is not None and g.user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        session['remember_me'] = form.remember_me.data
+        return oid.try_login(form.openid.data, ask_for=['nickname', 'email'])
+    return render_template('login.html', 
+                           title='Sign In',
+                           form=form,
+                           providers=app.config['OPENID_PROVIDERS'])
+</code></pre>
+<p>Notice we have imported several new modules, some of which we will use later.</p>
+<p>The changes from our previous version are very small. We have added a new decorator to our view function. The <code>oid.loginhandler</code> tells Flask-OpenID that this is our login view function. </p>
+<p>At the top of the function body we check if <code>g.user</code> is set to an authenticated user, and in that case we redirect to the index page. The idea here is that if there is a logged in user already we will not do a second login on top.</p>
+<p>The <code>g</code> global is setup by Flask as a place to store and share data during the life of a request. As I'm sure you guessed by now, we will be storing the logged in user here.</p>
+<p>The <code>url_for</code> function that we used in the <code>redirect</code> call is defined by Flask as a clean way to obtain the URL for a given view function. If you want to redirect to the index page you may very well use <code>redirect('/index')</code>, but there are very <a href="http://flask.pocoo.org/docs/quickstart/#url-building">good reasons</a> to let Flask build URLs for you.</p>
+<p>The code that runs when we get a data back from the login form is also new. Here we do two things. First we store the value of the <code>remember_me</code> boolean in the flask <em>session</em>, not to be confused with the <code>db.session</code> from Flask-SQLAlchemy. We've seen that the <code>flask.g</code> object stores and shares data though the life of a request. The <code>flask.session</code> provides a much more complex service along those lines. Once data is stored in the session object it will be available during that request and any future requests <em>made by the same client</em>. Data remains in the session until explicitly removed. To be able to do this, Flask keeps a different session container for each client of our application.</p>
+<p>The <code>oid.try_login</code> call in the following line is the call that triggers the user authentication through Flask-OpenID. The function takes two arguments, the <code>openid</code> given by the user in the web form and a list of data items that we want from the OpenID provider. Since we defined our User class to include <code>nickname</code> and <code>email</code>, those are the items we are going to ask for.</p>
+<p>The OpenID authentication happens asynchronously. Flask-OpenID will call a function that is registered with the <code>oid.after_login</code> decorator if the authentication is successful. If the authentication fails the user will be taken back to the login page.</p>
+<h2>The Flask-OpenID login callback</h2>
+<p>Here is our implementation of the <code>after_login</code> function (file <code>app/views.py</code>):</p>
+<pre><code>@oid.after_login
+def after_login(resp):
+    if resp.email is None or resp.email == "":
+        flash('Invalid login. Please try again.')
+        return redirect(url_for('login'))
+    user = User.query.filter_by(email=resp.email).first()
+    if user is None:
+        nickname = resp.nickname
+        if nickname is None or nickname == "":
+            nickname = resp.email.split('@')[0]
+        user = User(nickname=nickname, email=resp.email)
+        db.session.add(user)
+        db.session.commit()
+    remember_me = False
+    if 'remember_me' in session:
+        remember_me = session['remember_me']
+        session.pop('remember_me', None)
+    login_user(user, remember = remember_me)
+    return redirect(request.args.get('next') or url_for('index'))
+</code></pre>
+<p>The <code>resp</code> argument passed to the <code>after_login</code> function contains information returned by the OpenID provider.</p>
+<p>The first <code>if</code> statement is just for validation. We require a valid email, so if an email was not provided we cannot log the user in.</p>
+<p>Next, we search our database for the email provided. If the email is not found we consider this a new user, so we add a new user to our database, pretty much as we have learned in the previous chapter. Note that we handle the case of a missing <code>nickname</code>, since some OpenID providers may not have that information.</p>
+<p>After that we load the <code>remember_me</code> value from the Flask session, this is the boolean that we stored in the login view function, if it is available.</p>
+<p>Then we call Flask-Login's <code>login_user</code> function, to register this is a valid login.</p>
+<p>Finally, in the last line we redirect to the <em>next</em> page, or the index page if a next page was not provided in the request.</p>
+<p>The concept of the next page is simple. Let's say you navigate to a page that requires you to be logged in, but you aren't just yet. In Flask-Login you can protect views against non logged in users by adding the <code>login_required</code> decorator. If the user tries to access one of the affected URLs then it will be redirected to the login page automatically. Flask-Login will store the original URL as the <code>next</code> page, and it is up to us to return the user to this page once the login process completed.</p>
+<p>For this to work Flask-Login needs to know what view logs users in. We can configure this in the app's module initializer (file <code>app/__init__.py</code>):</p>
+<pre><code>lm = LoginManager()
+lm.init_app(app)
+lm.login_view = 'login'
+</code></pre>
+<h2>The g.user global</h2>
+<p>If you were paying attention, you will remember that in the login view function we check <code>g.user</code> to determine if a user is already logged in. To implement this we will use the <code>before_request</code> event from Flask. Any functions that are decorated with <code>before_request</code> will run before the view function each time a request is received. So this is the right place to setup our <code>g.user</code> variable (file <code>app/views.py</code>):</p>
+<pre><code>@app.before_request
+def before_request():
+    g.user = current_user
+</code></pre>
+<p>This is all it takes. The <code>current_user</code> global is set by Flask-Login, so we just put a copy in the <code>g</code> object to have better access to it. With this, all requests will have access to the logged in user, even inside templates.</p>
+<h2>The index view</h2>
+<p>In a previous chapter we left our <code>index</code> view function using fake objects, because at the time we did not have users or posts in our system. Well, we have users now, so let's hook that up:</p>
+<pre><code>@app.route('/')
+@app.route('/index')
+@login_required
+def index():
+    user = g.user
+    posts = [
+        { 
+            'author': {'nickname': 'John'}, 
+            'body': 'Beautiful day in Portland!' 
+        },
+        { 
+            'author': {'nickname': 'Susan'}, 
+            'body': 'The Avengers movie was so cool!' 
+        }
+    ]
+    return render_template('index.html',
+                           title='Home',
+                           user=user,
+                           posts=posts)
+</code></pre>
+<p>There are only two changes to this function. First, we have added the <code>login_required</code> decorator. This will ensure that this page is only seen by logged in users.</p>
+<p>The other change is that we pass <code>g.user</code> down to the template, instead of the fake object we used in the past.</p>
+<p>This is a good time to run the application.</p>
+<p>When you navigate to <code>http://localhost:5000</code> you will instead get the login page. Keep in mind that to login with OpenID you have to use the OpenID URL from your provider. You can use one of the OpenID provider links below the URL text field to generate the correct URL for you.</p>
+<p>As part of the login process you will be redirected to your provider's web site, where you will authenticate and authorize the sharing of some information with our application (just the email and nickname that we requested, no passwords or other personal information will be exposed).</p>
+<p>Once the login is complete you will be taken to the index page, this time as a logged in user.</p>
+<p>Feel free to try the <code>remember_me</code> checkbox. With this option enabled you can close and reopen your web browser and will continue to be logged in.</p>
+<h2>Logging out</h2>
+<p>We have implemented the log in, now it's time to add the log out.</p>
+<p>The view function for logging out is extremely simple (file <code>app/views.py</code>):</p>
+<pre><code>@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+</code></pre>
+<p>But we are also missing a link to logout in the template. We are going to put this link in the top navigation bar which is in the base layout (file <code>app/templates/base.html</code>):</p>
+<pre><code>&lt;html&gt;
+  &lt;head&gt;
+    {% if title %}
+    &lt;title&gt;{{ title }} - microblog&lt;/title&gt;
+    {% else %}
+    &lt;title&gt;microblog&lt;/title&gt;
+    {% endif %}
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div&gt;Microblog:
+        &lt;a href="{{ url_for('index') }}"&gt;Home&lt;/a&gt;
+        {% if g.user.is_authenticated %}
+        | &lt;a href="{{ url_for('logout') }}"&gt;Logout&lt;/a&gt;
+        {% endif %}
+    &lt;/div&gt;
+    &lt;hr&gt;
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    &lt;ul&gt;
+    {% for message in messages %}
+        &lt;li&gt;{{ message }} &lt;/li&gt;
+    {% endfor %}
+    &lt;/ul&gt;
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Note how easy it is to do this. We just needed to check if we have a valid user set in <code>g.user</code> and if we do we just add the logout link. We have also used the opportunity to use <code>url_for</code> in our template.</p>
+<h2>Final words</h2>
+<p>We now have a fully functioning user login system. In the next chapter we will be creating the user profile page and will be displaying user avatars on them.</p>
+<p>In the meantime, here is the updated application code including all the changes in this article:</p>
+<p>Download <a href="https://github.com/miguelgrinberg/microblog-2012/archive/version-0.5.zip">microblog-0.5.zip</a>.</p>
+<p>See you next time!</p>
+<p>Miguel</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy&amp;t=The%20Flask%20Mega-Tutorial%2C%20Part%20V%3A%20User%20Logins%20%282012%29" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy&amp;resubmit=true&amp;title=The%20Flask%20Mega-Tutorial,%20Part%20V:%20User%20Logins%20(2012)" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20Flask%20Mega-Tutorial%2C%20Part%20V%3A%20User%20Logins%20%282012%29&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy&amp;title=The%20Flask%20Mega-Tutorial%2C%20Part%20V%3A%20User%20Logins%20%282012%29&amp;summary=The%20Flask%20Mega-Tutorial%2C%20Part%20V%3A%20User%20Logins%20%282012%29&amp;source=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20Flask%20Mega-Tutorial%2C%20Part%20V%3A%20User%20Logins%20%282012%29&amp;body=https%3A//blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../the-flask-mega-tutorial-part-v-user-logins-legacy.html#comments">217 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#151</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-10-17T06:02:54Z" data-function="fromNow" data-refresh="0" style="display: none">2014-10-17T06:02:54Z</span>
+  </p>
+  <div>
+    <p>@Brian: OAuth is slightly more complicated, but it can be done. A good package for this that I have used in the past is rauth. I do not plan to update the tutorial in the near future, but I am planning a new article on OAuth.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d1b7eee1c9c2cdf5467e201f9f237e34?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#152</span> <span class="badge text-bg-warning">Federico</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-10-29T21:37:57Z" data-function="fromNow" data-refresh="0" style="display: none">2014-10-29T21:37:57Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, thanks for your amazing tutorial. Are you planning to explain also the authentication process with Flask-Oauth? Because I would prefer this method rather than Open-ID. I saw in your book but there is also nothing about Oauth authentication and login in Flask.<br>
+Thanks for your answer!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#153</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-10-30T17:39:08Z" data-function="fromNow" data-refresh="0" style="display: none">2014-10-30T17:39:08Z</span>
+  </p>
+  <div>
+    <p>@Federico: OpenID is sort of losing ground. I'll be publishing an article on OAuth authentication with Flask in the near future, but it won't be part of this series.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/65ccab13ec194cceb8490557128ebb1f?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#154</span> <span class="badge text-bg-warning">Jacob</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-11-02T21:48:37Z" data-function="fromNow" data-refresh="0" style="display: none">2014-11-02T21:48:37Z</span>
+  </p>
+  <div>
+    <p>Hello! Thank you very very much for your tutorial, it's surely the best one in the web. I was able to create fully working microblog, awesome adventure for python-beginner, but I am getting really frustrated now because OpenID is very much depreciated. That would be so very cool if you could write an article about implementing flask-social instead of openid into microblog, do you think it's possible? Documentation of flask-social is somehow weird for beginners, your tutor skills are awesome and I am sure that all of us (your readers) would really appreciated if you could do it in a free moment.</p>
+<p>Thank you again and best regards.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#155</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-11-03T07:37:17Z" data-function="fromNow" data-refresh="0" style="display: none">2014-11-03T07:37:17Z</span>
+  </p>
+  <div>
+    <p>@Jacob: I will be posting an article on OAuth authentication soon.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4d9dc50831b5b7f926e4791b9fbf314f?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#156</span> <span class="badge text-bg-warning">Aleksandr</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-11-23T05:22:39Z" data-function="fromNow" data-refresh="0" style="display: none">2014-11-23T05:22:39Z</span>
+  </p>
+  <div>
+    <p>Thank you!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/74d1b0fa18084dc9d2f99a309ee5c90e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#157</span> <span class="badge text-bg-warning">p.nagalakshmi</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-11-24T10:25:31Z" data-function="fromNow" data-refresh="0" style="display: none">2014-11-24T10:25:31Z</span>
+  </p>
+  <div>
+    <p>sir i got an error to practice userlogins in flask....<br>
+ File "<a href="http://run.py/" rel="nofollow">run.py</a>", line 2, in &lt;module&gt;<br>
+    from app import app<br>
+  File "/home/satinos-pc-02/microblog/app/<strong>init</strong>.py", line 8, in &lt;module&gt;<br>
+    from app import views, models<br>
+  File "/home/satinos-pc-02/microblog/app/<a href="http://views.py/" rel="nofollow">views.py</a>", line 40<br>
+    form = LoginForm()<br>
+                     ^<br>
+IndentationError: unindent does not match any outer indentation level</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#158</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-11-26T00:23:52Z" data-function="fromNow" data-refresh="0" style="display: none">2014-11-26T00:23:52Z</span>
+  </p>
+  <div>
+    <p>@p.nagalakshmi: the error is pretty clear, check your indentation.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/e140fb0094edc05c62fc79def2fabae3?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#159</span> <span class="badge text-bg-warning">micheal</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-12T19:45:10Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-12T19:45:10Z</span>
+  </p>
+  <div>
+    <p>hi miguel, i was wondering.. what changes do i need to make in order to do just a regular registration? i mean without openid</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#160</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-14T00:59:52Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-14T00:59:52Z</span>
+  </p>
+  <div>
+    <p>@micheal: I discuss regular username/password logins in very good detail in my book. The source code is freely available on github: <a href="https://github.com/miguelgrinberg/flasky" rel="nofollow">https://github.com/miguelgrinberg/flasky</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/600fcd12f0a47d97283f79e21ba75ed5?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#161</span> <span class="badge text-bg-warning">Rick </span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-15T23:37:26Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-15T23:37:26Z</span>
+  </p>
+  <div>
+    <p>Thanks for the blog, yes people are still using it 2 years on!<br>
+I was wondering f you have or planned on doing a version that doesnt use OpenId as it authentication? Or point me somewhere (other than the docs, im still learning!) that shows examples of logins</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#162</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2014-12-17T17:25:35Z" data-function="fromNow" data-refresh="0" style="display: none">2014-12-17T17:25:35Z</span>
+  </p>
+  <div>
+    <p>@Rick: my O'Reilly book and videos show how to create a standard username/password solution (<a href="http://flaskbook.com/" rel="nofollow">http://flaskbook.com</a>), and not too long ago I've written an article here regarding OAuth (<a href="../../oauth-authentication-with-flask.html" rel="nofollow">http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask</a>).</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/9f0d7fe28659419ba0e11a1129c5a7ef?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#163</span> <span class="badge text-bg-warning">Aaron</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-01-08T05:49:53Z" data-function="fromNow" data-refresh="0" style="display: none">2015-01-08T05:49:53Z</span>
+  </p>
+  <div>
+    <p>Dear Miguel,<br>
+Many thanks for the tutorial. I have had great difficulty these past two days wrestling with OpenID. Simply put the open_id url passed was not being recognised, reaching this point in the <a href="http://flask_openid.py/" rel="nofollow">flask_openid.py</a> module:</p>
+<p>except discover.DiscoveryFailure:<br>
+            self.signal_error(u'The OpenID was invalid')<br>
+            return redirect(self.get_current_url())</p>
+<p>There's every chance some configuration on my computer (Mac OS, Yosimite (and reformatted in the past week!)) was causing an issue. I have worked around my issue by combining your other tutorial regarding OAuth with Facebook/Twitter into this one. </p>
+<p>Now on to the remainder of your tutorial! Thanks!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/65f1e0bec2cdb85feb0a26c365e7b9cf?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#164</span> <span class="badge text-bg-warning">Suresh</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-01-15T16:14:29Z" data-function="fromNow" data-refresh="0" style="display: none">2015-01-15T16:14:29Z</span>
+  </p>
+  <div>
+    <p>Hey MG, awesome blog posts and tutorials! I had a question regarding Flask-Login and your HTTPAuth library. Are they mutually exclusive? Designed to work together? Etc?</p>
+<p>Basically, if I want to do token-based authentication and let Flask-Login handle.. .Well... Logins... Is that possible?</p>
+<p>Thanks!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#165</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-01-15T17:24:19Z" data-function="fromNow" data-refresh="0" style="display: none">2015-01-15T17:24:19Z</span>
+  </p>
+  <div>
+    <p>@Suresh: Flask-Login is not a good match for a REST API. In an API you need to authenticate every request, so there is no need to maintain a user session or keep track of the logged in state of the user.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/f6bf1bcfbc8925098abaf489337dd020?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#166</span> <span class="badge text-bg-warning">Andrii</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-01-17T18:43:51Z" data-function="fromNow" data-refresh="0" style="display: none">2015-01-17T18:43:51Z</span>
+  </p>
+  <div>
+    <p>For all those who has issue:<br>
+ImportError: cannot import name lm<br>
+Pay attention  in <a href="http://app__init__.py/" rel="nofollow">app__init__.py</a>  line with import "from app import views, models"<br>
+should follow after  position where lm object is being created and all operation with it accomplished<br>
+I've placed "from app import views, models" as last line, and that fixed the problem.</p>
+<p>p.s. Awesome tut! Thanks Miguel</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/f5b8c96ceeea88d77c357fc85a87116b?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#167</span> <span class="badge text-bg-warning">Chris</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-01-25T19:09:07Z" data-function="fromNow" data-refresh="0" style="display: none">2015-01-25T19:09:07Z</span>
+  </p>
+  <div>
+    <p>Hopefully you will update this tutorial.</p>
+<p><a href="http://www.theregister.co.uk/2013/09/05/myopenid_closes_for_good_2014/" rel="nofollow">http://www.theregister.co.uk/2013/09/05/myopenid_closes_for_good_2014/</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#168</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-01-26T01:44:50Z" data-function="fromNow" data-refresh="0" style="display: none">2015-01-26T01:44:50Z</span>
+  </p>
+  <div>
+    <p>@Chris: I don't have plans to update this tutorial at this time, since there are other OpenID providers that still work. I do agree that using OpenID is not a good idea, though, that is why I have blogged about using OAuth with Flask: <a href="../../oauth-authentication-with-flask.html" rel="nofollow">http://blog.miguelgrinberg.com/post/oauth-authentication-with-flask</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/95952519b5936c6f68e5fc713a4750ed?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#169</span> <span class="badge text-bg-warning">Vivek</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-01-29T15:06:42Z" data-function="fromNow" data-refresh="0" style="display: none">2015-01-29T15:06:42Z</span>
+  </p>
+  <div>
+    <p>Hi ,</p>
+<p>I am a beginner to python as well as flask, so may be my error sound stupid.<br>
+While i am compiling <strong>init</strong>.py it is showing "no module named config".</p>
+<p>Not sure what to do and stuck here.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#170</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-02-01T03:17:41Z" data-function="fromNow" data-refresh="0" style="display: none">2015-02-01T03:17:41Z</span>
+  </p>
+  <div>
+    <p>@Vivek: you are probably starting the application from the wrong directory. Your current directory should be the root directory, where <a href="http://config.py/" rel="nofollow">config.py</a> is.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a9937882e3b7e0e7bede33c128ea67c5?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#171</span> <span class="badge text-bg-warning">Michael</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-02-03T02:01:16Z" data-function="fromNow" data-refresh="0" style="display: none">2015-02-03T02:01:16Z</span>
+  </p>
+  <div>
+    <p>I just ran into the same issue with "ImportError: cannot import name 'lm'". I managed to trace the issue back to the code in app/<strong>init</strong>.py, where made a rather newbie mistake of adding all the new code from this lesson AFTER "from app import views, models". Of course, since app/<a href="http://views.py/" rel="nofollow">views.py</a> imports has "from app import app, db, lm, oid", initializing "lm = LoginManager()" needs to come BEFORE app/views tries to import it.</p>
+<p>THEN I ran into another issue "ImportError: No module named 'forms'". It seems these two lines in app/<a href="http://views.py/" rel="nofollow">views.py</a>...</p>
+<p>from forms import LoginForm<br>
+from models import User</p>
+<p>...need to be changed to<br>
+from app.forms import LoginForm<br>
+from app.models import User</p>
+<p>Given that the previous chapters of the tutorial say to create the both <a href="http://forms.py/" rel="nofollow">forms.py</a> and <a href="http://models.py/" rel="nofollow">models.py</a> in the app/ folder, I'm not sure how no one else commented on this. Is this just me being a newbie to Flask? Is there something else I missed that allowed everyone else to get the code to work as is?</p>
+<p>(Otherwise, I'm really enjoying this tutorial so far!)</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/db8588aa55f701d1266bb38785f131e1?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#172</span> <span class="badge text-bg-warning">Brandon</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-02-07T22:02:35Z" data-function="fromNow" data-refresh="0" style="display: none">2015-02-07T22:02:35Z</span>
+  </p>
+  <div>
+    <p>This is one of the worst tutorials I've ever read. The content is good, but the organization is so frustrating I'm going to have to quit. No real mention of what code is being changed, no hints to the organization of the code itself "(does this go before or after this block of code...oh, this part goes here and part goes here"). Really disappointed.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#173</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-02-08T00:21:34Z" data-function="fromNow" data-refresh="0" style="display: none">2015-02-08T00:21:34Z</span>
+  </p>
+  <div>
+    <p>@Brandon: Did you notice there is a Github project where the entire working code for each chapter is hosted?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/653ff7561448a9bff3e4aab9e91d86ae?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#174</span> <span class="badge text-bg-warning">Dilshad Abdulla</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-02-13T13:29:55Z" data-function="fromNow" data-refresh="0" style="display: none">2015-02-13T13:29:55Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel</p>
+<p>I follow your blog from beginning read and write the code line by line so far working good at the end of part v I have an error which I am not sure what is wrong. <br>
+I have checked many times can't find any error to fix it myself and I don't like copy your code if not type own code not able to learn, could you please give a tip as an idea please?<br>
+Here is the error:<br>
+ValueError</p>
+<p>ValueError: invalid key 'username'<br>
+App/venv/lib/python2.7/site-packages/<a href="http://flask_openid.py/" rel="nofollow">flask_openid.py</a>", line 495, in decorated<br>
+ [Display the sourcecode for this frame]  [Open an interactive python shell in this frame] return f(<em>args, </em>*kwargs)</p>
+<p>App/<a href="http://views.py/" rel="nofollow">views.py</a>", line 49, in login<br>
+ [Display the sourcecode for this frame]  [Open an interactive python shell in this frame] return oid.try_login(form.openid.data, ask_for=['username', 'email'])</p>
+<p>App/venv/lib/python2.7/site-packages/<a href="http://flask_openid.py/" rel="nofollow">flask_openid.py</a>", line 540, in try_login<br>
+raise ValueError('invalid key %r' % key)</p>
+<p>Many thanks.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#175</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2015-02-13T19:32:44Z" data-function="fromNow" data-refresh="0" style="display: none">2015-02-13T19:32:44Z</span>
+  </p>
+  <div>
+    <p>@Dilshad: you don't have to copy my code, but you can at least compare it to find the mistake. Try using 'nickname' instead of 'username'.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="6.html#comments">&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="8.html#comments">&raquo;</a></li>
+    <li class="page-item"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-v-user-logins-legacy/page/7 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:19 GMT -->
+</html>

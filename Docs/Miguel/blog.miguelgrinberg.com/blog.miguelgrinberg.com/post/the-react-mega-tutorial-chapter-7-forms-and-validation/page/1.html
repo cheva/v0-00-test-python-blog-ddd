@@ -1,0 +1,1421 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation/page/1 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:45 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    The React Mega-Tutorial, Chapter 7: Forms and Validation - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="javascript, react, jsx, rest, forms, validation">
+  
+  
+  <link rel="canonical" href="../../the-react-mega-tutorial-chapter-7-forms-and-validation.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="The React Mega-Tutorial, Chapter 7: Forms and Validation">
+    <meta property="og:description" content="A big part of most web applications is accepting, validating and processing user input. In this chapter you are going to learn how to perform these tasks with React by creating the user registration…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/the-react-mega-tutorial-chapter-7-forms-and-validation.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation">
+    <meta name="twitter:title" content="The React Mega-Tutorial, Chapter 7: Forms and Validation">
+    <meta name="twitter:description" content="A big part of most web applications is accepting, validating and processing user input. In this chapter you are going to learn how to perform these tasks with React by creating the user registration…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/the-react-mega-tutorial-chapter-7-forms-and-validation.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../the-react-mega-tutorial-chapter-7-forms-and-validation.html">The React Mega-Tutorial, Chapter 7: Forms and Validation</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2022-07-15T10:48:29Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2022-07-15T10:48:29Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>A big part of most web applications is accepting, validating and processing user input. In this chapter you are going to learn how to perform these tasks with React by creating the user registration and login forms for Microblog.</p>
+<p>The complete course, including videos for every chapter is available to order from my <a href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">courses site</a>. Ebook and paperback versions of this course are also available from <a href="https://www.amazon.com/dp/B09YPBXMMY/ref=nosim?tag=thirdwish-20">Amazon</a>. Thank you for your support!</p>
+<p>For your reference, here is the complete list of articles in this series:</p>
+<ul>
+<li><a href="introducing-the-react-mega-tutorial.html">Introducing the React Mega-Tutorial</a></li>
+<li><a href="the-react-mega-tutorial-chapter-1-modern-javascript.html">Chapter 1: Modern JavaScript</a></li>
+<li><a href="the-react-mega-tutorial-chapter-2-hello-react.html">Chapter 2: Hello, React!</a></li>
+<li><a href="the-react-mega-tutorial-chapter-3-working-with-components.html">Chapter 3: Working with Components</a></li>
+<li><a href="the-react-mega-tutorial-chapter-4-routing-and-page-navigation.html">Chapter 4: Routing and Page Navigation</a></li>
+<li><a href="the-react-mega-tutorial-chapter-5-connecting-to-a-back-end.html">Chapter 5: Connecting to a Back End</a></li>
+<li><a href="the-react-mega-tutorial-chapter-6-building-an-api-client.html">Chapter 6: Building an API Client</a></li>
+<li><a href="the-react-mega-tutorial-chapter-7-forms-and-validation.html">Chapter 7: Forms and Validation</a> (this article)</li>
+<li><a href="the-react-mega-tutorial-chapter-8-authentication.html">Chapter 8: Authentication</a></li>
+<li><a href="the-react-mega-tutorial-chapter-9-application-features.html">Chapter 9: Application Features</a></li>
+<li><a href="the-react-mega-tutorial-chapter-10-memoization.html">Chapter 10: Memoization</a></li>
+<li><a href="the-react-mega-tutorial-chapter-11-automated-testing.html">Chapter 11: Automated Testing</a></li>
+<li><a href="the-react-mega-tutorial-chapter-12-production-builds.html">Chapter 12: Production Builds</a></li>
+</ul>
+<h2>Introduction to Forms with React-Bootstrap</h2>
+<p>The React-Bootstrap documentation has a section on <a href="https://react-bootstrap.github.io/docs/forms/overview/">forms</a> that starts with a nice example of a login form. You can see how this example form looks in <a href="#fig7-1">Figure 7.1</a>.</p>
+<div id="fig7-1"></div>
+<p><center><img alt="Figure 7.1: Example React-Bootstrap form" src="../../../static/images/react-mega-tutorial/07-bootstrapform.png" /></center></p>
+<p>Below is a portion of the HTML source code that generates this form. For simplicity, I have only included the first field.</p>
+<pre><code class="language-jsx">&lt;Form&gt;
+  &lt;Form.Group className=&quot;mb-3&quot; controlId=&quot;formBasicEmail&quot;&gt;
+    &lt;Form.Label&gt;Email address&lt;/Form.Label&gt;
+    &lt;Form.Control type=&quot;email&quot; placeholder=&quot;Enter email&quot; /&gt;
+    &lt;Form.Text className=&quot;text-muted&quot;&gt;
+      {&quot;We'll never share your email with anyone else.&quot;}
+    &lt;/Form.Text&gt;
+  &lt;/Form.Group&gt;
+
+  // ... more fields here
+
+&lt;/Form&gt;
+</code></pre>
+<p>The <code>Form</code> component from React-Bootstrap is used as the top-level parent of the form. Several subcomponents of <code>Form</code> are used to create the different parts of each field:</p>
+<ul>
+<li><code>Form.Label</code> defines the label</li>
+<li><code>Form.Control</code> defines the actual input field</li>
+<li><code>Form.Text</code> defines a message that appears below the field</li>
+</ul>
+<p>As you see, defining an input field involves a decent amount of boilerplate, and having to repeat all this for every input field in every form is not ideal. You can probably guess that a better idea is to create a reusable input field component.</p>
+<h2>A Reusable Form Input Field</h2>
+<p>Below is the definition of a new component called <code>InputField</code>.</p>
+<p class="code_title"><em>src/components/InputField.js</em>: A generic form input field</p>
+
+<pre><code class="language-jsx">import Form from 'react-bootstrap/Form';
+
+export default function InputField(
+  { name, label, type, placeholder, error, fieldRef }
+) {
+  return (
+    &lt;Form.Group controlId={name} className=&quot;InputField&quot;&gt;
+      {label &amp;&amp; &lt;Form.Label&gt;{label}&lt;/Form.Label&gt;}
+      &lt;Form.Control
+        type={type || 'text'}
+        placeholder={placeholder}
+        ref={fieldRef}
+      /&gt;
+      &lt;Form.Text className=&quot;text-danger&quot;&gt;{error}&lt;/Form.Text&gt;
+    &lt;/Form.Group&gt;
+  );
+}
+</code></pre>
+<p>This component accepts several props, to allow for the most flexibility in rendering the field. The parent component must pass the field name, the label text, the field type (text, password, etc.), the placeholder text that appears inside the field when it is empty, and a validation error message, which will appear below the field.</p>
+<p>The props are all included as JSX template expressions in the rendered input field. There are a few minor differences between this field and the example one from React-Bootstrap:</p>
+<ul>
+<li>The label is omitted if the <code>label</code> prop was not passed by the parent component</li>
+<li>The <code>type</code> prop is optional, and defaults to <code>text</code> when not given by the parent</li>
+<li>The error message uses a <code>text-danger</code> style from Bootstrap, which renders the text in red</li>
+<li>The <code>placeholder</code> and <code>error</code> props are optional, and will render as empty text when not provided by the parent</li>
+</ul>
+<p>There is one more prop in this component called <code>fieldRef</code>, which is in turn passed to the <code>Form.Control</code> component as a <code>ref</code> prop. A reference provides a way for the application to interact with a rendered element. You will learn about React references in detail later in this chapter.</p>
+<p>The top-level component in the input field was given the <code>InputField</code> class name to make it easier to customize how it looks on the page. Below is a small CSS addition to <em>index.css</em> that adds top and bottom margins to this component.</p>
+<p class="code_title"><em>src/index.css</em>: Styles for the input field</p>
+
+<pre><code class="language-css">.InputField {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+</code></pre>
+<h2>The Login Form</h2>
+<p>Using the generic input field defined above it is now possible to build the Login page in <em>src/pages/LoginPage.js</em>.</p>
+<p class="code_title"><em>src/pages/LoginPage.js</em>: Login page</p>
+
+<pre><code class="language-jsx">import { useState } from 'react';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import Body from '../components/Body';
+import InputField from '../components/InputField';
+
+export default function LoginPage() {
+  const [formErrors, setFormErrors] = useState({});
+
+  const onSubmit = (ev) =&gt; {
+    ev.preventDefault();
+    console.log('handle form here');
+  };
+
+  return (
+    &lt;Body&gt;
+      &lt;h1&gt;Login&lt;/h1&gt;
+      &lt;Form onSubmit={onSubmit}&gt;
+        &lt;InputField
+          name=&quot;username&quot; label=&quot;Username or email address&quot;
+          error={formErrors.username} /&gt;
+        &lt;InputField
+          name=&quot;password&quot; label=&quot;Password&quot; type=&quot;password&quot;
+          error={formErrors.password} /&gt;
+        &lt;Button variant=&quot;primary&quot; type=&quot;submit&quot;&gt;Login&lt;/Button&gt;
+      &lt;/Form&gt;
+    &lt;/Body&gt;
+  );
+}
+</code></pre>
+<p>The page uses the <code>Body</code> component as its main wrapper, as all other pages. The login page will not offer navigation links, so for that reason the <code>sidebar</code> prop is not included.</p>
+<p>The <code>Form</code> component has a <code>onSubmit</code> prop, which configures a handler function that will be invoked when the form is submitted. The handler starts by doing something very important: it disables the browser's own form submission logic, by calling the <code>ev.preventDefault()</code> method of the event object that was passed as an argument. This is necessary to prevent the browser from sending a network request with the form data.</p>
+<p>This version of the component does not implement the form handling logic yet, it just logs a message to the browser's console to confirm that the event was received. The actual form submission code will be added in the following sections.</p>
+<p>The form implements a standard two field login form, using the <code>InputField</code> component defined above. The <code>name</code>, <code>label</code> and <code>error</code> props are passed for both fields. For the first field <code>type</code> isn't passed, so the default type of <code>text</code> is used. The password field needs to have the <code>type</code> explicitly set, so that the characters are not visible. The <code>placeholder</code> prop is not used in any of the fields in this form.</p>
+<p>The <code>error</code> props in both input fields is set to an attribute of a <code>formErrors</code> state variable that is defined inside the component. The state variable is initialized as an empty object, so the error messages for both fields are going to be initially set to <code>undefined</code>, which means they are not going to render any visible text. You will learn how to make validation errors visible later.</p>
+<p>The submit button is defined directly with the <a href="https://react-bootstrap.github.io/docs/components/buttons/">Button</a> component from React-Bootstrap.</p>
+<p><a href="#fig7-2">Figure 7.2</a> shows how the login page looks.</p>
+<div id="fig7-2"></div>
+<p><center><img alt="Figure 7.2: Login page" src="../../../static/images/react-mega-tutorial/07-login.png" /></center></p>
+<h2>Controlled and Uncontrolled Components</h2>
+<p>An important part of implementing a form is to be able to read what the user enters in the form fields. There are two main techniques to handle user input in React, using <a href="https://reactjs.org/docs/forms.html#controlled-components">controlled</a> or <a href="https://reactjs.org/docs/uncontrolled-components.html">uncontrolled</a> components.</p>
+<p>A <em>controlled</em> component is coded with event handlers that catch all changes to input fields. Every time a change handler triggers for a field, the updated contents of the field are copied to a React state variable. With this method, the values of the input fields for a form can be obtained from a state variable that acts as a mirror of the field.</p>
+<p>An <em>uncontrolled</em> component, on the other side, does not have its value tracked by React. When the field's data is needed, <a href="https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model">DOM</a> APIs are used to obtain it directly from the element.</p>
+<p>An often cited disadvantage of the controlled method, especially for forms with large number of fields, is that every form field needs a state variable and one or more event handlers to capture all the changes the user can make to them, making them tedious to write. Uncontrolled components also have some boilerplate code required, but overall they need significantly less code.</p>
+<p>For this project, the uncontrolled method will be used in all forms.</p>
+<h2>Accessing Components through DOM References</h2>
+<p>When working with vanilla JavaScript, the standard method to reference an element is to give it an <code>id</code> attribute, which then makes it possible to retrieve the element with the <code>document.getElementById()</code> function. In complex applications it is difficult to maintain unique <code>id</code> values for all the elements that need to be addressed on the page, and it is easy to inadvertently introduce duplicates.</p>
+<p>React has a more elegant solution based on <em>references</em>. A reference eliminates the need to come up with a unique identifier for every element, a task that gets harder as the number of elements and page complexity grows.</p>
+<p>A reference can be created with the <code>useRef()</code> hook inside a component's render function:</p>
+<pre><code class="language-jsx">export default function MyForm() {
+  const usernameField = useRef();
+  ...
+}
+</code></pre>
+<p>To associate this reference with an element rendered to the page, the <code>ref</code> attribute is added to the element when it is rendered.</p>
+<pre><code class="language-jsx">export default function MyForm() {
+  const usernameField = useRef();
+
+  return (
+    &lt;form&gt;
+      &lt;input type=&quot;text&quot; ref={usernameField} /&gt;
+    &lt;/form&gt;
+  );
+}
+</code></pre>
+<p>The reference object has a <code>current</code> attribute that can be used in side effect functions and event handlers to access the actual DOM object associated with the component:</p>
+<pre><code class="language-jsx">export default function MyForm() {
+  const usernameField = useRef();
+
+  const onSubmit = (ev) =&gt; {
+    ev.preventDefault();
+    alert('Your username is: ' + usernameField.current.value);
+  };
+
+  return (
+    &lt;form onSubmit={onSubmit}&gt;
+      &lt;input type=&quot;text&quot; ref={usernameField} /&gt;
+    &lt;/form&gt;
+  );
+}
+</code></pre>
+<p>Let's implement references for the two fields in the <code>LoginPage</code> component.</p>
+<p>As you recall, the <code>InputField</code> component accepts a <code>fieldRef</code> prop. The parent component can use this prop to pass a reference object. This reference is assigned to the <code>ref</code> prop on the input field element. With this solution, the parent gets access the input field and can obtain its value when processing the form submission.</p>
+<p>Why is the prop in the <code>InputField</code> component called <code>fieldRef</code> and not also <code>ref</code>? The reason is that <code>ref</code> is an attribute name that React handles in a special way, similar to the <code>key</code> attribute, so these attributes cannot be used as prop names. If you feel strongly about passing references to a subcomponent using a prop named <code>ref</code>, React provides a <a href="https://reactjs.org/docs/forwarding-refs.html">forwarding ref</a> option that makes it possible.</p>
+<p>The following listing shows the <code>LoginPage</code> component updated to have references for the two input fields.</p>
+<p class="code_title"><em>src/pages/LoginPage.js</em>: References in the login page</p>
+
+<pre><code class="language-jsx">import { useState, useEffect, useRef } from 'react';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import Body from '../components/Body';
+import InputField from '../components/InputField';
+
+export default function LoginPage() {
+  const [formErrors, setFormErrors] = useState({});
+  const usernameField = useRef();
+  const passwordField = useRef();
+
+  useEffect(() =&gt; {
+    usernameField.current.focus();
+  }, []);
+
+  const onSubmit = (ev) =&gt; {
+    ev.preventDefault();
+    const username = usernameField.current.value;
+    const password = passwordField.current.value;
+
+    console.log(`You entered ${username}:${password}`);
+  };
+
+  return (
+    &lt;Body&gt;
+      &lt;h1&gt;Login&lt;/h1&gt;
+      &lt;Form onSubmit={onSubmit}&gt;
+        &lt;InputField
+          name=&quot;username&quot; label=&quot;Username or email address&quot;
+          error={formErrors.username} fieldRef={usernameField} /&gt;
+        &lt;InputField
+          name=&quot;password&quot; label=&quot;Password&quot; type=&quot;password&quot;
+          error={formErrors.password} fieldRef={passwordField} /&gt;
+        &lt;Button variant=&quot;primary&quot; type=&quot;submit&quot;&gt;Login&lt;/Button&gt;
+      &lt;/Form&gt;
+    &lt;/Body&gt;
+  );
+}
+</code></pre>
+<p>The <code>usernameField</code> and <code>passwordField</code> references are created at the start of the render function, and are passed as <code>fieldRef</code> props to the two <code>InputField</code> components, which in turn will set these references on the actual input elements of the form.</p>
+<p>This new version of the <code>LoginPage</code> component has a new side effect function that shows a nice trick that takes advantage of the new references. The function runs only the first time the login page is rendered (note that the dependency array is empty), and makes the first field in the form focused. This means that the user can start typing the username right away, without having to click on the field with the mouse first. The <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus()</a> method used here is part of the DOM API.</p>
+<p>The <code>onSubmit</code> event handler for the form retrieves the values of the referenced input fields in the DOM, and for now, logs them to the console so that you can verify that everything is working when the form is submitted.</p>
+<h2>Client-Side Field Validation</h2>
+<p>When the user submits the form, the application must perform validation of all the form fields. It is important that all the data that is submitted to the server is validated there, because validation tasks performed in the client are easy to bypass by malicious users.</p>
+<p>With the purpose of making applications more responsive, it is common for clients to perform complementary validation tasks in the client, with the goal to catch the most basic errors without having to make a trip to the server and back. For example, checks can be added to ensure that both the username and password fields are not empty before submitting the form. The server will check this again, but it is simple enough to check in the client as well.</p>
+<p>The <code>formErrors</code> state variable added to the <code>LoginPage</code> component earlier is used to hold validation error messages for form fields. The listing below shows the additions to the <code>onSubmit</code> handler in this component that are necessary to validate that the username and password fields are not empty when the form is submitted.</p>
+<p class="code_title"><em>src/pages/LoginPage.js</em>: Validate input fields</p>
+
+<pre><code class="language-javascript">  const onSubmit = (ev) =&gt; {
+    ev.preventDefault();
+    const username = usernameField.current.value;
+    const password = passwordField.current.value;
+
+    const errors = {};
+    if (!username) {
+      errors.username = 'Username must not be empty.';
+    }
+    if (!password) {
+      errors.password = 'Password must not be empty.';
+    }
+    setFormErrors(errors);
+    if (Object.keys(errors).length &gt; 0) {
+      return;
+    }
+
+    // TODO: log the user in
+  };
+</code></pre>
+<p>The <code>errors</code> constant is initialized to an empty object, and populated with <code>username</code> and/or <code>password</code> keys when any of these fields are found to be empty. The values inserted under these keys are the text of the error messages. These values are already passed as the <code>error</code> props on the <code>InputField</code> components.</p>
+<p>After the <code>errors</code> object is populated, it is set as the updated value of the <code>formErrors</code> state variable. When the value of the state value changes, React will re-render the component, and during the re-render, the error messages will be displayed below each corresponding field. If there is at least one error, the function returns early, to prevent any actual actions defined later to execute when the form submission was deemed invalid.</p>
+<p>After incorporating these changes, navigate to <em>http://localhost:3000/login</em> on your browser and try submitting the form with empty and non-empty fields to see how the client-side validation provides immediate feedback. <a href="#fig7-3">Figure 7.3</a> shows the form after it was submitted with both fields empty.</p>
+<div id="fig7-3"></div>
+<p><center><img alt="Figure 7.3: Form validation errors" src="../../../static/images/react-mega-tutorial/07-errors.png" /></center></p>
+<h2>The User Registration Form</h2>
+<p>You will learn how to complete the implementation of the login form in the next chapter, when the topic of user authentication is discussed. In preparation for that work, in this section you'll implement another important form, the one dedicated to registering new users into the system.</p>
+<p>The new form will be in a <code>RegistrationPage</code> component, with the same structure as <code>LoginPage</code>. You can see it below.</p>
+<p class="code_title"><em>src/pages/RegistrationPage.js</em>: A user registration page</p>
+
+<pre><code class="language-jsx">import { useState, useEffect, useRef } from 'react';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import Body from '../components/Body';
+import InputField from '../components/InputField';
+
+export default function RegistrationPage() {
+  const [formErrors, setFormErrors] = useState({});
+  const usernameField = useRef();
+  const emailField = useRef();
+  const passwordField = useRef();
+  const password2Field = useRef();
+
+  useEffect(() =&gt; {
+    usernameField.current.focus();
+  }, []);
+
+  const onSubmit = async (event) =&gt; {
+    // TODO
+  };
+
+  return (
+    &lt;Body&gt;
+      &lt;h1&gt;Register&lt;/h1&gt;
+      &lt;Form onSubmit={onSubmit}&gt;
+        &lt;InputField
+          name=&quot;username&quot; label=&quot;Username&quot;
+          error={formErrors.username} fieldRef={usernameField} /&gt;
+        &lt;InputField
+          name=&quot;email&quot; label=&quot;Email address&quot;
+          error={formErrors.email} fieldRef={emailField} /&gt;
+        &lt;InputField
+          name=&quot;password&quot; label=&quot;Password&quot; type=&quot;password&quot;
+          error={formErrors.password} fieldRef={passwordField} /&gt;
+        &lt;InputField
+          name=&quot;password2&quot; label=&quot;Password again&quot; type=&quot;password&quot;
+          error={formErrors.password2} fieldRef={password2Field} /&gt;
+        &lt;Button variant=&quot;primary&quot; type=&quot;submit&quot;&gt;Register&lt;/Button&gt;
+      &lt;/Form&gt;
+    &lt;/Body&gt;
+  );
+}
+</code></pre>
+<p>The registration form has four fields for username, email, password and password confirmation. These fields all have a reference assigned to them. A <code>formErrors</code> state variable is added on this form as well, to keep track of validation error messages. The first field of the form is given the focus with a side effect function, as in <code>LoginPage</code>.</p>
+<p>This page needs to be associated with the <em>/register</em> route in <em>App.js</em>.</p>
+<p class="code_title"><em>src/App.js</em>: Registration page route</p>
+
+<pre><code class="language-jsx">... // &lt;-- no changes to existing imports
+import RegistrationPage from './pages/RegistrationPage';
+
+export default function App() {
+  return (
+    &lt;Container fluid className=&quot;App&quot;&gt;
+      &lt;BrowserRouter&gt;
+        &lt;ApiProvider&gt;
+          &lt;Header /&gt;
+          &lt;Routes&gt;
+            &lt;Route path=&quot;/&quot; element={&lt;FeedPage /&gt;} /&gt;
+            &lt;Route path=&quot;/explore&quot; element={&lt;ExplorePage /&gt;} /&gt;
+            &lt;Route path=&quot;/user/:username&quot; element={&lt;UserPage /&gt;} /&gt;
+            &lt;Route path=&quot;/login&quot; element={&lt;LoginPage /&gt;} /&gt;
+            &lt;Route path=&quot;/register&quot; element={&lt;RegistrationPage /&gt;} /&gt;
+            &lt;Route path=&quot;*&quot; element={&lt;Navigate to=&quot;/&quot; /&gt;} /&gt;
+          &lt;/Routes&gt;
+        &lt;/ApiProvider&gt;
+      &lt;/BrowserRouter&gt;
+    &lt;/Container&gt;
+  );
+}
+</code></pre>
+<p>The login page can include a link to the new registration page below the login form's submit button.</p>
+<p class="code_title"><em>src/pages/LoginPage.js</em>: Link to user registration page</p>
+
+<pre><code class="language-jsx">... // &lt;-- no changes to existing imports
+import { Link } from 'react-router-dom';
+
+export default function LoginPage() {
+  ... // &lt;-- no changes in the body of the function
+
+  return (
+    &lt;Body&gt;
+      &lt;h1&gt;Login&lt;/h1&gt;
+      ... // &lt;-- no changes to the form
+      &lt;hr /&gt;
+      &lt;p&gt;Don&amp;apos;t have an account? &lt;Link to=&quot;/register&quot;&gt;Register here&lt;/Link&gt;!&lt;/p&gt;
+    &lt;/Body&gt;
+  );
+}
+</code></pre>
+<h2>Form Submission and Server-Side Field Validation</h2>
+<p>Registering a user with Microblog API is a straightforward operation that only requires sending a <code>POST</code> request to <em>/api/users</em> with the new user's username, email and chosen password. This request can be made through the <code>MicroblogApiClient</code> instance, which can be accessed in this component through the <code>useApi()</code> custom hook.</p>
+<p>The listing below shows the changes to the registration page to support the form submission.</p>
+<p class="code_title"><em>src/pages/RegistrationPage.js</em>: Registration form submission</p>
+
+<pre><code class="language-javascript">... // &lt;-- no changes to existing imports
+import { useNavigate } from 'react-router-dom';
+import { useApi } from '../contexts/ApiProvider';
+
+export default function RegistrationPage() {
+  ... // &lt;-- no changes to state variables and references
+  const navigate = useNavigate();
+  const api = useApi();
+
+  const onSubmit = async (event) =&gt; {
+    event.preventDefault();
+    if (passwordField.current.value !== password2Field.current.value) {
+      setFormErrors({password2: &quot;Passwords don't match&quot;});
+    }
+    else {
+      const data = await api.post('/users', {
+        username: usernameField.current.value,
+        email: emailField.current.value,
+        password: passwordField.current.value
+      });
+      if (!data.ok) {
+        setFormErrors(data.body.errors.json);
+      }
+      else {
+        setFormErrors({});
+        navigate('/login');
+      }
+    }
+  };
+
+  ... // &lt;-- no changes to returned JSX
+}
+</code></pre>
+<p>In the body of the component function, the <code>api</code> instance is imported with the custom <code>useApi()</code> hook function. In addition to that, the <code>navigate()</code> function from the React-Router package is included, through the <code>useNavigate()</code> hook. This function is used to automatically redirect the user to the <em>/login</em> route after a successful user registration.</p>
+<p>The validation of this form has two passes. First, a client-side validation pass is done in the <code>onSubmit()</code> handler function. For this form, a check is done to ensure that the <code>password</code> and <code>password2</code> fields are equal. If an error is found, the <code>formErrors</code> state variable is updated with an error message and the form submission is suspended.</p>
+<p>The client-side validation could be expanded to also check that none of the fields are empty, that the email address is syntactically correct, and many other checks. But given that the back end performs all these checks already, an argument can be made that it is best to avoid repetition.</p>
+<p>If the client-side validation of the two password fields does not detect any errors, then the <code>api</code> instance is used to send the <code>POST</code> request to the server. The first argument to <code>api.post()</code> is the last part of the endpoint URL (after <em>/api</em>), and the second argument is an object with the request body, which is sent to the server in JSON format.</p>
+<p>If the request fails due to validation, the Microblog API back end returns an error response. The body of the response includes detailed information about the error, and in particular, the <code>errors.json</code> object contains validation error messages for each field. This is actually very convenient, because the <code>formErrors</code> state variable uses the same format. To display the validation errors from the server, this object is set directly on the state variable. <a href="#fig7-4">Figure 7.4</a> shows an example of server-side validation errors displayed on the form.</p>
+<p>If the request succeeds, the <code>formErrors</code> state variable is cleared of any previous errors, and then the <code>navigate()</code> function from React-Router is used to issue a redirect to the login page.</p>
+<div id="fig7-4"></div>
+<p><center><img alt="Figure 7.4: Sever-side validation errors in the registration form" src="../../../static/images/react-mega-tutorial/07-registration.png" /></center></p>
+<p>The user registration functionality is now fully functional. You can register users by navigating to <em>http://localhost:3000/register</em> in your browser and submitting the registration form.</p>
+<h2>Flashing Messages to the User</h2>
+<p>If you tried to register a user, you must have noticed that after the user registration is processed, you are unceremoniously redirected to the login page, without any indication of success or failure.</p>
+<p>A standard user interface pattern in web applications is to indicate the status of an operation by "flashing" a message to the user. A flashed message often appears at the top of the page, styled to call attention to it. In React-Bootstrap, the <a href="https://react-bootstrap.github.io/docs/components/alerts/">Alert</a> component can create this type of user interface component.</p>
+<p>Implementing message flashing in a reusable way presents an interesting challenge. To flash a message, a component needs to share the message to be flashed with the component that renders the alert message, which will very likely be in a different part of the component tree.</p>
+<p>Before going into implementation specifics, let's think about a nice design for flashing a message. Below you can see how an example <code>MyForm</code> component might flash a message after processing a form:</p>
+<pre><code class="language-javascript">export default function MyForm() {
+  const { flash } = useFlash();
+
+  const onSubmit = (ev) =&gt; {
+    ev.preventDefault();
+    ... // form processing here
+    flash('Your registration has been successful', 'success');
+  };
+
+  return ( ... );
+  }
+}
+</code></pre>
+<p>This is a really nice pattern, because any component that needs to flash a message can just get the <code>flash()</code> function from the <code>useFlash()</code> hook, without having to worry about how or where the alert is going to render in the page.</p>
+<p>But how do you implement something like this? React contexts are actually powerful enough to make a solution like this work. The component hierarchy that supports message flashing for the example <code>MyForm</code> component above might look like this:</p>
+<pre><code class="language-jsx">&lt;FlashProvider&gt;
+  &lt;Alert /&gt;
+  &lt;MyForm /&gt;
+&lt;/FlashProvider&gt;
+</code></pre>
+<p>And this is starting to look more familiar. The <code>FlashProvider</code> component can share a context that includes a <code>flash()</code> function, which child components such as the <code>MyForm</code> of the example above can use to set the alert message. The context will also need to share the text and style of the message, so that the component in charge of rendering the alert, also a child of <code>FlashProvider</code>, has the information it needs to do it.</p>
+<p>The actual implementation has an additional complication omitted above. On a traditional, server-rendered application, a flashed message goes away as soon as the user navigates to a new page. Since real page navigation does not exist in a React application, an alert may end up being displayed for a long time, so a mechanism to hide an alert after a reasonable amount of time needs to be included in this solution.</p>
+<p>The listing below shows the complete implementation of <code>FlashProvider</code>, with support for automatically hiding the alert after a specified number of seconds.</p>
+<p class="code_title"><em>src/contexts/FlashProvider.js</em>: A Flash context</p>
+
+<pre><code class="language-jsx">import { createContext, useContext, useState } from 'react';
+
+export const FlashContext = createContext();
+let flashTimer;
+
+export default function FlashProvider({ children }) {
+  const [flashMessage, setFlashMessage] = useState({});
+  const [visible, setVisible] = useState(false);
+
+  const flash = (message, type, duration = 10) =&gt; {
+    if (flashTimer) {
+      clearTimeout(flashTimer);
+      flashTimer = undefined;
+    }
+    setFlashMessage({message, type});
+    setVisible(true);
+    if (duration) {
+      flashTimer = setTimeout(hideFlash, duration * 1000);
+    }
+  };
+
+  const hideFlash = () =&gt; {
+    setVisible(false);
+  };
+
+  return (
+    &lt;FlashContext.Provider value={{flash, hideFlash, flashMessage, visible}}&gt;
+      {children}
+    &lt;/FlashContext.Provider&gt;
+  );
+}
+
+export function useFlash() {
+  return useContext(FlashContext).flash;
+}
+</code></pre>
+<p>The overall structure of this component is similar to that of <code>ApiProvider</code>. The <code>FlashContext</code> object is created in the global scope, and the <code>FlashContext.Provider</code> component is then rendered as a wrapper to the component's children. The value shared by this context is an object with four elements:</p>
+<ul>
+<li><code>flash</code> is the function that components can use to flash a message to the page.</li>
+<li><code>hideFlash</code> is a function that updates the visible state of the flash message to <code>false</code>.</li>
+<li><code>flashMessage</code> is an object with <code>message</code> and <code>type</code> properties, defining the alert to display. The <code>type</code> property can be any of the styling options supported by Bootstrap's alerts, for example: <code>success</code>, <code>danger</code>, <code>info</code>, etc.</li>
+<li><code>visible</code> is the current visible state of the alert.</li>
+</ul>
+<p>The <code>value={{ ... }}</code> prop of the <code>FlashContext.Provider</code> component has a syntax that may look strange. In React, when a prop needs to be assigned a value that is an object, two sets of braces are required. The outer pair of braces is what tells the JSX parser that the value of the prop is given as a JavaScript expression. The inner pair of braces are the object braces. The elements of the object, which are normally provided in <code>key: value</code> format, are in this case given as simple variables, using the object property shorthand, which takes the key and the value from the same variable.</p>
+<p>The component has two state variables. The <code>flashMessage</code> state variable holds the message and the type of the current alert. The <code>visible</code> variable is a boolean that keeps track of when the alert is displayed.</p>
+<p>The <code>flashTimer</code> global variable is going to manage a JavaScript timer instance that is created each time an alert is displayed, with the purpose of automatically hiding the alert after enough time has passed. You may wonder why this variable is declared as a global variable and not a state variable inside the component. State variables have the unique feature that they cause any components that use them to re-render when they change. The timer used by this component is an internal implementation value that has no connections to anything that is visible on the page that might need to re-render, so for that reason a global variable is used.</p>
+<p>The <code>flash()</code> function is defined with three arguments <code>message</code>, <code>type</code> and <code>duration</code>. The function starts by checking if there is an active flash timer. If there is a timer, that means that there is currently an alert on display that is going to be replaced. In that case the timer needs to be canceled, since a new timer will be created for the new alert.</p>
+<p>The function then updates the <code>flashMessage</code> state with the provided <code>message</code> and <code>type</code> arguments, sets the <code>visible</code> state to <code>true</code>, and finally creates a timer that calls the <code>hideFlash()</code> function after the number of seconds given in <code>duration</code> have passed. The <code>duration</code> argument defaults to 10 seconds, and the caller can pass 0 to skip the timer creation and display an alert that remains visible until the user closes it manually.</p>
+<p>The <code>hideFlash()</code> function just sets the <code>visible</code> state variable to <code>false</code>, to indicate that the alert should now be hidden.</p>
+<p>The JSX returned by this component just creates the context provider with all the children components inside.</p>
+<p>As in previous contexts, a <code>useFlash()</code> custom hook function is defined to return the <code>flash</code> function. This is a convenience function that all components can use to easily flash a message, without having to deal with the context directly.</p>
+<p>The flash context needs to be placed high enough in the component tree that all the components that may need to flash messages, plus the alert component that renders these messages are all children. As before, it is a good idea to do this in the <code>App</code> component, where all the application wide behaviors are defined.</p>
+<p class="code_title"><em>src/App.js</em>: The flash context</p>
+
+<pre><code class="language-jsx">... // &lt;-- no changes to existing imports
+import FlashProvider from './contexts/FlashProvider';
+
+export default function App() {
+  return (
+    &lt;Container fluid className=&quot;App&quot;&gt;
+      &lt;BrowserRouter&gt;
+        &lt;FlashProvider&gt;
+          &lt;ApiProvider&gt;
+            &lt;Header /&gt;
+            &lt;Routes&gt;
+              ... // &lt;-- no changes to routes
+            &lt;/Routes&gt;
+          &lt;/ApiProvider&gt;
+        &lt;/FlashProvider&gt;
+      &lt;/BrowserRouter&gt;
+    &lt;/Container&gt;
+  );
+}
+</code></pre>
+<p>The <code>FlashProvider</code> component is inserted as a parent of <code>ApiProvider</code>, which was the top-most application-specific component. This would enable <code>ApiProvider</code> and all of its children to work with flashed messages.</p>
+<h3>The FlashMessage Component</h3>
+<p>The second part of this solution is the component that displays the flashed messages. This is the task of the <code>FlashMessage</code> component. Below is the implementation of this component.</p>
+<p class="code_title"><em>src/components/FlashMessage.js</em>: Display a flashed message</p>
+
+<pre><code class="language-jsx">import { useContext } from 'react';
+import Alert from 'react-bootstrap/Alert';
+import Collapse from 'react-bootstrap/Collapse';
+import { FlashContext } from '../contexts/FlashProvider';
+
+export default function FlashMessage() {
+  const { flashMessage, visible, hideFlash } = useContext(FlashContext);
+
+  return (
+    &lt;Collapse in={visible}&gt;
+      &lt;div&gt;
+        &lt;Alert variant={flashMessage.type || 'info'} dismissible
+          onClose={hideFlash}&gt;
+          {flashMessage.message}
+        &lt;/Alert&gt;
+      &lt;/div&gt;
+    &lt;/Collapse&gt;
+  );
+}
+</code></pre>
+<p>To be able to render alerts, this component needs access to the data shared by the <code>FlashProvider</code> component. The <code>useFlash()</code> hook function only provides access to the <code>flash()</code> function, which components can use to display an alert. Because this component needs access to the remaining elements of <code>FlashContext</code>, it accesses the context with the <code>useContext</code> hook. There is no great benefit in adding custom hook functions for these attributes of the flash context, since their use is limited to this component.</p>
+<p>This component takes advantage not only of the <a href="https://react-bootstrap.github.io/docs/components/alerts/">Alert</a> component of React-Bootstrap, but also <a href="https://react-bootstrap.github.io/docs/utilities/transitions/#collapse">Collapse</a>, which adds a nice sliding animation when the alert is shown or hidden. The <code>in</code> prop of <code>Collapse</code> determines if the components needs to be shown or hidden, so it is directly assigned the value of the <code>visible</code> state variable that was obtained from the flash context.</p>
+<p>The <code>Collapse</code> documentation indicates that to have a smooth animation it is often necessary to wrap the collapsible elements in a <code>&lt;div&gt;</code>, so this is done here to wrap <code>Alert</code>. The alert itself uses the attributes of <code>flashMessage</code> to configure the styling and the message.</p>
+<p>To make these alerts more friendly, the <code>dismissible</code> prop is added, so that there is a close button on the alert that the user can click to immediately dismiss it, without having to wait for the timer to do it. The <code>onClose</code> prop is the handler for the close action, which is directly sent to the same <code>hideFlash</code> function that the timer uses.</p>
+<p>The <code>FlashMessage</code> can be added to the <code>Body</code> component, so that it is available in all the pages of the application, above the content area:</p>
+<p class="code_title"><em>src/components/Body.js</em>: Show a flashed message in the page</p>
+
+<pre><code class="language-jsx">... // &lt;-- no changes to existing imports
+import FlashMessage from './FlashMessage';
+
+export default function Body({ sidebar, children }) {
+  return (
+    &lt;Container&gt;
+      &lt;Stack direction=&quot;horizontal&quot; className=&quot;Body&quot;&gt;
+        {sidebar &amp;&amp; &lt;Sidebar /&gt;}
+        &lt;Container className=&quot;Content&quot;&gt;
+          &lt;FlashMessage /&gt;
+          {children}
+        &lt;/Container&gt;
+      &lt;/Stack&gt;
+    &lt;/Container&gt;
+  );
+}
+</code></pre>
+<p>The <code>FlashMessage</code> component is inserted as the first child of the <code>Content</code> container, so that it appears on top of any page content. When the sidebar is enabled, the alert only covers the extent of the content portion.</p>
+<p>The <code>RegistrationPage</code> component can now retrieve the <code>flash()</code> function from the <code>useFlash()</code> hook, and display a success message after registration.</p>
+<p class="code_title"><em>src/pages/RegistrationPage.js</em>: Flash a message after registration</p>
+
+<pre><code class="language-javascript">... // &lt;-- no changes to existing imports
+import { useFlash } from '../contexts/FlashProvider';
+
+export default function RegistrationPage() {
+  ... // &lt;-- no changes to state variables, references and other hooks
+  const flash = useFlash();
+
+  ... // &lt;-- no changes to side effect function
+
+  const onSubmit = async (event) =&gt; {
+    event.preventDefault();
+    if (passwordField.current.value !== password2Field.current.value) {
+      ... // &lt;-- no changes to client-side validation
+    }
+    else {
+      ... &lt;-- no changes
+      if (!data.ok) {
+        ... // &lt;-- no changes
+      }
+      else {
+        setFormErrors({});
+        flash('You have successfully registered!', 'success');
+        navigate('/login');
+      }
+    }
+  };
+
+  ... // &lt;-- no changes to returned JSX
+}
+</code></pre>
+<p><a href="#fig7-5">Figure 7.5</a> shows how the flashed message looks after a user is registered.</p>
+<div id="fig7-5"></div>
+<p><center><img alt="Figure 7.5: Flashed message" src="../../../static/images/react-mega-tutorial/07-flash.png" /></center></p>
+<h2>Chapter Summary</h2>
+<ul>
+<li>Use a React reference to access DOM elements in side effect or event handler functions.</li>
+<li>Use DOM APIs to obtain or set the value of an uncontrolled input component through a reference.</li>
+<li>Use client-side validation for forms as a complement, but not as a replacement for server-side validation.</li>
+<li>A React context is not only useful when a parent needs to share data with its children. It can also be used to enable children components to pass information between themselves with the parent as intermediary.</li>
+</ul></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation&amp;t=The%20React%20Mega-Tutorial%2C%20Chapter%207%3A%20Forms%20and%20Validation" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation&amp;resubmit=true&amp;title=The%20React%20Mega-Tutorial,%20Chapter%207:%20Forms%20and%20Validation" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=The%20React%20Mega-Tutorial%2C%20Chapter%207%3A%20Forms%20and%20Validation&amp;url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation&amp;title=The%20React%20Mega-Tutorial%2C%20Chapter%207%3A%20Forms%20and%20Validation&amp;summary=The%20React%20Mega-Tutorial%2C%20Chapter%207%3A%20Forms%20and%20Validation&amp;source=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=The%20React%20Mega-Tutorial%2C%20Chapter%207%3A%20Forms%20and%20Validation&amp;body=https%3A//blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../the-react-mega-tutorial-chapter-7-forms-and-validation.html#comments">6 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/1aa41b3aa15d15269d29ef7f1b1f843e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Tomas</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-08-11T11:42:55Z" data-function="fromNow" data-refresh="0" style="display: none">2022-08-11T11:42:55Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>I just noticed that <code>setFormErrors(data.body.errors.json)</code> for client-side validation on the registration form doesn't act as expected. I had to change the <code>errors</code> key to <code>messages</code>. So <code>setFormErrors(data.body.messages.json)</code>. Have you come across this before?</p>
+<p>Many thanks,<br>
+Tomas</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2022-08-11T13:27:20Z" data-function="fromNow" data-refresh="0" style="display: none">2022-08-11T13:27:20Z</span>
+  </p>
+  <div>
+    <p>@Tomas: Are you running an unmodified Microblog-API? This project returns the list of validation errors in the <code>errors</code> field, there is no <code>messages</code> field in the response.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a3460dff64d1ade3f57fc87972613466?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">Tom V</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-06-09T12:33:09Z" data-function="fromNow" data-refresh="0" style="display: none">2023-06-09T12:33:09Z</span>
+  </p>
+  <div>
+    <p>The bootstrap react documentation pages have changed - I keep running into it. For instance the forms page is now here: <a href="https://react-bootstrap.github.io/docs/forms/overview" rel="nofollow">https://react-bootstrap.github.io/docs/forms/overview</a><br>
+Thanks for this series, its awesome.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/87c1502b5ba0a684fc9351fa21e20a34?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-warning">Oker Calvin </span> said
+    
+    <span class="flask-moment" data-timestamp="2023-06-16T20:07:32Z" data-function="fromNow" data-refresh="0" style="display: none">2023-06-16T20:07:32Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>useEffect(() =&gt; {<br>
+    usernameField.current.focus();<br>
+  }, []); </p>
+<p>The above code is showing an error of focus being undefined in both login and registrration pages</p>
+<p>I tried to look for the possible solution but in vain</p>
+<p>any help on theis</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2023-06-16T21:52:02Z" data-function="fromNow" data-refresh="0" style="display: none">2023-06-16T21:52:02Z</span>
+  </p>
+  <div>
+    <p>@Oker: please share the exact error and stack trace. It's difficult to diagnose the problem from a verbal description of what happens.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b7a89a904155fd1628767c84f505b619?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-warning">Xiao</span> said
+    
+    <span class="flask-moment" data-timestamp="2024-04-28T09:19:56Z" data-function="fromNow" data-refresh="0" style="display: none">2024-04-28T09:19:56Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, this is yet another awesome repo that I followed from you after flask-mega-tutorial. I've noticed that if the API server is not running or due to network error, the data fetched in RegistrationPage.js can get an net::ERR_CONNECTION_REFUSED error. Therefore, I add some logic like <code>flash('Server no response!', 'danger');</code> in my code if the fetch fails. Thank you, your articles really help me a lot in learning web development and I'm also reading your sqlalchemy-2 ebook!</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdmyA.BCwFGfkRy8aXXVdsM5GeQinbbJ8">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  
+  <div class="card-header">The React Mega-Tutorial</div>
+  <a class="card-book-cover" href="https://amzn.to/3LK7Skg">
+    <img src="../../../static/react-book-small.png">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you would you like to support my <a href="../../introducing-the-react-mega-tutorial.html">React Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial in book and/or video formats, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3LK7Skg">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3LK7Skg">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/react-mega-tutorial">Click here to get the Video Course!</a>
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/the-react-mega-tutorial-chapter-7-forms-and-validation/page/1 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:49 GMT -->
+</html>

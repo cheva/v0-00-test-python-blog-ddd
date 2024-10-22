@@ -1,0 +1,1262 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:52:14 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    Setting Up a Flask Application in Visual Studio Code - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="Flask, Python, Programming, Microsoft, Visual Studio Code, IDE">
+  
+  
+  <link rel="canonical" href="../../setting-up-a-flask-application-in-visual-studio-code.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="Setting Up a Flask Application in Visual Studio Code">
+    <meta property="og:description" content="As a follow up to my Setting Up a Flask Application in PyCharm article, today I&#39;m going to show you how to set up your project with Visual Studio Code (Code, for short), which is a free and open…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/setting-up-a-flask-application-in-visual-studio-code.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code">
+    <meta name="twitter:title" content="Setting Up a Flask Application in Visual Studio Code">
+    <meta name="twitter:description" content="As a follow up to my Setting Up a Flask Application in PyCharm article, today I&#39;m going to show you how to set up your project with Visual Studio Code (Code, for short), which is a free and open…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/setting-up-a-flask-application-in-visual-studio-code.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../setting-up-a-flask-application-in-visual-studio-code.html">Setting Up a Flask Application in Visual Studio Code</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2019-09-09T12:07:38Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2019-09-09T12:07:38Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>As a follow up to my <a href="../../setting-up-a-flask-application-in-pycharm.html">Setting Up a Flask Application in PyCharm</a> article, today I'm going to show you how to set up your project with <a href="https://code.visualstudio.com/">Visual Studio Code</a> (Code, for short), which is a free and open source integrated development environment from Microsoft with great support for Python. Like I did in the previous article, you can see me going through all the required steps to set up an example project in the video below. After the video, I provide a short written summary of the process.</p>
+<div style="margin: auto; margin-bottom: 15px;"><div class="video-container"><iframe width="425" height="315" src="https://www.youtube.com/embed/UXqiVe6h3lA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div></div>
+
+<h2>Creating a Project in Visual Studio Code</h2>
+<p>To open a project for the first time in Code you just use the File|Open menu option and select the top level folder of the project. I've found that sometimes Code does not detect a Python project until you open a file with the .py extension, so if you don't see a Python interpreter displayed in the status bar at the bottom of the Code window, just open a Python file to trigger the Python subsystem to initialize. Note that the official Python plugin for Code needs to be installed beforehand.</p>
+<p>The status bar shows the selected Python interpreter for the project. In general I've seen code pick up virtual environments that are in the project folder directly. If your virtualenv is somewhere else, click the Python interpreter section of the status bar and then you will be given the option to select your interpreter.</p>
+<h2>Adding Run and Debug Configurations</h2>
+<p>In Code, run configurations for a project are created in the debugger section of the user interface. So click on the little bug icon on the left side, and then on the configuration list drop down next to the green "run" button. Because this is a new project, the configuration list is empty and only has an "Add Configuration" option. Click this option and then you will be prompted to select from a list of project types. Very conveniently Flask is one of the list options, so select that. The Flask configuration will then prompt you for the application location, which must be given exactly as you set it in the <code>FLASK_APP</code> environment variable.</p>
+<p>The new run configuration is stored in a new file called <code>.vscode/launch.json</code>. Since this is a standard JSON file, you can make changes or tweaks as you see necessary. And if you plan on using the Code configuration often you can also add this file to source control so that it is preserved.</p>
+<p>With the configuration created you can now run the application with or without debugging, either from the Debug menu or by using the green "play" icon. When the application is running its output is captured in the bottom panel of the Code window. A small floating toolbar also appears near the top of the window with a Stop button. If you are running with the debugger enabled, you can add breakpoints by clicking in the left margin of the corresponding lines of code. Other buttons in the floating debug toolbar are used to step through the code when the application stops at a breakpoint.</p>
+<h2>Configuring Unit Tests</h2>
+<p>By looking at the Code window you will not find any indication that you can add unit testing to your configuration. Unfortunately the support for testing is somewhat hidden. To define unit tests you need to open Code's command palette, using <code>Ctrl+Shift+P</code> (Windows, Linux) or <code>Cmd+Shift+P</code> (Mac). In the command palette, you can type "tests" to search and filter the long list of available functions. Once you locate the function "Python: Discover Tests" select it.</p>
+<p>The Discover Tests function will detect that unit testing isn't configured and will ask you if you want to configure it. Click the "Enable and Configure a Test Framework" to begin the configuration process. The test configuration is  done with guided prompts, like the run configuration. In the first prompt, you have to select your test runner, which can be <code>unittest</code>, <code>pytest</code> or <code>nose</code>. The second prompt is to select the directory within the project that has all the tests. The third and last prompt is to select the file pattern for the test files. For this third prompt in general I use the <code>*test*.py</code> pattern, which covers pretty much all naming conventions for test files.</p>
+<p>When you complete the configuration Code will go off to discover tests in the project. You will also notice that now there is a new icon for tests in the left sidebar. You can click this option to see all the discovered tests, along with options to run or debug all the tests together, or a single test individually.</p>
+<h2>Better Debug Configuration</h2>
+<p>The project configuration at this point is almost complete. There is actually one small problem with it, that is not caused by Code but by an old bug in Flask. The problem occurs when the application crashes, at which point a normal Flask application would either show the in-browser debugger when you are in debug mode, or else just show an Internal Server Error page and log the exception to the terminal and/or log file. When working with Code, it would be desirable to have crashes reported in the Code debugger, and this is unfortunately not possible with the current configuration.</p>
+<p>The problem is in Flask, which does not properly configure the bubbling up of errors for external debuggers, so any crashes will never make it into Code. The workaround to address this problem is to switch from the <code>flask run</code> method of starting the application to the older <code>app.run()</code> method, which has more configuration options, including one to specify that exceptions should not be caught by Flask and should be let bubble up into another debugger.</p>
+<p>To do this, you have to add the familiar <code>app.run()</code> snippet of code to the module that contains the application:</p>
+<pre><code class="python">if __name__ == '__main__':
+    app.run(use_debugger=False, use_reloader=False, passthrough_errors=True)
+</code></pre>
+
+<p>This configures the alternative <code>app.run()</code> runner properly for Code, where there is no need to use the in-browser debugger or the reloader. The <code>passthrough_errors</code> option is the one that allows errors to bubble up, an option that is unfortunately not available when you run the application with <code>flask run</code>.</p>
+<p>To complete this change you have to go into the <code>.vscode/launch.json</code> file and change the <code>module</code> setting, which was set to <code>flask</code> in the original configuration to the name of your module (without the .py extension). The <code>args</code> options contained <code>run</code> and a couple other options, which now are not needed, so this setting should be change into an empty list.</p>
+<p>With these changes the application can properly report unexpected errors and crashes into the Code debugger. It's important to note that <code>flask run</code> can still be used when you want to run your application outside of Code.</p>
+<h2>Conclusion</h2>
+<p>I hope this was a useful article and video. You may want to also check out the article and video that I've made for the <a href="../../setting-up-a-flask-application-in-pycharm.html">PyCharm IDE</a> based on the same project.</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code&amp;t=Setting%20Up%20a%20Flask%20Application%20in%20Visual%20Studio%20Code" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code&amp;resubmit=true&amp;title=Setting%20Up%20a%20Flask%20Application%20in%20Visual%20Studio%20Code" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=Setting%20Up%20a%20Flask%20Application%20in%20Visual%20Studio%20Code&amp;url=https%3A//blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code&amp;title=Setting%20Up%20a%20Flask%20Application%20in%20Visual%20Studio%20Code&amp;summary=Setting%20Up%20a%20Flask%20Application%20in%20Visual%20Studio%20Code&amp;source=https%3A//blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=Setting%20Up%20a%20Flask%20Application%20in%20Visual%20Studio%20Code&amp;body=https%3A//blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../setting-up-a-flask-application-in-visual-studio-code.html#comments">25 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/e9adc09419d8b1cfbbd4f899bc5aae38?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#1</span> <span class="badge text-bg-warning">Tiago</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-09-10T17:33:22Z" data-function="fromNow" data-refresh="0" style="display: none">2019-09-10T17:33:22Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,<br>
+I've been following all your posts and learning a lot. Please, could you prepare an article explaining for example: Where should we keep our business logic in Flask or Django ? What about Fat Model ? It could be very cool.<br>
+Thanks.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#2</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-09-10T18:08:31Z" data-function="fromNow" data-refresh="0" style="display: none">2019-09-10T18:08:31Z</span>
+  </p>
+  <div>
+    <p>@Tiago: Have you seen my longer tutorials, like the Mega-Tutorial or my O'Reilly book?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d522f66361be9b885d7df0d8ed06a476?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#3</span> <span class="badge text-bg-warning">Maulin Tolia</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-02T13:20:15Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-02T13:20:15Z</span>
+  </p>
+  <div>
+    <p>Do you use a linter on vscode?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#4</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-02T13:25:07Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-02T13:25:07Z</span>
+  </p>
+  <div>
+    <p>@Maulin: On some projects I do. But in general I have the linter running from tox, separately from vscode.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/5a31f8dfa15b738e0bb7de5f7065a065?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#5</span> <span class="badge text-bg-warning">Oleksis</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-02T19:34:26Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-02T19:34:26Z</span>
+  </p>
+  <div>
+    <p>Thanks for the tips, i want add one tip is use the terminal integrantes shell of Git bash.exe in Windows, why default i get the error in Visual Code python debugger: ConnectionRefusedError [WinError 10061]<br>
+Then my settings.json is:</p>
+<p>{<br>
+    ....<br>
+    "terminal.external.windows Exec": " C:\Program Files\Git\bin\bash.exe",<br>
+    "terminal.integrated.shell.windows": " C:\Program Files\Git\bin\bash.exe"<br>
+}</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/06a592cb220a48909f427831c26c10f4?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#6</span> <span class="badge text-bg-warning">Ralf Kretzschmar</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-11-08T12:12:28Z" data-function="fromNow" data-refresh="0" style="display: none">2019-11-08T12:12:28Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,<br>
+first off: Thank you very much for your excelent resources. I am right now working through your book "Flask Web Developement, 2nd Edition". Great stuff! (Especially for me coming from a c#/.net background)</p>
+<p>One remark on debugging in VS Code. If you set the checkbox "On raised exceptions" in the Breakpoint section of the Debugger sidebar, exception break you into the debugger with the default run configuration.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#7</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-11-09T15:38:20Z" data-function="fromNow" data-refresh="0" style="display: none">2019-11-09T15:38:20Z</span>
+  </p>
+  <div>
+    <p>@Ralf: My understanding is that when you check "on raised exceptions" you will get a break on any exceptions, even those that are handled. So depending on the codebase you may get breaks on lots of false positives if the code relies on raising exceptions that are then handled in a higher scope. So I would still prefer the solution that I propose here in general.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/bdb7f265d567c63eef405d91c53e4e84?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#8</span> <span class="badge text-bg-warning">Kristin</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-12-08T03:56:51Z" data-function="fromNow" data-refresh="0" style="display: none">2019-12-08T03:56:51Z</span>
+  </p>
+  <div>
+    <p>I've faced the problem - I can't run the application for debugging. It's not running, then shows the exception message about Timeout waiting for debugger connection as described here: <a href="https://stackoverflow.com/questions/52462599/visual-studio-code-python-timeout-waiting-for-debugger-connection" rel="nofollow">https://stackoverflow.com/questions/52462599/visual-studio-code-python-timeout-waiting-for-debugger-connection</a></p>
+<p>I tried all techniques in that post but nothing worked. Can you please help? Thanks!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#9</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-12-08T08:24:08Z" data-function="fromNow" data-refresh="0" style="display: none">2019-12-08T08:24:08Z</span>
+  </p>
+  <div>
+    <p>@Kristin: I suggest you reinstall VSCode, this is probably a bad installation.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/dd4ca5f722a9634ccfa5b058982a0ffe?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#10</span> <span class="badge text-bg-warning">Brett Castellanos</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-16T16:49:01Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-16T16:49:01Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, thanks for the great content!</p>
+<p>I am working through the Microblog tutorial, but I thought setting up the debugger would be nice along the way. I followed the instructions in this tutorial but for some reason I am still receiving internal server errors.</p>
+<p>When I download the flasky repo and follow the instructions, errors are caught by the VS Code debugger.</p>
+<p>Any ideas what the difference could be?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#11</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-17T23:46:08Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-17T23:46:08Z</span>
+  </p>
+  <div>
+    <p>@Brett: you need to set debug mode (FLASK_DEBUG=1), and you also need to use the app.run() method of running the server, same as what I show in this article.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/dd4ca5f722a9634ccfa5b058982a0ffe?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#12</span> <span class="badge text-bg-warning">Brett Castellanos</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-22T17:11:03Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-22T17:11:03Z</span>
+  </p>
+  <div>
+    <p>Thanks @Miguel. I somehow missed FLASK_DEBUG=1.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/9ebeeb7f06a0b83f3ce8bfecbdca41e7?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#13</span> <span class="badge text-bg-warning">Yanal</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-07T11:11:22Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-07T11:11:22Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>Thank you for this video.</p>
+<p>About the bug that prevents code from pausing debugging when an uncaught exception occurs, did you try to tick the "RaisedException" check box at the bottom left corner of VSCode (see at 25'00'' for instance) ? </p>
+<p>On my project, with the default configuration (with falsk run) vs code is pausing when an uncaught exception is raising up.</p>
+<p>Was the bug you are mentioning fixed? Am I missing something?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#14</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-07T19:09:07Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-07T19:09:07Z</span>
+  </p>
+  <div>
+    <p>@Yanal: if you tick the raised exception box the debugger will stop for all exceptions, even those that are handled. Depending on the application this could be maddening. The normal behavior with that box not ticked is to only stop for exceptions that are not handled, which is the behavior that we want, but Flask always catches exceptions in handlers due to the bug I refer to in the video. The bug is not fixed, by the way.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/24b8f75d09f628e5dcc39dc4f750b7c9?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#15</span> <span class="badge text-bg-warning">Jeff</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-28T00:54:23Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-28T00:54:23Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, </p>
+<p>Big Fan. In the last 4-5 years, your content has been one of the few reliable resources I depend on when it comes to web development and learning. </p>
+<p>When can you comment on the changes I need to make to properly move from a Flask Blueprint/Application Factory framework (I use your mega-tutorial approach) to a format that allows for proper debugging in Code? For example, do I need to change the application entry point .py file to the app.run() method you referred to? Or do I need to move away from blueprints/factories all together? Much appreciated!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#16</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-28T11:45:29Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-28T11:45:29Z</span>
+  </p>
+  <div>
+    <p>@Jeff: the only change is to add the app.run() call so that you can configure VS Code to use that method to start the app and have a better debugging experience. The structure of your app is not affected by this, it does not need to change at all. Also you can continue to use "flask run" when you run the app outside of VS Code, this change is only to address the debugging issue in Flask when running from an IDE with integrated debugging.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/9d0252d7efd44278cc50611a5a6029a1?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#17</span> <span class="badge text-bg-warning">Sourav</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-31T13:34:00Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-31T13:34:00Z</span>
+  </p>
+  <div>
+    <p>I have a problem when i run flask ...<br>
+ when i run in command propt python (whatever the folder name).py then it not giving me ip for running my program it only giving me new command propt</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#18</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-31T14:33:58Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-31T14:33:58Z</span>
+  </p>
+  <div>
+    <p>@Sourav: did you add the app.run() logic at the bottom of your Python file as I show in this article?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/3d42ef5511e32339960b6bcc75bda78b?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#19</span> <span class="badge text-bg-warning">Filipe Bezerra</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-06-13T16:59:13Z" data-function="fromNow" data-refresh="0" style="display: none">2020-06-13T16:59:13Z</span>
+  </p>
+  <div>
+    <p>I have followed the entire tutorial today and I encountered a problem when trying to use the Code (version 1.46.0 on windows) debugger using the tutorial's approach.</p>
+<p>Here's the bottom of the <a href="http://flask.py/" rel="nofollow">flask.py</a> file</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br>
+    app.run(use_reloader=False, use_debugger=False, passthrough_errors=True)</p>
+<p>Here's the launch.json:</p>
+<p>{<br>
+    // Use IntelliSense to learn about possible attributes.<br>
+    // Hover to view descriptions of existing attributes.<br>
+    // For more information, visit: <a href="https://go.microsoft.com/fwlink/?linkid=830387" rel="nofollow">https://go.microsoft.com/fwlink/?linkid=830387</a><br>
+    "version": "0.2.0",<br>
+    "configurations": [<br>
+        {<br>
+            "name": "Python: Flask",<br>
+            "type": "python",<br>
+            "request": "launch",<br>
+            "module": "flask",<br>
+            "env": {<br>
+                "FLASK_APP": "<a href="http://flasky.py/" rel="nofollow">flasky.py</a>",<br>
+                "FLASK_ENV": "development",<br>
+                "FLASK_DEBUG": "0"<br>
+            },<br>
+            "args": [],<br>
+            "jinja": true<br>
+        }<br>
+    ]<br>
+}</p>
+<p>When I press to Start debugging the execution just stops and the terminal shows that:</p>
+<p>(venv) D:\education\handson\miguelgrinberg\setting-up-flask-application-in-visual-studio-code\flasky&gt; cd d:\education\handson\miguelgrinberg\setting-up-flask-application-in-visual-studio-code\flasky &amp;&amp; cmd /C "d:\education\handson\miguelgrinberg\setting-up-flask-application-in-visual-studio-code\flasky\venv\Scripts\python.exe c:\Users\filipebezerra.vscode\extensions\ms-python.python-2020.5.86806\pythonFiles\lib\python\debugpy\wheels\debugpy\launcher 52479 -- -m flask "<br>
+Usage: python -m flask [OPTIONS] COMMAND [ARGS]...</p>
+<p>This shell command acts as general utility script for Flask applications.</p>
+<p>It loads the application configured (through the FLASK_APP environment<br>
+  variable) and then provides commands either provided by the application or<br>
+  Flask itself.</p>
+<p>The most useful commands are the "run" and "shell" command.</p>
+<p>Example usage:</p>
+<pre><code>set FLASK_APP=<a href="http://hello.py/" rel="nofollow">hello.py</a>
+set FLASK_DEBUG=1
+flask run
+</code></pre>
+<p>Options:<br>
+  --version  Show the flask version<br>
+  --help     Show this message and exit.</p>
+<p>Commands:<br>
+  db       Perform database migrations.<br>
+  deploy   Run deployment tasks.<br>
+  profile  Start the application under the code...<br>
+  run      Runs a development server.<br>
+  shell    Runs a shell in the app context.<br>
+  test     Run the unit tests.</p>
+<p>So the debugger couldn't execute the application using the old way. So to fix that I had to add another configuration for our flasky module:</p>
+<p>Here's my final launch.json</p>
+<p>{<br>
+    // Use IntelliSense to learn about possible attributes.<br>
+    // Hover to view descriptions of existing attributes.<br>
+    // For more information, visit: <a href="https://go.microsoft.com/fwlink/?linkid=830387" rel="nofollow">https://go.microsoft.com/fwlink/?linkid=830387</a><br>
+    "version": "0.2.0",<br>
+    "configurations": [<br>
+        {<br>
+            "name": "Python: Módulo",<br>
+            "type": "python",<br>
+            "request": "launch",<br>
+            "module": "flasky"<br>
+        },<br>
+        {<br>
+            "name": "Python: Flask",<br>
+            "type": "python",<br>
+            "request": "launch",<br>
+            "module": "flask",<br>
+            "env": {<br>
+                "FLASK_APP": "<a href="http://flasky.py/" rel="nofollow">flasky.py</a>",<br>
+                "FLASK_ENV": "development",<br>
+                "FLASK_DEBUG": "0"<br>
+            },<br>
+            "args": [],<br>
+            "jinja": true<br>
+        }<br>
+    ]<br>
+}</p>
+<p>Note that we need to set the module property without the .py suffix. With that configuration we can start debugging switching between the flasky module and also the flask module.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#20</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-06-13T20:02:50Z" data-function="fromNow" data-refresh="0" style="display: none">2020-06-13T20:02:50Z</span>
+  </p>
+  <div>
+    <p>@Filipe: you haven't changed your run configuration to run <code>python <a href="http://flasky.py/" rel="nofollow">flasky.py</a></code> instead of <code>flask run</code>.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/909a1d49815a754b1fc82b369b2f253e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#21</span> <span class="badge text-bg-warning">Scott Guthart</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-06-28T17:12:27Z" data-function="fromNow" data-refresh="0" style="display: none">2020-06-28T17:12:27Z</span>
+  </p>
+  <div>
+    <p>I'm getting gunicorn critical worker timeout errors when running my app within docker. I am using the way of calling app.run that you suggest. Is it possible that this is causing my timeout error?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#22</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-06-28T22:52:34Z" data-function="fromNow" data-refresh="0" style="display: none">2020-06-28T22:52:34Z</span>
+  </p>
+  <div>
+    <p>@Scott: I wouldn't think the method of starting the app would change things, but this is easy enough to try, right? Start your app with <code>flask run</code> instead and see what happens.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/909a1d49815a754b1fc82b369b2f253e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#23</span> <span class="badge text-bg-warning">Scott</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-06-30T22:45:51Z" data-function="fromNow" data-refresh="0" style="display: none">2020-06-30T22:45:51Z</span>
+  </p>
+  <div>
+    <p>Thanks, Miguel! You're right it wasn't. It was a very strange thing that was happening with SSL.</p>
+<p>On another note, I am wondering how you usually debug the javascript in your flask apps. Is it possible also to do it in VSCode?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#24</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-07-01T22:08:06Z" data-function="fromNow" data-refresh="0" style="display: none">2020-07-01T22:08:06Z</span>
+  </p>
+  <div>
+    <p>@Scott: I use Chrome to debug JS code. I believe it is possible to debug directly inside Code, but I haven't investigated that simply because Chrome is pretty decent to debug.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/6a021332fab6f9095b7a0ed6672e6058?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#25</span> <span class="badge text-bg-warning">Daniel Guetta</span> said
+    
+    <span class="flask-moment" data-timestamp="2024-01-19T18:34:34Z" data-function="fromNow" data-refresh="0" style="display: none">2024-01-19T18:34:34Z</span>
+  </p>
+  <div>
+    <p>Thanks for the characteristically great post!</p>
+<p>Just a quick heads up that for me, automatic reloading did <em>not</em> happen in the vscode debugger, so after many, many hours of Googling, I figured out the right config to get auto-reloading goodness is:</p>
+<p><code>app.run(use_debugger=False, passthrough_errors=True) # Note that use_reloader is NOT set to False</code></p>
+<p>And CRUCIALLY, you also need to set <code>"flask":true</code> in your vscode launch.json file. Otherwise when Werkzeug throws an exception (SystemExit: 3) to force itself to restart, VSCode will annoyingly break at that error.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdnxQ.0sGjpRYAC606kispWeomrhw--q8">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/setting-up-a-flask-application-in-visual-studio-code/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:52:14 GMT -->
+</html>

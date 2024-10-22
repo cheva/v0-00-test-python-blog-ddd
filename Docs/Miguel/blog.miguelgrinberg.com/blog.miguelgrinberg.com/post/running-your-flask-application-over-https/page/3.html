@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/running-your-flask-application-over-https/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:17 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    Running Your Flask Application Over HTTPS - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="python, security, ssl, openssl, certificates, authentication, encryption, cryptography">
+  
+  
+  <link rel="canonical" href="../../running-your-flask-application-over-https.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="Running Your Flask Application Over HTTPS">
+    <meta property="og:description" content="While you work on your Flask application, you normally run the development web server, which provides a basic, yet functional WSGI complaint HTTP server. But eventually you will want to deploy your…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/running-your-flask-application-over-https.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https">
+    <meta name="twitter:title" content="Running Your Flask Application Over HTTPS">
+    <meta name="twitter:description" content="While you work on your Flask application, you normally run the development web server, which provides a basic, yet functional WSGI complaint HTTP server. But eventually you will want to deploy your…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/running-your-flask-application-over-https.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          Post not found.
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../running-your-flask-application-over-https.html">Running Your Flask Application Over HTTPS</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2017-06-03T18:41:15Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2017-06-03T18:41:15Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>While you work on your Flask application, you normally run the development web server, which provides a basic, yet functional WSGI complaint HTTP server. But eventually you will want to deploy your application for production use, and at that time, one of the many things you will need to decide is if you should require clients to use encrypted connections for added security.</p>
+<p>People ask me all the time about this, in particular how to expose a Flask server on HTTPS. In this article I'm going to present several options for adding encryption to a Flask application, going from an extremely simple one that you can implement in just five seconds, to a robust solution that should give you an A+ rating like my site gets from <a href="https://www.ssllabs.com/ssltest/analyze.html?d=blog.miguelgrinberg.com">this exhaustive SSL analysis service</a>.</p>
+<p><center><img alt="SSL" src="../../../static/images/flask-ssl-01.png" /></center></p>
+<h2>How Does HTTPS Work?</h2>
+<p>The encryption and security functionality for HTTP is implemented through the <a href="https://en.wikipedia.org/wiki/Transport_Layer_Security">Transport Layer Security (TLS)</a> protocol. Basically put, TLS defines a standard way to make any network communication channel secure. Since I'm not a security expert, I don't think I can do a great job if I try to give you a detailed description of the TLS protocol, so I will just give you some of the details that are of interest for our purpose of setting up a secure and encrypted Flask server.</p>
+<p>The general idea is that when the client establishes a connection with the server and requests an encrypted connection, the server responds with its  <em>SSL Certificate</em>. The certificate acts as identification for the server, as it includes the server name and domain. To ensure that the information provided by the server is correct, the certificate is cryptographically signed by a <em>certificate authority</em>, or CA. If the client knows and trusts the CA, it can confirm that the certificate signature indeed comes from this entity, and with this the client can be certain that the server it connected to is legitimate.</p>
+<p>After the client verifies the certificate, it creates an encryption key to use for the communication with the server. To make sure that this key is sent securely to the server, it encrypts it using a public key that is included with the server certificate. The server is in possession of the private key that goes with that public key in the certificate, so it is the only party that is able to decrypt the package. From the point when the server receives the encryption key all traffic is encrypted with this key that only the client and server know.</p>
+<p>From this summary you can probably guess that to implement TLS encryption we need two items: a server certificate, which includes a public key and is signed by a CA, and a private key that goes with the public key included in the certificate.</p>
+<h2>The Simplest Way To Do It</h2>
+<p>Flask, and more specifically Werkzeug, support the use of on-the-fly certificates, which are useful to quickly serve an application over HTTPS without having to mess with certificates. All you need to do, is add <code>ssl_context='adhoc'</code> to your <code>app.run()</code> call. As an example, below you can see the "Hello, World" Flask application from the official documentation, with TLS encryption added:</p>
+<pre><code>from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+if __name__ == "__main__":
+    app.run(ssl_context='adhoc')
+</code></pre>
+<p>This option is also available through the Flask CLI if you are using a Flask 1.x release:</p>
+<pre><code>$ flask run --cert=adhoc
+</code></pre>
+<p>To use ad hoc certificates with Flask, you need to install an additional dependency in your virtual environment:</p>
+<pre><code>$ pip install pyopenssl
+</code></pre>
+<p>When you run the script (or start with <code>flask run</code> if you prefer), you will notice that Flask indicates that it is running an https:// server:</p>
+<pre><code>$ python hello.py
+ * Running on https://127.0.0.1:5000/ (Press CTRL+C to quit)
+</code></pre>
+<p>Simple, right? The problem is that browsers do not like this type of certificate, so they show a big and scary warning that you need to dismiss before you can access the application. Once you allow the browser to connect, you will have an encrypted connection, just like what you get from a server with a valid certificate, which make these ad hoc certificates convenient for quick &amp; dirty tests, but not for any real use.</p>
+<h2>Self-Signed Certificates</h2>
+<p>A so called <em>self-signed</em> certificate is one where the signature is generated using the private key that is associated with that same certificate. I mentioned above that the client needs to "know and trust" the CA that signed a certificate, because that trust relationship is what allows the client to validate a server certificate. Web browsers and other HTTP clients come pre-configured with a list of known and trusted CAs, but obviously if you use a self-signed certificate the CA is not going to be known and validation will fail. That is exactly what happened with the ad hoc certificate we used in the previous section. If the web browser is unable to validate a server certificate, it will let you proceed and visit the site in question, but it will make sure you understand that you are doing it at your own risk.</p>
+<p><center><img alt="SSL" src="../../../static/images/flask-ssl-02.png" /></center></p>
+<p>But what is the risk, really? With the Flask server from the previous section you obviously trust yourself, so there is no risk to you. The problem is when users are presented with this warning when connecting to a site they do not directly know or control. In those cases, it is impossible for the user to know if the server is authentic or not, because anyone can generate certificates for any domain, as you will see below.</p>
+<p>While self-signed certificates can be useful sometimes, the ad hoc certificates from Flask are not that great, because each time the server runs, a different certificate is generated on the fly through pyOpenSSL. When you are working with a self-signed certificate, it is better to have the same certificate used every time you launch your server, because that allows you to configure your browser to trust it, and that eliminates the security warnings.</p>
+<p>You can generate self-signed certificates easily from the command line. All you need is to have <a href="https://www.openssl.org/">openssl</a> installed:</p>
+<pre><code>openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
+</code></pre>
+<p>This command writes a new certificate in <code>cert.pem</code> with its corresponding private key in <code>key.pem</code>, with a validity period of 365 days. When you run this command, you will be asked a few questions. Below you can see in red how I answered them to generate a certificate for <em>localhost</em>:</p>
+<pre>
+Generating a 4096 bit RSA private key
+......................++
+.............++
+writing new private key to 'key.pem'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:<span style="color: #ff0000">US</span>
+State or Province Name (full name) [Some-State]:<span style="color: #ff0000">Oregon</span>
+Locality Name (eg, city) []:<span style="color: #ff0000">Portland</span>
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:<span style="color: #ff0000">Miguel Grinberg Blog</span>
+Organizational Unit Name (eg, section) []:
+Common Name (e.g. server FQDN or YOUR name) []:<span style="color: #ff0000">localhost</span>
+Email Address []:
+</pre>
+
+<p>We can now use this new self-signed certificate in our Flask application by setting the <code>ssl_context</code> argument in <code>app.run()</code> to a tuple with the filenames of the certificate and private key files:</p>
+<pre><code>from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+if __name__ == "__main__":
+    app.run(ssl_context=('cert.pem', 'key.pem'))
+</code></pre>
+<p>Alternatively, you can add the <code>--cert</code> and <code>--key</code> options to the <code>flask run</code> command if you are using Flask 1.x or newer:</p>
+<pre><code>$ flask run --cert=cert.pem --key=key.pem
+</code></pre>
+<p>The browser will continue to complain about this certificate, but if you inspect it, you will see the information that you entered when you created it:</p>
+<p><center><img alt="SSL" src="../../../static/images/flask-ssl-03.png" /></center></p>
+<h2>Using Production Web Servers</h2>
+<p>Of course we all know that the Flask development server is only good for development and testing. So how do we install an SSL certificate on a production server?</p>
+<p>If you are using <a href="http://gunicorn.org/">gunicorn</a>, you can do this with command line arguments:</p>
+<pre><code>$ gunicorn --certfile cert.pem --keyfile key.pem -b 0.0.0.0:8000 hello:app
+</code></pre>
+<p>If you use nginx as a reverse proxy, then you can configure the certificate with nginx, and then nginx can "terminate" the encrypted connection, meaning that it will accept encrypted connections from the outside, but then use regular unencrypted connections to talk to your Flask backend. This is a very useful set up, as it frees your application from having to deal with certificates and encryption. The configuration items for nginx are as follows:</p>
+<pre><code>server {
+    listen 443 ssl http2;
+    server_name example.com;
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+    # ...
+}
+</code></pre>
+<p>Another important item you need to consider is how are clients that connect through regular HTTP going to be handled. The best solution, in my opinion, is to respond to unencrypted requests with a redirect to the same URL but on HTTPS. For a Flask application, you can achieve that using the <a href="https://github.com/kennethreitz/flask-sslify">Flask-SSLify</a> extension. With nginx, you can include another <code>server</code> block in your configuration:</p>
+<pre><code>server {
+    listen 80;
+    server_name example.com;
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+</code></pre>
+<p>If you are using a different web server, check their documentation and you will likely find similar ways to create the configurations shown above.</p>
+<h2>Using "Real" Certificates</h2>
+<p>We have now explored all the options we have for self-signed certificates, but in all those cases, the limitation remains that web browsers are not going to trust those certificates unless you tell them to, so the best option for server certificates for a production site is to obtain them from one of these CAs that are well known and automatically trusted by all the web browsers.</p>
+<p>When you request a certificate from a CA, this entity is going to verify that you are in control of your server and domain, but how this verification is done depends on the CA. If the server passes this verification then the CA will issue a certificate for it with its own signature and give it to you to install. The certificate is going to be good for a period of time that is usually not longer than a year. Most CAs charge money for these certificates, but there are a couple that offer them for free. The most popular free CA is called <a href="https://letsencrypt.org/">Let's Encrypt</a>.</p>
+<p>Getting a certificate from Let's Encrypt is fairly easy, since the whole process is automated. Assuming you are using an Ubuntu based server, you have to begin by installing their open source <code>certbot</code> tool on your server:</p>
+<pre><code>$ sudo apt-get install software-properties-common
+$ sudo add-apt-repository ppa:certbot/certbot
+$ sudo apt-get update
+$ sudo apt-get install certbot
+</code></pre>
+<p>And now you are ready to request the certificate using this utility. There are a few ways that certbot uses to verify your site. The "webroot" method is, in general, the easiest to implement. With this method, certbot adds some files in a directory that your web server exposes as static files, and then tries to access these files over HTTP, using the domain you are trying to generate a certificate for. If this test is successful, certbot knows that the server in which it is running it is associated with the correct domain, and with that it is satisfied and issues the certificate. The command to request a certificate with this method is as follows:</p>
+<pre><code>$ sudo certbot certonly --webroot -w /var/www/example -d example.com
+</code></pre>
+<p>In this example, we are trying to generate a certificate for a <code>example.com</code> domain, which uses the directory in <code>/var/www/example</code> as a static file root. Unfortunately a Flask based website does not have a static file root directory, all static files from the application are accessed with the <code>/static</code> prefix, at least when you use the default configuration, so more planning is necessary.</p>
+<p>What certbot does to the static root directory is add a <code>.well-known</code> subdirectory, and then store some files in it. Then it uses a HTTP client to retrieve those files as <code>http://example.com/.well-known/...</code>. If it can retrieve the files, then that is confirmation that your server is in full control of the domain name. For Flask and other applications that don't have a static file root directory, it is necessary to define one.</p>
+<p>If you are using nginx as reverse proxy, you can take advantage of the powerful mappings that you can create in the configuration to give certbot a private directory where it can write its verification files. In the following example, I extended the HTTP server block shown in the previous section to send all Let's Encrypt related requests (which always begin with <code>/.well-known/...</code>) to a specific directory of your choice:</p>
+<pre><code>server {
+    listen 80;
+    server_name example.com;
+    location ~ /.well-known {
+        root /path/to/letsencrypt/verification/directory;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+</code></pre>
+<p>Then you can give this director to certbot:</p>
+<pre><code>$ sudo certbot certonly --webroot -w /path/to/letsencrypt/verification/directory -d example.com
+</code></pre>
+<p>If certbot is able to verify the domain, it will write the certificate file as <code>/etc/letsencrypt/live/example.com/fullchain.pem</code> and the private key as <code>/etc/letsencrypt/live/example.com/privkey.pem</code>, and these are going to be valid for a period of 90 days.</p>
+<p>To use this newly acquired certificate, you can enter the two filenames mentioned above in place of the self-signed files we used before, and this should work with any of the configurations described above. And of course you will also need to make your application available through the domain name that you registered, as that is the only way the browser will accept the certificate as valid.</p>
+<p>Certbot is also used when you need to renew the certificates. To do that, you simply issue the following command:</p>
+<pre><code>$ sudo certbot renew
+</code></pre>
+<p>If there are any certificates in your system that are close to expire, the above command renews them, leaving new certificates in the same locations. You will likely need to restart your web server if you want the renewed certificates to be picked up.</p>
+<h2>Achieving an SSL A+ Grade</h2>
+<p>If you use a certificate from Let's Encrypt or another known CA for your production site and you are running a recent and maintained operating system on this server, you are likely very close to have a top-rated server in terms of SSL security. You can head over to the <a href="https://www.ssllabs.com/ssltest">Qualys SSL Labs</a> site and get a report to see where you stand.</p>
+<p>Chances are you will still have some minor things to do. The report will indicate what areas you need to improve, but in general, I expect you'll be told that the options the server exposes for the encrypted communication are too wide, or too weak, leaving you open to known vulnerabilities.</p>
+<p>One of the areas in which it is easy to make an improvement is in how the coefficients that are used during the encryption key exchange are generated, which usually have defaults that are fairly weak. In particular, the <a href="https://en.wikipedia.org/wiki/Diffie–Hellman_key_exchange">Diffie-Hellman</a> coefficients take a considerable amount of time to be generated, so servers by default use smaller numbers to save time. But we can pre-generate strong coefficients and store them in a file, which then nginx can use. Using the <code>openssl</code> tool, you can run the following command:</p>
+<pre><code>openssl dhparam -out /path/to/dhparam.pem 2048
+</code></pre>
+<p>You can change the 2048 above for a 4096 if you want even stronger coefficients. This command is going to take some time to run, specially if your server does not have a lot of CPU power, but when it's done, you will have a <code>dhparam.pem</code> file with strong coefficients that you can plug into the ssl server block in nginx:</p>
+<pre><code>    ssl_dhparam /path/to/dhparam.pem;
+</code></pre>
+<p>Next, you will probably need to configure which <a href="https://en.wikipedia.org/wiki/Cipher_suite">ciphers</a> the server allows for the encrypted communication. This is the list that I have on my server:</p>
+<pre><code>    ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:!DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
+</code></pre>
+<p>In this list, disabled ciphers are prefixed with a <code>!</code>. The SSL report will tell you if there are any ciphers that are not recommended. You will have to check from time to time to find out if new vulnerabilities have been discovered that require modifications to this list.</p>
+<p>Below you can find my current nginx SSL configuration, which includes the above settings, plus a few more that I added to address warnings from the SSL report:</p>
+<pre><code>server {
+    listen 443 ssl http2;
+    server_name example.com;
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+    ssl_dhparam /path/to/dhparam.pem;
+    ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:!DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
+    ssl_protocols TLSv1.2;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:50m;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    add_header Strict-Transport-Security max-age=15768000;
+    # ...
+}
+</code></pre>
+<p>You can see the results that I obtained for my site at the top of this article. If you are after 100% marks in all categories, you will have to add additional restrictions to your configuration, but this is going to limit the number of clients that can connect to your site. In general, older browsers and HTTP clients use ciphers that are not considered to be the strongest, but if you disable those, then these clients will not be able to connect. So you will basically need to compromise, and also routinely review the security reports and make updates as things change over time.</p>
+<p>Unfortunately for the level of sophistication on these last SSL improvements you will need to use a professional grade web server, so if you don't want to go with nginx, you will need to find one that supports these settings, and the list is pretty small. I know Apache does, but besides that, I don't know any other.</p>
+<h2>Conclusion</h2>
+<p>So there you go, this is how you can implement top-of-the-line SSL security for your Flask application. Is there anything that I left out? Do you do things differently? Let me know below in the comments!</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/running-your-flask-application-over-https&amp;t=Running%20Your%20Flask%20Application%20Over%20HTTPS" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/running-your-flask-application-over-https&amp;resubmit=true&amp;title=Running%20Your%20Flask%20Application%20Over%20HTTPS" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=Running%20Your%20Flask%20Application%20Over%20HTTPS&amp;url=https%3A//blog.miguelgrinberg.com/post/running-your-flask-application-over-https" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/running-your-flask-application-over-https&amp;title=Running%20Your%20Flask%20Application%20Over%20HTTPS&amp;summary=Running%20Your%20Flask%20Application%20Over%20HTTPS&amp;source=https%3A//blog.miguelgrinberg.com/post/running-your-flask-application-over-https" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/running-your-flask-application-over-https" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=Running%20Your%20Flask%20Application%20Over%20HTTPS&amp;body=https%3A//blog.miguelgrinberg.com/post/running-your-flask-application-over-https" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../running-your-flask-application-over-https.html#comments">99 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/be156ec7070d757a154c30af2578cf33?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#51</span> <span class="badge text-bg-warning">Robert</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-15T19:03:07Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-15T19:03:07Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, <br>
+Amazing tutorials!<br>
+How would you configure something similar to certbot on a windows host machine?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#52</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-15T19:41:59Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-15T19:41:59Z</span>
+  </p>
+  <div>
+    <p>@Robert: Certbot should work great if you install it on the WSL (Windows Subsystem for Linux). Not sure if there is another way.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/417adf23e5a6a6326eba451dbdac50ea?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#53</span> <span class="badge text-bg-warning">Jan</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-20T13:19:46Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-20T13:19:46Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>I have been following your Flask Tutorials to setup a communication between my iOS Tablet Application and the Flask App. Because iOS does not let you use GET requests via HTTP I have decided to change the message protocol for the python server to HTTPS which led me to this tutorial.<br>
+Now when I change to code to "app.run(debug=True, ssl_context='adhoc') Flask does not apply the given parameter and it still says "Running on http://127.0.0.1:5000/".<br>
+After debugging a bit it really seems that the parameter 'adhoc' is not being passed through the necessary function within '<a href="http://serving.py/" rel="nofollow">serving.py</a>'.<br>
+The function 'run_simple(..)' of <a href="http://serving.py/" rel="nofollow">serving.py</a> is called by app.run(..), which is why I inserted following code into this function:</p>
+<pre><code>if ssl_context is None:
+    _log("info", " * ! User message: No SSL Context given")
+else:
+    _log("info", " * ! User message: SSL context provided: " + ssl_context)
+</code></pre>
+<p>I always receive the log message that there was no ssl context given which confuses me a lot. Do you know any reason for that? Corporal Proxy maybe?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#54</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-08-20T15:19:32Z" data-function="fromNow" data-refresh="0" style="display: none">2019-08-20T15:19:32Z</span>
+  </p>
+  <div>
+    <p>@Jan: How do you start your Flask application? If you are using "flask run", then the app.run() call is not used. Maybe that's the problem?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/93e8e273dd411c6b2bc6c6ffae79b43a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#55</span> <span class="badge text-bg-warning">Zoya Ferdowsian</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-11-12T20:21:32Z" data-function="fromNow" data-refresh="0" style="display: none">2019-11-12T20:21:32Z</span>
+  </p>
+  <div>
+    <p>Thank you for a very nice article, best seen so far. <br>
+I tried installing pyOpenSSL but running into issues <a href="https://stackoverflow.com/questions/58823729/pyopenssl-install-issues-trying-to-use-python-flask-with-https" rel="nofollow">https://stackoverflow.com/questions/58823729/pyopenssl-install-issues-trying-to-use-python-flask-with-https</a>  I wonder if anyoeon can help</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/93e8e273dd411c6b2bc6c6ffae79b43a?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#56</span> <span class="badge text-bg-warning">Zoya Ferdowsian</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-11-12T22:30:31Z" data-function="fromNow" data-refresh="0" style="display: none">2019-11-12T22:30:31Z</span>
+  </p>
+  <div>
+    <p>Please disregard my previous question. I solved it by </p>
+<pre><code>python -m pip install -U --force-reinstall pip
+pip install cryptography
+pip install pyOpsnSSL
+</code></pre>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d4e979d7623cca719cb3da14f147107f?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#57</span> <span class="badge text-bg-warning">Jean-Philippe Allard</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-03T21:39:12Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-03T21:39:12Z</span>
+  </p>
+  <div>
+    <p>Hey Michael, </p>
+<p>Just found this amazing resource while configuring security for my app and thought to share with everyone: <a href="https://ssl-config.mozilla.org/#server=nginx&amp;server-version=1.17.0&amp;config=intermediate" rel="nofollow">https://ssl-config.mozilla.org/#server=nginx&amp;server-version=1.17.0&amp;config=intermediate</a></p>
+<p>Much faster to use the cipher list available there according to your use case instead of trying to match them one by one on the Qualys report! </p>
+<p>Thanks for your guides, they're great.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8cfe9fcd69e48966c91334e4d970a5c2?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#58</span> <span class="badge text-bg-warning">David Barrow</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-14T11:56:56Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-14T11:56:56Z</span>
+  </p>
+  <div>
+    <p>Certbot cannot access the page because, the HTTP version redirects to HTTPS which cannot be authorised due to the lack of a certificate. Its also worth checking that the CLRF to LF  conversion has been correctly inputted into the server, when adding files directly into the nano editor via SSH from windows its quite error prone to say the least. ;)</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#59</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-01-14T15:45:28Z" data-function="fromNow" data-refresh="0" style="display: none">2020-01-14T15:45:28Z</span>
+  </p>
+  <div>
+    <p>@David: your nginx configuration is incorrect. The /.well-known URL needs to be configured to not be redirected to https. This is shown above in my examples, please take a look.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4071a5220f622b4bacf172a71447db5f?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#60</span> <span class="badge text-bg-warning">Alex OSullivan</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-07T04:30:56Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-07T04:30:56Z</span>
+  </p>
+  <div>
+    <p>Very new here to learning about web development. I was able to follow this tutorial and was able to get the certificate recognized. But when I go to my site through <a href="http://www.example.com/" rel="nofollow">www.example.com</a> rather then <a href="http://example.com/" rel="nofollow">http://example.com</a> or <a href="https://example.com/" rel="nofollow">https://example.com</a> i get a certificate error. Is this a limitation of the Lets Encrypt free tier service? </p>
+<p>I think Nginx is working because <a href="http://www.example.com/" rel="nofollow">www.example.com</a> is redirected to <a href="https://www.example.com/" rel="nofollow">https://www.example.com</a>. But the certificate is showing as not matching.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#61</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-07T10:31:00Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-07T10:31:00Z</span>
+  </p>
+  <div>
+    <p>@Alex: The certificate that I showed in this article is for <a href="http://example.com/" rel="nofollow">example.com</a>, it does not cover subdomains. You have a couple of options:</p>
+<ul>
+<li>Generate a certificate that covers both <a href="http://example.com/" rel="nofollow">example.com</a> and <a href="http://www.example.com/" rel="nofollow">www.example.com</a>. For this, just run certbot with two "-d" options in the same command.</li>
+<li>Generate a different certificate for <a href="http://www.example.com/" rel="nofollow">www.example.com</a>. Run certbot again for the www subdomain, then configure nginx to use the correct cert for each domain.</li>
+<li>You can get a wildcard certificate that covers *.example.com (i.e. all subdomains of <a href="http://example.com/" rel="nofollow">example.com</a>). This is not covered in this tutorial, as this option did not exist when I wrote it.</li>
+</ul>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4071a5220f622b4bacf172a71447db5f?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#62</span> <span class="badge text-bg-warning">Alex OSullivan</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-07T14:56:15Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-07T14:56:15Z</span>
+  </p>
+  <div>
+    <p>Hey i submitted a comment yesterday and I was able to fix this buy getting certbot to create a certification from <a href="http://example.com/" rel="nofollow">example.com</a> and <a href="http://www.example.com/" rel="nofollow">www.example.com</a> and then set up the nginx with two server listening on 443. One for <a href="http://example.com/" rel="nofollow">example.com</a> with the corresponding keys and one with <a href="http://www.example.com/" rel="nofollow">www.example.com</a> with corresponding keys. Now typing <a href="http://example.com/" rel="nofollow">example.com</a> or <a href="http://example.com/" rel="nofollow">http://example.com</a> will result in no browser warnings.</p>
+<p>Thanks again for the great tutorials I have learned so much.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b7870242cef45bb87e5a5b30b8eeccfa?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#63</span> <span class="badge text-bg-warning">Shuvendu</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-07T18:43:24Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-07T18:43:24Z</span>
+  </p>
+  <div>
+    <p>Superb..This is what I am searching for.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/29991fd47b6163d61140367422eed529?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#64</span> <span class="badge text-bg-warning">Chris</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-23T08:20:24Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-23T08:20:24Z</span>
+  </p>
+  <div>
+    <p>Good morning Miguel,<br>
+First, please let me Thank you for your great instructions!<br>
+Unfortunately my website is not trusted. When I look into the certificate I get </p>
+<p>Use of key<br>
+Critical - yes<br>
+Use of key - digital signature, key encipherment <br>
+(translated, hopefully understandable)</p>
+<p>I guess this is why the connection is not secure as it is the only critical=yes line.<br>
+What do I need to do?</p>
+<p>Thank you</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#65</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-02-23T15:20:51Z" data-function="fromNow" data-refresh="0" style="display: none">2020-02-23T15:20:51Z</span>
+  </p>
+  <div>
+    <p>@Chris: instead of looking at the certificate itself, look at what the browser says when it declares your site insecure.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8d99aa6a6dc736bc82aac02a83edb983?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#66</span> <span class="badge text-bg-warning">Sébastien</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-01T11:18:42Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-01T11:18:42Z</span>
+  </p>
+  <div>
+    <p>Hi @Miguel:<br>
+I love your tutorials! There are not so much of them on the web that are so clear. They explain so well the context and the meaning of each step that they are easy to adapt to your own context.<br>
+I have a problem though with the usage of the letsencrypt certificates with gunicorn.<br>
+I created successfully the certificates for my domain and they seem to work at the level of nginx. But when I try to use my actual .pem files with gunicorn, it keeps telling me that those files do not exist. <br>
+When I convert the fullchain.pem into a fullchain.crt file using openssl, it is found but same problem with the key. I try then to convert the privkey.pem into privkey.key also using openssl (the tutorials are less clear for that part - not sur I am using the right conversion parameters) so that the key file get finally accepted by gunicorn.<br>
+But then, when I try to connect on the web site, I get the following: <br>
+Forbidden <br>
+'[SSL] PEM lib (_ssl.c:3503)'<br>
+Here is the command I use to launch gunicorn:<br>
+gunicorn --certfile /etc/letsencrypt/live/my.site.domain/fullchain.pem --keyfile  /etc/letsencrypt/live/my.site.domain/privkey.pem -b 127.0.0.1:8000 -w 4 flask_start:app</p>
+<p>Any idea of what I did wrong?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/8d99aa6a6dc736bc82aac02a83edb983?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#67</span> <span class="badge text-bg-warning">Sébastien</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-01T14:30:35Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-01T14:30:35Z</span>
+  </p>
+  <div>
+    <p>@miguel: I finally found what was wrong with the certificates: they were not accessible by gunicorn in their original location. So I copied them in another location.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/f6d3423e4e874b797cec74a423b651f6?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#68</span> <span class="badge text-bg-warning">Damou walid</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-03-14T23:26:19Z" data-function="fromNow" data-refresh="0" style="display: none">2020-03-14T23:26:19Z</span>
+  </p>
+  <div>
+    <p>you are the best please continue !</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b2892222bf9c57a2c48d27f3c8a24cb8?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#69</span> <span class="badge text-bg-warning">Dogo Daikon</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-05-18T13:00:52Z" data-function="fromNow" data-refresh="0" style="display: none">2020-05-18T13:00:52Z</span>
+  </p>
+  <div>
+    <p>Again really useful - but the rating from ssllabs is not A+ anymore - it's now B:</p>
+<p><a href="https://www.ssllabs.com/ssltest/analyze.html?d=blog.miguelgrinberg.com" rel="nofollow">https://www.ssllabs.com/ssltest/analyze.html?d=blog.miguelgrinberg.com</a></p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#70</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-05-18T17:18:27Z" data-function="fromNow" data-refresh="0" style="display: none">2020-05-18T17:18:27Z</span>
+  </p>
+  <div>
+    <p>@Dogo: thanks for letting me know. I have corrected the problem and updated the article with the changes required to be graded A+ under the new grading rules.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/719a482765f062628190318829a8b6af?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#71</span> <span class="badge text-bg-warning">Sean P</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-05-22T02:02:49Z" data-function="fromNow" data-refresh="0" style="display: none">2020-05-22T02:02:49Z</span>
+  </p>
+  <div>
+    <p>Hey Miguel,</p>
+<p>I setup everything on AWS per your tutorial. My site is loading fine in HTTP.</p>
+<p>I've used your code from above to route the port 80 connections requesting /.well-known and I'm getting an error</p>
+<p>Domain: <a href="http://mysite.com/" rel="nofollow">mysite.com</a><br>
+   Type:   unauthorized<br>
+   Detail: Invalid response from<br>
+   <a href="https://mysite.com/.well-known/acme-challenge/YoRnoFtgRNkDALNygWwcIHriIW6w" rel="nofollow">https://mysite.com/.well-known/acme-challenge/YoRnoFtgRNkDALNygWwcIHriIW6w</a><br>
+sPzev-vlX0FoEIs<br>
+   [54.95.208.118]: "&lt;!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2<br>
+   Final//EN\"&gt;\n&lt;title&gt;404 Not Found&lt;/title&gt;\n&lt;h1&gt;Not<br>
+   Found&lt;/h1&gt;\n</p><p>The requested URL was"</p>
+<p>To fix these errors, please make sure that your domain name was<br>
+   entered correctly and the DNS A/AAAA record(s) for that domain<br>
+   contain(s) the right IP address.</p>
+<p>I've triple checked that my code matches yours. I have my actual site URL in there. Is there anything specific that needs to be done in terms of folder permissions or choosing a location of the folder? Or has this guide fallen out of date? I'm at a loss for why this isn't working.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#72</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-05-22T08:42:06Z" data-function="fromNow" data-refresh="0" style="display: none">2020-05-22T08:42:06Z</span>
+  </p>
+  <div>
+    <p>@Sean: certbot needs to have write access to the verification directory, which shouldn't be a problem if you run it with <code>sudo</code> as I do. Nginx needs to have read access so that it can serve the files that certbot writes. Other than that I can't think of anything else.</p>
+<p>Forget certbot for a moment and put a text file in your verification directory, then try to get it through your site as <code><a href="http://mysite.com/.well-known/myfile.txt" rel="nofollow">http://mysite.com/.well-known/myfile.txt</a></code>. Until you get this simple file serving to work there is no point in continuing to mess with certbot, go back to your nginx config and tweak it until this works. Then certbot should work just fine.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a3abb98dedbcb481e3ba361bc6f5b48c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#73</span> <span class="badge text-bg-warning">Aneel</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-06-10T12:41:02Z" data-function="fromNow" data-refresh="0" style="display: none">2020-06-10T12:41:02Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>I've deployed flask web app in production on windows using Waitress server. I have an issue now to use https without which I cannot get approval from my organisation. Is there any way I can implement SSL on waitress? </p>
+<p>Thanks in advance,<br>
+Aneel</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#74</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-06-10T22:59:46Z" data-function="fromNow" data-refresh="0" style="display: none">2020-06-10T22:59:46Z</span>
+  </p>
+  <div>
+    <p>@Aneel: waitress does not support SSL, you'll need to use a reverse proxy in front of it to handle the SSL.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4a7b1d1c22f8a46e05996344359cf770?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#75</span> <span class="badge text-bg-warning">Seyla </span> said
+    
+    <span class="flask-moment" data-timestamp="2020-07-16T17:40:13Z" data-function="fromNow" data-refresh="0" style="display: none">2020-07-16T17:40:13Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel! Your article was useful to me. Thanks! <br>
+I'm working with the flask app in Windows, and I have two problems:<br>
+-  Do you know how I can generate the CONNECT Verb when I use 127.0.0.1:5000? <br>
+-  I generated the server.key, server.crt but when I try to use it, It's like that certificate is invalid. I can see that connect to https:127.0.0.1:5000 but when I try to execute GET, I don't receive and status response like 200, 504, etc.</p>
+<p>If you can help, I thank you so. I can't understand how can resolve these.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="2.html#comments">&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="4.html#comments">&raquo;</a></li>
+    <li class="page-item"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdmug.a9dR8nW-gBuE5xomG8TgPAIonNo">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  <div class="card-header">Flask Web Development, 2nd Edition</div>
+  <a class="card-book-cover" href="https://amzn.to/3lE2mok">
+    <img src="../../../static/flask2e-book-cover-small.png" alt="Flask Web Development, 2nd Edition">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you want to learn modern web development techniques with Python and Flask, you may find the second edition of my <a href="https://amzn.to/3lE2mok">O'Reilly book</a> useful.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3lE2mok">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/running-your-flask-application-over-https/page/3 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:49:18 GMT -->
+</html>

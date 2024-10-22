@@ -1,0 +1,1412 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:37 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    Flask-Migrate: Alembic database migration wrapper for Flask - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="flask, programming, python, database, migrations, alembic, schema">
+  
+  
+  <link rel="canonical" href="../../flask-migrate-alembic-database-migration-wrapper-for-flask.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="Flask-Migrate: Alembic database migration wrapper for Flask">
+    <meta property="og:description" content="In this post I introduce you to Flask-Migrate, a new database migration handler for Flask based on Alembic that I just made public.Is a New Extension Necessary?If you read the database chapter of my…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/flask-migrate-alembic-database-migration-wrapper-for-flask.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask">
+    <meta name="twitter:title" content="Flask-Migrate: Alembic database migration wrapper for Flask">
+    <meta name="twitter:description" content="In this post I introduce you to Flask-Migrate, a new database migration handler for Flask based on Alembic that I just made public.Is a New Extension Necessary?If you read the database chapter of my…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/flask-migrate-alembic-database-migration-wrapper-for-flask.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../flask-migrate-alembic-database-migration-wrapper-for-flask.html">Flask-Migrate: Alembic database migration wrapper for Flask</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2013-09-09T06:12:19Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2013-09-09T06:12:19Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>In this post I introduce you to Flask-Migrate, a new database migration handler for Flask based on <a href="https://alembic.readthedocs.org/en/latest/index.html">Alembic</a> that I just made public.</p>
+<h2>Is a New Extension Necessary?</h2>
+<p>If you read the database chapter of my <a href="../../the-flask-mega-tutorial-part-iv-database.html">Mega-Tutorial</a>, you know that I have chosen <a href="https://code.google.com/p/sqlalchemy-migrate/">sqlalchemy-migrate</a> for database migrations.</p>
+<p>I liked sqlalchemy-migrate back then (I still do, actually), but its development appears to have halted completely. Support for SQLAlchemy 0.8.x has not been implemented yet, six months past the 0.8.0 release.</p>
+<p>On the other side, since I wrote my migration Mega-Tutorial chapter Alembic has gained notoriety. Alembic is written by zzzeek (Mike Bayer), who is the author of SQLAlchemy. He is actively developing Alembic on <a href="https://bitbucket.org/zzzeek/alembic">bitbucket</a>.</p>
+<p>There is an extension called <a href="https://github.com/tobiasandtobias/flask-alembic">Flask-Alembic</a> out there that has many similarities to mine, but that project also appears to have stalled, there haven't been any commits or messages from the developers in several months. The project was never made available on the Python Package Index (PyPI), so while it is possible to install directly from git, that is less ideal, and might be a deal breaker for some.</p>
+<p>That is why I have decided to write Flask-Migrate. Out of respect for the Flask-Alembic project I decided to use a different name on PyPI, in case they ever decide to resume work on their project and publish it.</p>
+<h2>Using Flask-Migrate</h2>
+<p>Flask-Migrate provides a set of command line options that attach to <a href="http://flask-script.readthedocs.org/en/latest/">Flask-Script</a>. </p>
+<p>To install the extension you use <code>pip</code> as usual:</p>
+<pre><code>$ pip install flask-migrate
+</code></pre>
+<p>As part of the installation you will also get Flask, Flask-SQLAlchemy and Flask-Script.</p>
+<p>Below is a sample application that initializes Flask-Migrate and registers it with Flask-Script. As is typically the case with Flask-Script, the script is called <code>manage.py</code>:</p>
+<pre><code>from flask import Flask
+from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.script import Manager
+from flask.ext.migrate import Migrate, MigrateCommand
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(128))
+
+if __name__ == '__main__':
+    manager.run()
+</code></pre>
+<p>When you run the application you get an additional <code>db</code> option in the command line (you can call it differently if you want, of course):</p>
+<pre><code>$ python manage.py --help
+usage: manage.py [-h] {shell,db,runserver} ...
+
+positional arguments:
+  {shell,db,runserver}
+    shell               Runs a Python shell inside Flask application context.
+    db                  Perform database migrations
+    runserver           Runs the Flask development server i.e. app.run()
+
+optional arguments:
+  -h, --help            show this help message and exit
+</code></pre>
+<p>The <code>db</code> command exposes most of the Alembic options:</p>
+<pre><code>$ python manage.py db --help
+usage: Perform database migrations
+
+positional arguments:
+  {upgrade,migrate,current,stamp,init,downgrade,history,revision}
+    upgrade             Upgrade to a later version
+    migrate             Alias for 'revision --autogenerate'
+    current             Display the current revision for each database.
+    stamp               'stamp' the revision table with the given revision;
+                        dont run any migrations
+    init                Generates a new migration
+    downgrade           Revert to a previous version
+    history             List changeset scripts in chronological order.
+    revision            Create a new revision file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+</code></pre>
+<p>To add migration support to your database you just need to run the <code>init</code> command:</p>
+<pre><code>$ python manage.py db init
+  Creating directory /home/miguel/app/migrations...done
+  Creating directory /home/miguel/app/migrations/versions...done
+  Generating /home/miguel/app/alembic.ini...done
+  Generating /home/miguel/app/migrations/env.py...done
+  Generating /home/miguel/app/migrations/env.pyc...done
+  Generating /home/miguel/app/migrations/README...done
+  Generating /home/miguel/app/migrations/script.py.mako...done
+  Please edit configuration/connection/logging settings in
+  '/home/miguel/app/migrations/alembic.ini' before proceeding.
+</code></pre>
+<p>Note that you should replace <code>manage.py</code> with the name of your launch script if you used a different name.</p>
+<p>When you use Alembic alone you have to edit a couple of configuration files, but Flask-Migrate handles all that for you. When the <code>init</code> command completes you will have a <em>migrations</em> folder with the configuration files ready to be used.</p>
+<p>To issue your first migration you can run the following command:</p>
+<pre><code>$ python manage.py db migrate
+INFO  [alembic.migration] Context impl SQLiteImpl.
+INFO  [alembic.migration] Will assume non-transactional DDL.
+INFO  [alembic.autogenerate] Detected added table 'user'
+  Generating /home/miguel/app/migrations/versions/4708a5190f2_.py...done
+</code></pre>
+<p>The <code>migrate</code> command adds a new migration script. You should review it and edit it to be accurate, as Alembic cannot detect all changes that you make to your models. In particular it does not detect indexes, so those need to be added manually to the script.</p>
+<p>If you prefer to write your migration scripts from scratch then use <code>revision</code> instead of <code>migrate</code>:</p>
+<pre><code>$ python manage.py db revision
+  Generating /home/miguel/app/migrations/versions/15c04479d683_.py...done
+</code></pre>
+<p>You can read Alembic's documentation to learn how to write migration scripts.</p>
+<p>The next step is to apply the migration to the database. For this you use the <code>upgrade</code> command:</p>
+<pre><code>$ python manage.py db upgrade
+INFO  [alembic.migration] Context impl SQLiteImpl.
+INFO  [alembic.migration] Will assume non-transactional DDL.
+INFO  [alembic.migration] Running upgrade None -&gt; 4708a5190f2, empty message
+</code></pre>
+<p>And that's it! Your database is now synchronized with your models.</p>
+<p>You should add all the files in the <em>migrations</em> folder to version control along with your source files. If you need to update another system to the latest database version you just need to update your source tree on that other system and then run <code>db upgrade</code>, like you did above.</p>
+<p>If you have any suggestions to improve this extension please let me know below in the comments.</p>
+<p>Miguel</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask&amp;t=Flask-Migrate%3A%20Alembic%20database%20migration%20wrapper%20for%20Flask" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask&amp;resubmit=true&amp;title=Flask-Migrate:%20Alembic%20database%20migration%20wrapper%20for%20Flask" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=Flask-Migrate%3A%20Alembic%20database%20migration%20wrapper%20for%20Flask&amp;url=https%3A//blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask&amp;title=Flask-Migrate%3A%20Alembic%20database%20migration%20wrapper%20for%20Flask&amp;summary=Flask-Migrate%3A%20Alembic%20database%20migration%20wrapper%20for%20Flask&amp;source=https%3A//blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=Flask-Migrate%3A%20Alembic%20database%20migration%20wrapper%20for%20Flask&amp;body=https%3A//blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../flask-migrate-alembic-database-migration-wrapper-for-flask.html#comments">124 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/2adf42e3816870258f34c5ebf8f5be1d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#101</span> <span class="badge text-bg-warning">Leon</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-08-17T19:27:59Z" data-function="fromNow" data-refresh="0" style="display: none">2016-08-17T19:27:59Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel, Thank you for your tutorial. I was trying to add a custom data type in flasky to support json. The module is in app/utils/<a href="http://customdatatype.py/" rel="nofollow">customDataType.py</a>. And the new migration scripts is generated in migrations/versions/...</p>
+<p>In the script, I need to import the 'JsonType'. </p>
+<p>from ...app.utils.customDataType import JsonType</p>
+<p>Also, I add <strong>init</strong>.py files in root, migrations and versions folder, which didn't help solve the import exception "Attempted relative import in non-package".</p>
+<p>How can I import module in app? Thank you.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/32950bd1db38f3d85cf19ff2e4b97891?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#102</span> <span class="badge text-bg-warning">Shahab</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-08-24T14:22:50Z" data-function="fromNow" data-refresh="0" style="display: none">2016-08-24T14:22:50Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>I am following you tutorial, but get stock at this point:</p>
+<p>$ python <a href="http://manage.py/" rel="nofollow">manage.py</a> db init<br>
+Traceback (most recent call last):<br>
+  File "./<a href="http://manage.py/" rel="nofollow">manage.py</a>", line 139, in &lt;module&gt;<br>
+    manager.run()<br>
+  File "/home/shahab/projects/coreapis/venv/local/lib/python2.7/site-packages/flask_script/<strong>init</strong>.py", line 412, in run<br>
+    result = self.handle(sys.argv[0], sys.argv[1:])<br>
+  File "/home/shahab/projects/coreapis/venv/local/lib/python2.7/site-packages/flask_script/<strong>init</strong>.py", line 383, in handle<br>
+    res = handle(<em>args, </em><em>config)<br>
+  File "/home/shahab/projects/coreapis/venv/local/lib/python2.7/site-packages/flask_script/<a href="http://commands.py/" rel="nofollow">commands.py</a>", line 216, in <strong>call</strong><br>
+    return self.run(</em>args, **kwargs)<br>
+  File "/home/shahab/projects/coreapis/venv/local/lib/python2.7/site-packages/flask_migrate/<strong>init</strong>.py", line 58, in init<br>
+    directory = current_app.extensions['migrate'].directory<br>
+KeyError: 'migrate'</p>
+<p>Could you please tell me what I have done wrong.</p>
+<p>Thank you</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#103</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-08-25T05:19:27Z" data-function="fromNow" data-refresh="0" style="display: none">2016-08-25T05:19:27Z</span>
+  </p>
+  <div>
+    <p>@Shahab: did you initialize the Migrate class?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#104</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-08-25T05:24:34Z" data-function="fromNow" data-refresh="0" style="display: none">2016-08-25T05:24:34Z</span>
+  </p>
+  <div>
+    <p>@Leon: It seems you have a Python import problem, unrelated to Flask or Flask-Migrate. I recommend that you write a question on Stack Overflow and add the relevant code and the full stack trace of the error.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/330cd3d34fada0b1de25d37e00756a7c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#105</span> <span class="badge text-bg-warning">Valentin</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-09-29T06:54:14Z" data-function="fromNow" data-refresh="0" style="display: none">2016-09-29T06:54:14Z</span>
+  </p>
+  <div>
+    <p>Hi,</p>
+<p>Thanks for this great tool.<br>
+I just have one problem/question.<br>
+I have now a bunch of revisions files. It works great to update any system to the last version. I wonder however how I can handle setting up a new system from scratch.<br>
+I can of course generate the database using sqlalchemy db.create_all() but I don't consider it a good solution because it's different from what I do for existing systems. I want to be sure they ends with the same results. It can also be a problem if some custom statements were added to the revisions scripts, they would not be executed for this new system.<br>
+What I would expect: a way to create the database in the initial version before any migrations applied and then apply all migrations scripts.<br>
+Does this make sense? Is there a simple way to do this?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#106</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-09-29T18:29:58Z" data-function="fromNow" data-refresh="0" style="display: none">2016-09-29T18:29:58Z</span>
+  </p>
+  <div>
+    <p>@Valentin: database creation always happens outside of SQLAlchemy and Alembic, and you need to do it on your own (except for sqlite, where the db file is created automatically by SQLAlchemy). The db.create_all() function only creates tables, it does not create a database. So the steps to create an updated database from scratch are two: #1 create the database using the db admin tool of your choice, and #2 run the "db upgrade" command to let Alembic create the tables via the migration scripts.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/0c2bc193d1655cf4436f2d82a03eca73?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#107</span> <span class="badge text-bg-warning">Jason</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-06-20T21:34:51Z" data-function="fromNow" data-refresh="0" style="display: none">2017-06-20T21:34:51Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,<br>
+Thanks so much for the tutorials, they are really helpful!<br>
+I have been able to follow it while using multiple databases:<br>
+    $ python <a href="http://manage.py/" rel="nofollow">manage.py</a> db init --multidb<br>
+    $ python <a href="http://manage.py/" rel="nofollow">manage.py</a> db migrate<br>
+However, it throws an database is locked error when I try to do the upgrade:<br>
+    $ python <a href="http://manage.py/" rel="nofollow">manage.py</a> db upgrade<br>
+The error:<br>
+    sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked</p>
+<p>Could you help me solve this please? Thanks!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#108</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-06-21T04:44:06Z" data-function="fromNow" data-refresh="0" style="display: none">2017-06-21T04:44:06Z</span>
+  </p>
+  <div>
+    <p>@Jason: Could be that your database file is open by another process at the time you are trying to migrate it. The error is unrelated to Flask-Migrate, Alembic or SQLAlchemy.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/970df7eaf1b030c5ad075a634b791cfd?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#109</span> <span class="badge text-bg-warning">Pranay Khilari</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-09-12T06:34:11Z" data-function="fromNow" data-refresh="0" style="display: none">2019-09-12T06:34:11Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>I read your document which is excellent, Also I read all the comments one thing is still not clear for me is below case.<br>
+1) I have model package which contains all the models.<br>
+2) I am not writing the model in <a href="http://manage.py/" rel="nofollow">manage.py</a> file.<br>
+3) If I used the flask-migrate it is not detecting the models which are present in my model package.<br>
+4) My database is empty.</p>
+<p>Please help me.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#110</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-09-12T19:49:36Z" data-function="fromNow" data-refresh="0" style="display: none">2019-09-12T19:49:36Z</span>
+  </p>
+  <div>
+    <p>@Pranay: you need to import your models. If you do not import them, then SQLAlchemy does not know about them.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/4354ad6eeee136ef09e00cce22539754?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#111</span> <span class="badge text-bg-warning">Mike A</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-09-18T14:14:57Z" data-function="fromNow" data-refresh="0" style="display: none">2019-09-18T14:14:57Z</span>
+  </p>
+  <div>
+    <p>Dear Sir.  First, than you so much for all your contributions to the community.  Your mega-tutorial gave me the leg up I needed.</p>
+<p>When using Migrate in a simple flask app, there is an issue with mysql and boolean fields.  In the models file, the field is specified like so: "db.Column(db.Boolean, unique=False, default=False)".  When the column is created in the DB, its created as a tinyint, which is fine, but every time migrate is used, it detects the tinyint/boolean difference and tries to update it: <br>
+"INFO  [alembic.autogenerate.compare] Detected type change from TINYINT(display_width=1) to Boolean() on 'circuits.is_child'"</p>
+<p>I currently go in and curate the .py file in the versions folder to deal with it, but it becomes tedious now that I have 40 booleans in my app.  I know I could change the column type in models to "db.Column(TINYINT(display_width=1), default=0)" but this outputs as a "1" rather than as "True" so im not sure its the best way to go.</p>
+<p>Any thoughts?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#112</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-09-19T08:17:17Z" data-function="fromNow" data-refresh="0" style="display: none">2019-09-19T08:17:17Z</span>
+  </p>
+  <div>
+    <p>@Mike: this issue explains the problem and provides some solutions: <a href="https://github.com/miguelgrinberg/Flask-Migrate/issues/143" rel="nofollow">https://github.com/miguelgrinberg/Flask-Migrate/issues/143</a>.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/2350cf407e2d60bb87c361c84e36a1c3?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#113</span> <span class="badge text-bg-warning">Ravina</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-07T07:59:55Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-07T07:59:55Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,<br>
+Can u help me out this error<br>
+Can't load plugin: sqlalchemy.dialects:mysql.pymysql<br>
+How to rectify this error</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#114</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-07T21:59:02Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-07T21:59:02Z</span>
+  </p>
+  <div>
+    <p>@Ravina: you need to install pymysql into your virtual environment.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/601f5150697574f9cb5f391c5600f3c3?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#115</span> <span class="badge text-bg-warning">Tim</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-15T10:33:00Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-15T10:33:00Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel and thanks for the great tutorial!</p>
+<p>I created a model with incorrect column type (instead of String I used Integer on task id). I tried changing it afterwards using ALTER TABLE via MYSQL Workbench but because the table had a foreign key restriction to result table I was not able to do this. I tried to remove the foreign key restriction, but eventually got tired of figuring out how to do this, and removed both task and result tables with DROP TABLE. </p>
+<p>I thought that Flask-Migrate would just re-create the missing tables. But now when I run "flask db migrate" and "flask db upgrade" I get an error. So is there a way to just start over? All I have is one line in the user table, so I would just like to be able to re-create all tables.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#116</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-15T16:59:10Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-15T16:59:10Z</span>
+  </p>
+  <div>
+    <p>If you want tables to be recreated you would run the upgrade command. The migrate command generates a new migration, that is used when you make changes to the models and want those changes applied to the database.</p>
+<p>Maybe you should show the error that you are getting if you can't get this to work when you run the upgrade command alone.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/601f5150697574f9cb5f391c5600f3c3?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#117</span> <span class="badge text-bg-warning">Tim</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-17T12:46:01Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-17T12:46:01Z</span>
+  </p>
+  <div>
+    <p>It seems that it wants the tables to exist:</p>
+<p>(venv) user@mypc:/mnt/c/flask/myapp$ flask db upgrade<br>
+INFO  [alembic.runtime.migration] Context impl MySQLImpl.<br>
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.<br>
+INFO  [alembic.runtime.migration] Running upgrade 26159dd471d8 -&gt; 4ee052488c48, changed task id type<br>
+Traceback (most recent call last):<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/engine/<a href="http://base.py/" rel="nofollow">base.py</a>", line 1244, in _execute_context<br>
+    cursor, statement, parameters, context<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/engine/<a href="http://default.py/" rel="nofollow">default.py</a>", line 550, in do_execute<br>
+    cursor.execute(statement, parameters)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://cursors.py/" rel="nofollow">cursors.py</a>", line 170, in execute<br>
+    result = self._query(query)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://cursors.py/" rel="nofollow">cursors.py</a>", line 328, in _query<br>
+    conn.query(q)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://connections.py/" rel="nofollow">connections.py</a>", line 517, in query<br>
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://connections.py/" rel="nofollow">connections.py</a>", line 732, in _read_query_result<br>
+    result.read()<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://connections.py/" rel="nofollow">connections.py</a>", line 1075, in read<br>
+    first_packet = self.connection._read_packet()<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://connections.py/" rel="nofollow">connections.py</a>", line 684, in _read_packet<br>
+    packet.check_error()<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://protocol.py/" rel="nofollow">protocol.py</a>", line 220, in check_error<br>
+    err.raise_mysql_exception(self._data)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://err.py/" rel="nofollow">err.py</a>", line 109, in raise_mysql_exception<br>
+    raise errorclass(errno, errval)<br>
+pymysql.err.ProgrammingError: (1146, "Table 'myapp.result' doesn't exist")</p>
+<p>The above exception was the direct cause of the following exception:</p>
+<p>Traceback (most recent call last):<br>
+  File "/home/user/.virtualenvs/venv/bin/flask", line 10, in &lt;module&gt;<br>
+    sys.exit(main())<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/flask/<a href="http://cli.py/" rel="nofollow">cli.py</a>", line 966, in main<br>
+    cli.main(prog_name="python -m flask" if as_module else None)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/flask/<a href="http://cli.py/" rel="nofollow">cli.py</a>", line 586, in main<br>
+    return super(FlaskGroup, self).main(<em>args, </em><em>kwargs)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/click/<a href="http://core.py/" rel="nofollow">core.py</a>", line 717, in main<br>
+    rv = self.invoke(ctx)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/click/<a href="http://core.py/" rel="nofollow">core.py</a>", line 1137, in invoke<br>
+    return _process_result(sub_ctx.command.invoke(sub_ctx))<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/click/<a href="http://core.py/" rel="nofollow">core.py</a>", line 1137, in invoke<br>
+    return _process_result(sub_ctx.command.invoke(sub_ctx))<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/click/<a href="http://core.py/" rel="nofollow">core.py</a>", line 956, in invoke<br>
+    return ctx.invoke(self.callback, </em><em>ctx.params)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/click/<a href="http://core.py/" rel="nofollow">core.py</a>", line 555, in invoke<br>
+    return callback(</em>args, <strong>kwargs)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/click/<a href="http://decorators.py/" rel="nofollow">decorators.py</a>", line 17, in new_func<br>
+    return f(get_current_context(), *args, </strong>kwargs)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/flask/<a href="http://cli.py/" rel="nofollow">cli.py</a>", line 426, in decorator<br>
+    return <strong>ctx.invoke(f, <em>args, </em><em>kwargs)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/click/<a href="http://core.py/" rel="nofollow">core.py</a>", line 555, in invoke<br>
+    return callback(</em>args, <strong>kwargs)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/flask_migrate/<a href="http://cli.py/" rel="nofollow">cli.py</a>", line 134, in upgrade<br>
+    _upgrade(directory, revision, sql, tag, x_arg)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/flask_migrate/<strong>init</strong>.py", line 95, in wrapped<br>
+    f(*args, </strong>kwargs)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/flask_migrate/__init</strong>.py", line 280, in upgrade<br>
+    command.upgrade(config, revision, sql=sql, tag=tag)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/<a href="http://command.py/" rel="nofollow">command.py</a>", line 276, in upgrade<br>
+    script.run_env()<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/script/<a href="http://base.py/" rel="nofollow">base.py</a>", line 475, in run_env<br>
+    util.load_python_file(self.dir, "<a href="http://env.py/" rel="nofollow">env.py</a>")<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/util/<a href="http://pyfiles.py/" rel="nofollow">pyfiles.py</a>", line 90, in load_python_file<br>
+    module = load_module_py(module_id, path)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/util/<a href="http://compat.py/" rel="nofollow">compat.py</a>", line 177, in load_module_py<br>
+    spec.loader.exec_module(module)<br>
+  File "&lt;frozen importlib._bootstrap_external&gt;", line 678, in exec_module<br>
+  File "&lt;frozen importlib._bootstrap&gt;", line 219, in _call_with_frames_removed<br>
+  File "migrations/<a href="http://env.py/" rel="nofollow">env.py</a>", line 96, in &lt;module&gt;<br>
+    run_migrations_online()<br>
+  File "migrations/<a href="http://env.py/" rel="nofollow">env.py</a>", line 90, in run_migrations_online<br>
+    context.run_migrations()<br>
+  File "&lt;string&gt;", line 8, in run_migrations<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/runtime/<a href="http://environment.py/" rel="nofollow">environment.py</a>", line 839, in run_migrations<br>
+    self.get_context().run_migrations(<strong>kw)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/runtime/<a href="http://migration.py/" rel="nofollow">migration.py</a>", line 362, in run_migrations<br>
+    step.migration_fn(</strong>kw)<br>
+  File "/mnt/c/flask/myapp/migrations/versions/<a href="http://4ee052488c48_changed_task_id_type.py/" rel="nofollow">4ee052488c48_changed_task_id_type.py</a>", line 24, in upgrade<br>
+    existing_nullable=True)<br>
+  File "&lt;string&gt;", line 8, in alter_column<br>
+  File "&lt;string&gt;", line 3, in alter_column<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/operations/<a href="http://ops.py/" rel="nofollow">ops.py</a>", line 1775, in alter_column<br>
+    return operations.invoke(alt)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/operations/<a href="http://base.py/" rel="nofollow">base.py</a>", line 345, in invoke<br>
+    return fn(self, operation)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/operations/<a href="http://toimpl.py/" rel="nofollow">toimpl.py</a>", line 56, in alter_column<br>
+<strong><a href="http://operation.kw/" rel="nofollow">operation.kw</a><br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/ddl/<a href="http://mysql.py/" rel="nofollow">mysql.py</a>", line 96, in alter_column<br>
+    else existing_comment,<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/alembic/ddl/<a href="http://impl.py/" rel="nofollow">impl.py</a>", line 134, in _exec<br>
+    return conn.execute(construct, *multiparams, </strong>params)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/engine/<a href="http://base.py/" rel="nofollow">base.py</a>", line 988, in execute<br>
+    return meth(self, multiparams, params)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/sql/<a href="http://ddl.py/" rel="nofollow">ddl.py</a>", line 72, in _execute_on_connection<br>
+    return connection._execute_ddl(self, multiparams, params)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/engine/<a href="http://base.py/" rel="nofollow">base.py</a>", line 1050, in _execute_ddl<br>
+    compiled,<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/engine/<a href="http://base.py/" rel="nofollow">base.py</a>", line 1248, in _execute_context<br>
+    e, statement, parameters, cursor, context<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/engine/<a href="http://base.py/" rel="nofollow">base.py</a>", line 1466, in _handle_dbapi_exception<br>
+    util.raise_from_cause(sqlalchemy_exception, exc_info)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/util/<a href="http://compat.py/" rel="nofollow">compat.py</a>", line 399, in raise_from_cause<br>
+    reraise(type(exception), exception, tb=exc_tb, cause=cause)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/util/<a href="http://compat.py/" rel="nofollow">compat.py</a>", line 153, in reraise<br>
+    raise value.with_traceback(tb)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/engine/<a href="http://base.py/" rel="nofollow">base.py</a>", line 1244, in _execute_context<br>
+    cursor, statement, parameters, context<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/sqlalchemy/engine/<a href="http://default.py/" rel="nofollow">default.py</a>", line 550, in do_execute<br>
+    cursor.execute(statement, parameters)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://cursors.py/" rel="nofollow">cursors.py</a>", line 170, in execute<br>
+    result = self._query(query)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://cursors.py/" rel="nofollow">cursors.py</a>", line 328, in _query<br>
+    conn.query(q)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://connections.py/" rel="nofollow">connections.py</a>", line 517, in query<br>
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://connections.py/" rel="nofollow">connections.py</a>", line 732, in _read_query_result<br>
+    result.read()<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://connections.py/" rel="nofollow">connections.py</a>", line 1075, in read<br>
+    first_packet = self.connection._read_packet()<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://connections.py/" rel="nofollow">connections.py</a>", line 684, in _read_packet<br>
+    packet.check_error()<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://protocol.py/" rel="nofollow">protocol.py</a>", line 220, in check_error<br>
+    err.raise_mysql_exception(self._data)<br>
+  File "/home/user/.virtualenvs/venv/lib/python3.6/site-packages/pymysql/<a href="http://err.py/" rel="nofollow">err.py</a>", line 109, in raise_mysql_exception<br>
+    raise errorclass(errno, errval)<br>
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1146, "Table 'myapp.result' doesn't exist")<br>
+[SQL: ALTER TABLE result MODIFY payload_json TEXT(2000) NULL]<br>
+(Background on this error at: <a href="http://sqlalche.me/e/f405" rel="nofollow">http://sqlalche.me/e/f405</a>)</p>
+<p>I want to run several tasks at the same time and also save the task results. I am still trying to figure out the best database design for this, so most likely I will be modifying the DB as I go. Here are my models for 'task' and 'result' tables:</p>
+<p>class Result(db.Model):<br>
+    id = db.Column(db.Integer, primary_key=True)<br>
+    task_id = db.Column(db.String, db.ForeignKey('<a href="http://task.id/" rel="nofollow">task.id</a>'))<br>
+    payload_json = db.Column(db.Text(2000))</p>
+<p>class Task(db.Model):</p>
+<pre><code>__tablename__ = 'task'
+
+id = db.Column(db.String(50), primary_key=True)
+name = db.Column(db.String(128), index=True)
+user_id = db.Column(db.Integer, db.ForeignKey('<a href="http://user.id/" rel="nofollow">user.id</a>'))
+results = db.relationship('Result', backref='task', lazy='dynamic')
+complete = db.Column(db.Boolean, default=False)
+</code></pre>
+<p>I thought about re-creating the tables via MySQL Workbench but I wasn't 100% sure what SQLAlchemy actually does with backref and lazy commands (what are the corresponding SQL commands).</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#118</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2019-10-17T16:42:11Z" data-function="fromNow" data-refresh="0" style="display: none">2019-10-17T16:42:11Z</span>
+  </p>
+  <div>
+    <p>@Tim: the migration script seems to assume the myapp.result table exists, but in reality it does not. You may want to delete that migration script and generate a new one. Then you should ensure this table is detected as a new table, not as an existing table that needs a change.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/1c27270dafe06e045cea3a0d5def7759?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#119</span> <span class="badge text-bg-warning">Vova</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-19T00:37:28Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-19T00:37:28Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel. I have a question. Is it okay that - after opening app.db - I see a wrong encoding? I mean like this <a href="https://clip2net.com/s/4767OF3" rel="nofollow">https://clip2net.com/s/4767OF3</a>. After I change the encoding, the migration breaks, and it's impossible to do anything even if I return to the previous encoding. I have to completely remove the app.db to make everything work again, but it's a bed solution in many ways I guess...</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#120</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2020-04-19T10:58:00Z" data-function="fromNow" data-refresh="0" style="display: none">2020-04-19T10:58:00Z</span>
+  </p>
+  <div>
+    <p>@Vova: were you opening the sqlite file in a text editor? That will never work, this file is not in any encoding, it is a binary file, so it will never display correctly in a text editor.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/0fd365dbe2622eef8a496380ed457acf?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#121</span> <span class="badge text-bg-warning">Andrés Darío Altamirano</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-01-21T04:03:54Z" data-function="fromNow" data-refresh="0" style="display: none">2021-01-21T04:03:54Z</span>
+  </p>
+  <div>
+    <p>Hello Miguel! I have a doubt regarding the db migrate. What do you think it is the best approach for using migrations that are from different packages such as sqlalchemy_utils?<br>
+I am trying to use sqlalchemy_utils.UUID.types.UUIDType for a field on a MySQL database, but when a migration is created, Alembic does not import that sqlalchemy_utils library so the migration crashes. Of course it would be easy to add the import inside the migration file, or, add it in the script.py.mako so it can be used broadly, but, in case you are in a project where the whole migrations folder is not versioned and docker takes care of creating that folder and apply the detected migrations, I can't find an decent way to achieve the use of a third party library as this one.</p>
+<p>Regards</p>
+<p>Andrés</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#122</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-01-21T12:26:13Z" data-function="fromNow" data-refresh="0" style="display: none">2021-01-21T12:26:13Z</span>
+  </p>
+  <div>
+    <p>@Andrés: the only two solutions I know are the two that you mentioned: either add the import manually, or add it to the template migration file. I do not know what use case you have where migrations aren't versioned. Neither Flask-Migrate nor Alembic are intended to be use that way, since automatic migration generation is not always possible.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/46511045c94fdd56d3e26844b619b5d3?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#123</span> <span class="badge text-bg-warning">Rahul</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-31T17:44:34Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-31T17:44:34Z</span>
+  </p>
+  <div>
+    <p>How do we manage migrations when working on the same project with multiple team members using a central remote repo, what strategy can be used so that migration versions don't diverge when someone is making changes?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/729e26a2a2c7ff24a71958d4aa4e5f35?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#124</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2021-08-31T18:40:32Z" data-function="fromNow" data-refresh="0" style="display: none">2021-08-31T18:40:32Z</span>
+  </p>
+  <div>
+    <p>@Rahul: This is handled by Alembic, not this extension. See the branching and merging support in the Alembic docs.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="4.html#comments">&laquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;</a></li>
+    <li class="page-item disabled"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.ZxdnkA.VIti8ps8RmzL9PbCpG8xLvghu1Q">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  <div class="card-header">SQLAlchemy 2 In Practice</div>
+  <a class="card-book-cover" href="https://amzn.to/3S0diwc">
+    <img src="../../../static/sqlalchemy-small.png">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you want to learn the ins and outs of relational database programming with Python and SQLAlchemy, consider my <a href="https://amzn.to/3S0diwc">SQLAlchemy 2 In Practice</a> book, available on <a href="https://amzn.to/3S0diwc">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3S0diwc">Click here to get this Book!</a><br />
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/flask-migrate-alembic-database-migration-wrapper-for-flask/page/0 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:37 GMT -->
+</html>

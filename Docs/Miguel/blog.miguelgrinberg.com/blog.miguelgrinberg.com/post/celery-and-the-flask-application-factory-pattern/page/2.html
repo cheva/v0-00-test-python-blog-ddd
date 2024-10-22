@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="en">
+  
+<!-- Mirrored from blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern/page/2 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:40 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    
+  <script type="text/javascript">
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme')
+      if (storedTheme) {
+        return storedTheme
+      }
+      return 'auto';
+    }
+
+    function setTheme(theme) {
+      if (theme === 'auto') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      }
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    };
+
+    setTheme(getPreferredTheme());
+  </script>
+  
+    <title>
+  
+    Celery and the Flask Application Factory Pattern - miguelgrinberg.com
+  
+</title>
+  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="miguelgrinberg.com">
+  <meta name="copyright" content="Copyright (c) 2012-2024 Miguel Grinberg">
+  <meta name="author" content="Miguel Grinberg">
+  
+  <meta name="keywords" content="flask, python, programming, celery, asynchronous, background, web development, app factory">
+  
+  
+  <link rel="canonical" href="../../celery-and-the-flask-application-factory-pattern.html">
+  
+
+  
+    <link href="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap" rel="stylesheet">
+
+  <link href="../../../static/tomorrow.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/tomorrow-night.min.css" type="text/css" rel="stylesheet" />
+  <link href="../../../static/social.css" rel="stylesheet" type="text/css" />
+  <link href="../../../static/style_20231230.css" rel="stylesheet" type="text/css" />
+
+  <link rel="shortcut icon" href="https://blog.miguelgrinberg.com/static/favicon.ico">
+  <link rel="alternate" type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed" title="miguelgrinberg.com RSS feed">
+
+    <meta property="og:title" content="Celery and the Flask Application Factory Pattern">
+    <meta property="og:description" content="After I published my article on using Celery with Flask, several readers asked how this integration can be done when using a large Flask application organized around the application factory pattern…">
+    <meta property="og:image" content="https://blog.miguelgrinberg.com/static/cards/celery-and-the-flask-application-factory-pattern.jpg">
+    <meta property="og:url" content="https://blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern">
+    <meta name="twitter:title" content="Celery and the Flask Application Factory Pattern">
+    <meta name="twitter:description" content="After I published my article on using Celery with Flask, several readers asked how this integration can be done when using a large Flask application organized around the application factory pattern…">
+    <meta name="twitter:image" content="https://blog.miguelgrinberg.com/static/cards/celery-and-the-flask-application-factory-pattern.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@miguelgrinberg">
+
+  </head>
+  <body>
+    <svg style="display: none" version="2.0">
+      <defs>
+        <symbol id="icon-theme-auto" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-circle-half" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/>
+        </symbol>
+        <symbol id="icon-theme-light" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+          <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </symbol>
+        <symbol id="icon-theme-dark" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278"/>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </symbol>
+      </defs>
+    </svg>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="https://blog.miguelgrinberg.com/index">miguelgrinberg.com</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="https://blog.miguelgrinberg.com/index">Home</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../my-courses-and-books.html">My Courses and Books</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../hire-me.html">Consulting</a></li>
+        <li class="nav-item"><a class="nav-link" aria-current="page" href="../../about-me.html">About Me</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg width="20" height="20" version="2.0"><use id="current-theme" href="#icon-theme-light"></svg>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a id="select-theme-light" class="dropdown-item" href="javascript:updateTheme('light')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-light"></svg>&nbsp; Light Mode
+              </a>
+            </li>
+            <li>
+              <a id="select-theme-dark" class="dropdown-item" href="javascript:updateTheme('dark')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-dark"></svg>&nbsp; Dark Mode
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a id="select-theme-auto" class="dropdown-item" href="javascript:updateTheme('auto')">
+                <svg width="16" height="16" version="2.0"><use href="#icon-theme-auto"></svg>&nbsp; System Default
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item social-icons">
+          <a type="application/rss+xml" href="https://blog.miguelgrinberg.com/feed"><img src="../../../static/social/rss.png" alt="RSS Feed" title="RSS Feed" /></a>
+          <a href="https://twitter.com/miguelgrinberg"><img src="../../../static/social/twitter.png" alt="Twitter" title="Twitter" /></a>
+          <a rel="me" href="https://mstdn.social/@miguelgrinberg"><img src="../../../static/social/mastodon.png" alt="Mastodon" title="Mastodon" /></a>
+          <a href="http://github.com/miguelgrinberg"><img src="../../../static/social/github.png" alt="GitHub" title="GitHub" /></a>
+          <a href="https://youtube.com/miguelgrinberg"><img src="../../../static/social/youtube.png" alt="YouTube" title="YouTube" /></a>
+          <a href="http://www.linkedin.com/in/miguelgrinberg"><img src="../../../static/social/linkedin.png" alt="LinkedIn" title="LinkedIn" /></a>
+          <a href="https://patreon.com/miguelgrinberg"><img src="../../../static/social/patreon.png" alt="Patreon" title="Patreon" /></a>
+          <!--<a href="https://www.facebook.com/miguelgrinbergblog"><img src="/static/social/facebook.png" alt="Facebook" title="Facebook" /></a>-->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <div id="main">
+        
+        
+        
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          Post not found.
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        
+        
+        
+        
+
+<div class="post">
+
+<div class="post-header">
+  <h1><a href="../../celery-and-the-flask-application-factory-pattern.html">Celery and the Flask Application Factory Pattern</a></h1>
+  <h2>
+    Posted by
+    <form action="https://blog.miguelgrinberg.com/author/Miguel Grinberg" method="POST">
+      <input type="submit" class="btn btn-danger btn-sm" value="Miguel Grinberg" />
+    </form>
+    on
+    <button class="btn btn-secondary btn-sm" disabled><span class="flask-moment" data-timestamp="2015-05-16T02:09:49Z" data-function="format" data-format="LL" data-refresh="0" style="display: none">2015-05-16T02:09:49Z</span></button>
+    under
+    
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" />
+      </form>
+    
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" />
+      </form>
+    
+    
+  </h2>
+</div>
+<div class="post-body"><p>After I published my article on using <a href="../../using-celery-with-flask.html">Celery with Flask</a>, several readers asked how this integration can be done when using a large Flask application organized around the <a href="http://flask.pocoo.org/docs/0.10/patterns/appfactories/">application factory</a> pattern. It's a very good question, as it is non-trivial to make Celery, which does not have a dedicated Flask extension, delay access to the application until the factory function is invoked.</p>
+<p>In this article I'm going to describe in detail how I added Celery to <a href="http://github.com/miguelgrinberg/flasky">Flasky</a>, the application featured in my <a href="http://flaskbook.com/">Flask book</a>.</p>
+<h2>The Code</h2>
+<p>I know some of you are impatient, so let me direct you to the Github repository that has the modified Flasky application described in this article: <a href="http://github.com/miguelgrinberg/flasky-with-celery">http://github.com/miguelgrinberg/flasky-with-celery</a>.</p>
+<p>The first two commits in this repository import the Flasky application, as featured in my book. The changes to add Celery are all contained in the third and last commit.</p>
+<h2>Creating the Celery instance</h2>
+<p>The first problem that presents is how to create the <code>celery</code> object, which provides the <code>celery.task</code> decorator. The fact that it provides the decorator means that it has to be created as a global variable, and that implies that the Flask application instance is not going to be around when it is created.</p>
+<p>Here is how I initialized the Celery instance in the single file application:</p>
+<pre><code>celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
+</code></pre>
+<p>So this is a big problem, as I'm using <code>app</code> all over the place here. To adapt this bit of code to Flasky I had to get a bit creative. Here is what I did:</p>
+<pre><code>from celery import Celery
+from config import config, Config
+
+celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
+
+def create_app(config_name):
+    # ...
+    celery.conf.update(app.config)
+    # ...
+    return app
+</code></pre>
+<p>The solution involves separating the creation and the configuration of the <code>celery</code> instance. I create the object as a global variable, but I delay its configuration until <code>create_app()</code> is invoked. </p>
+<p>To make this work, I had to remove all references to <code>app</code> in the object creation. Instead of <code>app.name</code> I used <code>__name__</code>, which is what <code>app.name</code> will be initialized to later when the app factory function is called. The only configuration item that needs to be passed during creation is the URL of the broker, so to get that item before the application exists I had to import it directly from the <code>Config</code> class. The one problem that this creates is that it is not possible to have different brokers in different configurations, this item is fixed for all configurations.</p>
+<p>The configuration portion is very easy. In the application factory function the application is available, so configuration works exactly as in the single file case.</p>
+<h2>Sending Asynchronous Emails Through Celery</h2>
+<p>To test this setup I converted the thread based email sending function to use Celery. This was surprisingly easy to do. Here is the relevant code:</p>
+<pre><code>from . import celery
+
+@celery.task
+def send_async_email(msg):
+    mail.send(msg)
+
+def send_email(to, subject, template, **kwargs):
+app = current_app._get_current_object()
+    msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + ' ' + subject,
+                  sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    send_async_email.delay(msg)
+</code></pre>
+<p>Here I simply decorate the function that sends the email with <code>celery.task</code>, and then invoke it using the <code>delay()</code> method. In the thread based version the main thread passed the <code>app</code> variable to the background thread so that it can set up an application context (required by Flask-Mail), but I have removed that here because passing an application instance to the Celery worker process doesn't make much sense. Instead I want the worker to have its own Flask application, like I did in the single file example.</p>
+<h2>Setting Up The Celery Worker</h2>
+<p>The only remaining task is to launch a Celery worker. This process needs to have its own Flask application instance that can be used to create the context necessary for the Flask background tasks to run. For this I used a separate starter script, which I called <code>celery_worker.py</code>:</p>
+<pre><code>#!/usr/bin/env python
+import os
+from app import celery, create_app
+
+app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+app.app_context().push()
+</code></pre>
+<p>This little script creates a Flask application and pushes an application context, which will remain set through the entire life of the process. Celery also needs access to the <code>celery</code> instance, so I imported it from the <code>app</code> package.</p>
+<p>If you have an activated virtual environment, now you can start the Celery worker with the following command:</p>
+<pre><code>(venv) $ celery -A celery_worker.celery worker --loglevel=info
+</code></pre>
+<p>If you now start a Redis service and the Flasky application, everything should be working.</p>
+<h2>Conclusion</h2>
+<p>I hope this clarifies the setup of Celery, but if there are any remaining questions feel free to let me know below in the comments. If you want step-by-step instructions on how to run the example code, see the README file on the <a href="http://github.com/miguelgrinberg/flasky-with-celery">github repository</a>.</p>
+<p>Miguel</p></div>
+
+<div class="card patreon-bar">
+  <div class="card-body">
+    <h5>Become a Patron!</h5>
+    <p class="card-text">Hello, and thank you for visiting my blog! If you enjoyed this article, please consider supporting my work on this blog on <a href="https://patreon.com/miguelgrinberg">Patreon</a>!</p>
+    <a href="https://patreon.com/miguelgrinberg" alt="Become a Patron!" title="Become a Patron!"><img src="../../../static/patreon-button.png"></a>
+  </div>
+</div>
+
+
+<div class="card social-bar">
+  <div class="card-body">
+    <h5>Share this post:</h5>
+      <!-- Sharingbutton Hacker News -->
+      <a class="resp-sharing-button__link" href="https://news.ycombinator.com/submitlink?u=https%3A//blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern&amp;t=Celery%20and%20the%20Flask%20Application%20Factory%20Pattern" target="_blank" rel="noopener" aria-label="Hacker News">
+        <div class="resp-sharing-button resp-sharing-button--hackernews resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><path fill-rule="evenodd" d="M60.94 82.314L17 0h20.08l25.85 52.093c.397.927.86 1.888 1.39 2.883.53.994.995 2.02 1.393 3.08.265.4.463.764.596 1.095.13.334.262.63.395.898.662 1.325 1.26 2.618 1.79 3.877.53 1.26.993 2.42 1.39 3.48 1.06-2.254 2.22-4.673 3.48-7.258 1.26-2.585 2.552-5.27 3.877-8.052L103.49 0h18.69L77.84 83.308v53.087h-16.9v-54.08z"></path></svg></div>Hacker News</div>
+      </a>
+
+      <!-- Sharingbutton Reddit -->
+      <a class="resp-sharing-button__link" href="https://reddit.com/submit/?url=https%3A//blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern&amp;resubmit=true&amp;title=Celery%20and%20the%20Flask%20Application%20Factory%20Pattern" target="_blank" rel="noopener" aria-label="Reddit">
+        <div class="resp-sharing-button resp-sharing-button--reddit resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg></div>Reddit</div>
+      </a>
+
+      <!-- Sharingbutton Twitter -->
+      <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=Celery%20and%20the%20Flask%20Application%20Factory%20Pattern&amp;url=https%3A//blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern" target="_blank" rel="noopener" aria-label="Twitter">
+        <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg></div>Twitter</div>
+      </a>
+
+      <!-- Sharingbutton LinkedIn -->
+      <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A//blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern&amp;title=Celery%20and%20the%20Flask%20Application%20Factory%20Pattern&amp;summary=Celery%20and%20the%20Flask%20Application%20Factory%20Pattern&amp;source=https%3A//blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg></div>LinkedIn</div>
+      </a>
+
+      <!-- Sharingbutton Facebook -->
+      <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A//blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern" target="_blank" rel="noopener" aria-label="Facebook">
+        <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg></div>Facebook</div>
+      </a>
+
+      <!-- Sharingbutton E-Mail -->
+      <a class="resp-sharing-button__link" href="mailto:?subject=Celery%20and%20the%20Flask%20Application%20Factory%20Pattern&amp;body=https%3A//blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern" target="_self" rel="noopener" aria-label="E-Mail">
+        <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--medium"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>E-Mail</div>
+      </a>
+
+  </div>
+</div>
+
+<div id="comments" class="post-comment-count">
+  
+  <a class="btn btn-outline-secondary" href="../../celery-and-the-flask-application-factory-pattern.html#comments">78 comments</a>
+  
+</div>
+
+
+<div class="comments">
+  <ul>
+    
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#26</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-02-18T06:36:17Z" data-function="fromNow" data-refresh="0" style="display: none">2016-02-18T06:36:17Z</span>
+  </p>
+  <div>
+    <p>@Nikolay: I believe Celery needs to know the broker from the start, yes. Not sure I understand where the circular import is. Can you show me an example?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/a12cca5782425f9e4530f8eb6af2f332?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#27</span> <span class="badge text-bg-warning">Jatayu</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-03-02T13:23:31Z" data-function="fromNow" data-refresh="0" style="display: none">2016-03-02T13:23:31Z</span>
+  </p>
+  <div>
+    <p>Thanks Miguel.</p>
+<p>How many Flask app instances running in this scenario ?</p>
+<p>Is there a large Flask server running as the main application serving webpages/forms etc, and a separate Flask app running the Celery?</p>
+<p>Or are they one and the same Flask instance ?</p>
+<p>Is it even possible to have 2 Flask instance like I mentioned, and control the Celery from the other Flask instance ?</p>
+<p>What is the drawback of running Celery in the same Flask instance that serve the main we forms etc ?</p>
+<p>Thank you for Any hints/answer.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/81b7764db4cee52c78b3547047117c62?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#28</span> <span class="badge text-bg-warning">Jeremy </span> said
+    
+    <span class="flask-moment" data-timestamp="2016-03-02T22:00:50Z" data-function="fromNow" data-refresh="0" style="display: none">2016-03-02T22:00:50Z</span>
+  </p>
+  <div>
+    <p>I just want to say THANK YOU SOOOO MUCH!!!!. I've just restructured an application to use application factories, blueprints and celery. The factories and blueprint took a bit of time to fully grasp and a LOT of thinking about how to properly do this without circular imports. After I got the app fully configured, I thought I was done until I tried to run the app and no celery tasks were running. I've spent hours of frustration on this. Scrapped the application factory idea completely. I even had come across this post and didn't take the time to fully read it like I should(Frustration does weird things to brain) I then fully re-read this blog post and placed the celery object in my app/<strong>init</strong>.py and configured it per your recommendations within the create_app function. I then just imported the celery object to my tasks module and created the <a href="http://celery_worker.py/" rel="nofollow">celery_worker.py</a> module per your requirements. I still don't fully understand why the need to import the celery object into the celery_worker since it's not being used and I will continue to do research on this, but GEE GOLLY WILKERS BATMAN! IT WORKSSS!!! FINALLYYYY!!! THANK U THANK U THANK UUUUUUUU!!!! None of my ideas were working. Either creating circular imports or just flat out crashing. Not sure how you came up with this design but you're a GOD SEND!!!</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#29</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-03-05T03:08:17Z" data-function="fromNow" data-refresh="0" style="display: none">2016-03-05T03:08:17Z</span>
+  </p>
+  <div>
+    <p>@Jatayu: The main server has one application instance. The celery worker(s) have each one application instance. You can't run Celery on the same app instance as the main application, since Celery worker(s) run on separate processes.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/cc8c50c2f1b500b89569f25ee9a4a72d?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#30</span> <span class="badge text-bg-warning">zou</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-08-29T08:40:42Z" data-function="fromNow" data-refresh="0" style="display: none">2016-08-29T08:40:42Z</span>
+  </p>
+  <div>
+    <p>hi Miguel Grinberg<br>
+when i use:<br>
+@celery.task(bind=True)<br>
+def mysqlTomongoDB(self, id):<br>
+    job = JobInfo.query.filter_by(id=id).first()<br>
+    config = job.to_josn()<br>
+I encountered this problem：RuntimeError: application not registered on db instance and no application bound to current context<br>
+i use celery and flask usage like you</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/02520a2887d51e742854c7286ad39ab8?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#31</span> <span class="badge text-bg-warning">E Rodriguez</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-09-07T11:44:54Z" data-function="fromNow" data-refresh="0" style="display: none">2016-09-07T11:44:54Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>How could I perform database operations in my celery tasks? I am struggling with the db session and app context :/</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#32</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-09-10T17:42:17Z" data-function="fromNow" data-refresh="0" style="display: none">2016-09-10T17:42:17Z</span>
+  </p>
+  <div>
+    <p>@zou: any time you use the database, you need to do so while an application context is active. This is how the database instance knows where to go look for the database settings you have in the configuration.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#33</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-09-10T17:52:18Z" data-function="fromNow" data-refresh="0" style="display: none">2016-09-10T17:52:18Z</span>
+  </p>
+  <div>
+    <p>@E: you need to use an application instance to push an application context:</p>
+<p>with app.app_context():<br>
+    # you can use the db here</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d54be2579f8842981743b8aef758602c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#34</span> <span class="badge text-bg-warning">TDog</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-11-07T22:36:38Z" data-function="fromNow" data-refresh="0" style="display: none">2016-11-07T22:36:38Z</span>
+  </p>
+  <div>
+    <p>Hi Miguel,</p>
+<p>Thank you! The above steps seem to work fine, but Celery 3.1.24 gave me a warning about avoiding the pickle serializer for security reasons. As suggested I've configured it like this:</p>
+<p>CELERY_ACCEPT_CONTENT = ['json']</p>
+<p>But now when I attempt to run a task I get this:</p>
+<p>CRITICAL/MainProcess] Can't decode message body: ContentDisallowed('Refusing to deserialize untrusted content of type pickle (application/x-python-serialize)',) [type:'application/x-python-serialize' encoding:'binary' headers:{}]</p>
+<p>I discovered I might have to configure it more like so:</p>
+<p>CELERY_TASK_SERIALIZER = 'json'<br>
+CELERY_RESULT_SERIALIZER = 'json'</p>
+<p>But I still get the same error as above? Do you have any advice?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#35</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-11-08T04:45:21Z" data-function="fromNow" data-refresh="0" style="display: none">2016-11-08T04:45:21Z</span>
+  </p>
+  <div>
+    <p>@TDog: the error seems to suggest the Flask server is sending pickled tasks, which the Celery server rejects. Have you updated both sides with the configuration change to use json?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/d54be2579f8842981743b8aef758602c?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#36</span> <span class="badge text-bg-warning">TDog</span> said
+    
+    <span class="flask-moment" data-timestamp="2016-11-11T06:42:15Z" data-function="fromNow" data-refresh="0" style="display: none">2016-11-11T06:42:15Z</span>
+  </p>
+  <div>
+    <p>@Miguel: thanks, I was accidentally importing a random celery instance from another module, I suspect this was why.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b34459223ccc26e561469c0f5080add0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#37</span> <span class="badge text-bg-warning">Andrey</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-01-29T12:35:34Z" data-function="fromNow" data-refresh="0" style="display: none">2017-01-29T12:35:34Z</span>
+  </p>
+  <div>
+    <p>Hello, Miguel.<br>
+Thank you for this article.<br>
+Could you please say a couple of words (maybe another wonderful article..?) about the testing process?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#38</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-01-30T17:59:36Z" data-function="fromNow" data-refresh="0" style="display: none">2017-01-30T17:59:36Z</span>
+  </p>
+  <div>
+    <p>@Andrey: What testing process? Do you mean in general? You may want to look at my Flack project on GitHub. This is a project with Celery integration and has good unit test coverage.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b34459223ccc26e561469c0f5080add0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#39</span> <span class="badge text-bg-warning">Andrey</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-01-31T10:06:13Z" data-function="fromNow" data-refresh="0" style="display: none">2017-01-31T10:06:13Z</span>
+  </p>
+  <div>
+    <p>I'll study your code on <a href="http://github.com/" rel="nofollow">github.com</a> better.</p>
+<p>Now, I'll try to explain what I do not understand yet.<br>
+For example, we have this function "send_email" and use it in a view function. How can I test this view function? Do I need to start the Celery worker first? Is there any peculiarity how to start it, where to start it and with what app_context? Will the message be sent inside the test? Or how to prevent sending message while testing?</p>
+<p>And I have one more question about the "send_async_email" function in your example... It gets the instance of flask_mail.Message as its argument. I can't understand how it works and has no conflict with the message serialization. I just try to use Celery the first time and write my own code with no experience with Celery. That is why I have so many question... I am sorry.</p>
+<p>And thank you in advance for your answers. They are very important.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#40</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-01-31T19:03:56Z" data-function="fromNow" data-refresh="0" style="display: none">2017-01-31T19:03:56Z</span>
+  </p>
+  <div>
+    <p>@Andrey: i think you can go about it in different ways. My preference for testing code that launches Celery tasks is to test both sides independently. On the server side you can mock the Celery task. This eliminates the need to have Celery running during unit tests, which complicates things a lot.</p>
+<p>Regarding serialization, Celery provides several methods to serialize arguments. Back when I did this, pickle was the default. This method can serialize complex objects, so that worked well for me. These days, Celery changed the default, so pickle needs to be explicitly selected if you want to use it. Or as a better alternative, you can send the data as a dictionary and create the Message object directly on the Celery task.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b34459223ccc26e561469c0f5080add0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#41</span> <span class="badge text-bg-warning">Andrey</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-01T13:56:43Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-01T13:56:43Z</span>
+  </p>
+  <div>
+    <blockquote>
+<p>On the server side you can mock the Celery task.</p>
+</blockquote>
+<p>This magic is unreachable for me now. But I'll do my best. :)</p>
+<p>OK. Thank you very much, Miguel.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/295c68a2e7f764f4ce981f03a0d2bf10?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#42</span> <span class="badge text-bg-warning">Greg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-03T21:30:17Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-03T21:30:17Z</span>
+  </p>
+  <div>
+    <p>Hey Miguel!</p>
+<p>This is a great tutorial. I am using your application factory pattern and my Flask application runs as a wsgi application. I seem to be running into the following issue when I attempt to run Celery within the application context:</p>
+<p>[2017-02-03 16:24:27,915: CRITICAL/MainProcess] Unrecoverable error: ImportError('No module named http',)<br>
+Traceback (most recent call last):<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/worker/<a href="http://worker.py/" rel="nofollow">worker.py</a>", line 203, in start<br>
+    self.blueprint.start(self)<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/<a href="http://bootsteps.py/" rel="nofollow">bootsteps.py</a>", line 115, in start<br>
+    self.on_start()<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/apps/<a href="http://worker.py/" rel="nofollow">worker.py</a>", line 143, in on_start<br>
+    self.emit_banner()<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/apps/<a href="http://worker.py/" rel="nofollow">worker.py</a>", line 158, in emit_banner<br>
+    ' \n', self.startup_info(artlines=not use_image))),<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/apps/<a href="http://worker.py/" rel="nofollow">worker.py</a>", line 221, in startup_info<br>
+    results=self.app.backend.as_uri(),<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/kombu/utils/<a href="http://objects.py/" rel="nofollow">objects.py</a>", line 44, in <strong>get</strong><br>
+    value = obj.<strong>dict</strong>[self.<strong>name</strong>] = self.<strong>get(obj)<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/app/<a href="http://base.py/" rel="nofollow">base.py</a>", line 1182, in backend<br>
+    return self._get_backend()<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/app/<a href="http://base.py/" rel="nofollow">base.py</a>", line 900, in _get_backend<br>
+    self.loader)<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/app/<a href="http://backends.py/" rel="nofollow">backends.py</a>", line 65, in by_url<br>
+    return by_name(backend, loader), url<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/celery/app/<a href="http://backends.py/" rel="nofollow">backends.py</a>", line 45, in by_name<br>
+    cls = symbol_by_name(backend, aliases)<br>
+  File "/apps/env27/virtualenv/fl_program/lib/python2.7/site-packages/kombu/utils/<a href="http://imports.py/" rel="nofollow">imports.py</a>", line 56, in symbol_by_name<br>
+    module = imp(module_name, package=package, **kwargs)<br>
+  File "/usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/2.7/lib/python2.7/importlib/__init</strong>.py", line 37, in import_module<br>
+<strong>import</strong>(name)<br>
+ImportError: No module named http</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#43</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-04T07:58:07Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-04T07:58:07Z</span>
+  </p>
+  <div>
+    <p>@Greg: looks like a Python 2 vs Python 3 issue. I recommend that you either use a newer version of Python (3.5 or 3.6), or else downgrade Celery to an older release. You can look at the requirements file in the GitHub project to see what version I used back when i wrote this article.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b34459223ccc26e561469c0f5080add0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#44</span> <span class="badge text-bg-warning">Andrey</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-12T14:26:15Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-12T14:26:15Z</span>
+  </p>
+  <div>
+    <p>Hello, Miguel. I am back, and I definitely need your help. Could you please help me?</p>
+<p>My problem is this: <a href="https://github.com/tgi-f/journal" rel="nofollow">https://github.com/tgi-f/journal</a></p>
+<p>This is my current application at the start point. And actually it works well on my local machine with the development server. But I tried to deploy this application on VirtualBox with Ubuntu-16.04-server. And there this application shows CSRF Error.</p>
+<p>Please, help me understand what I did wrong, how to debug the error and fix it. More information about the deployment and the error I got is available here:</p>
+<p><a href="http://avm.pythonanywhere.com/RJMjaB" rel="nofollow">http://avm.pythonanywhere.com/RJMjaB</a></p>
+<p>I am determined to answer any of your question and explain every letter in my code.<br>
+Thank you in advance...</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#45</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-12T16:47:47Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-12T16:47:47Z</span>
+  </p>
+  <div>
+    <p>@Audrey: can't really tell, but you can debug this on your side. Just look at the requests that the browser is sending to verify if the correct CSRF token is being sent. I think that should allow you to find what is the problem.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b34459223ccc26e561469c0f5080add0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#46</span> <span class="badge text-bg-warning">Andrey</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-13T03:11:18Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-13T03:11:18Z</span>
+  </p>
+  <div>
+    <blockquote>
+<p>Just look at the requests that the browser is sending to verify if the correct CSRF token is being sent.</p>
+</blockquote>
+<p>Actually it is being sent. There is the CSRF token in the request form and cookies in the request headers. But why they do not match? Some strange and devastating thing happens with cookies. I have no idea what to do. Is the configuration of my app right and correct?</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/89fbe3bf3a71de6c32c34adb65059e5e?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#47</span> <span class="badge text-bg-danger">Miguel Grinberg</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-13T06:07:06Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-13T06:07:06Z</span>
+  </p>
+  <div>
+    <p>@Audrey: I don't see anything wrong in your configuration, at least nothing obvious. If you can see a CSRF token submitted with the form, then will need to decode the session cookie, and see what other token the server was expecting. This isn't really that difficult, the server comes up with a token, puts it in the form that goes out to the client, and also in the session cookie, then when the client submits it back, the session and the form tokens must match. That's all there is to it, so you need to find where is the disconnect.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b34459223ccc26e561469c0f5080add0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#48</span> <span class="badge text-bg-warning">Andrey</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-13T09:30:05Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-13T09:30:05Z</span>
+  </p>
+  <div>
+    <p>OK, thank you, Miguel... I suspect I have to read the manual on nginx and test gunicorn on my local machine in place of the development server. The strange thing is, the error I got is not stable. I'll think about your words and see what I can do. If you find something bad in my code, please, let me know.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b34459223ccc26e561469c0f5080add0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#49</span> <span class="badge text-bg-warning">Andrey</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-02-17T10:19:18Z" data-function="fromNow" data-refresh="0" style="display: none">2017-02-17T10:19:18Z</span>
+  </p>
+  <div>
+    <p>It's me again. I tried gunicorn on my local machine in place of the development server. It does not work. At least I know who is responsible now.</p>
+  </div>
+</div>
+    </li>
+    
+    <li>
+      <div class="comment-thumbnail"><img class="rounded" src="https://gravatar.com/avatar/b34459223ccc26e561469c0f5080add0?s=60&amp;d=identicon"></div>
+<div class="comment-body">
+  
+  <p>
+    
+    <span class="badge bg-secondary">#50</span> <span class="badge text-bg-warning">Andrey</span> said
+    
+    <span class="flask-moment" data-timestamp="2017-03-11T14:32:05Z" data-function="fromNow" data-refresh="0" style="display: none">2017-03-11T14:32:05Z</span>
+  </p>
+  <div>
+    <p>Hello, Miguel. It is me again, and my issue got solved. It turned out Gunicorn was not guilty. I had to change the configuration of my application and the way how Celery was initialized. Now everything works fine and there is no CSRF errors on my local machine and virtual server where I test the solution.</p>
+  </div>
+</div>
+    </li>
+    
+  </ul>
+</div>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="1.html#comments">&laquo;</a></li>
+    <li class="page-item"><a class="page-link" href="3.html#comments">&raquo;</a></li>
+    <li class="page-item"><a class="page-link" href="0.html#comments">&raquo;&raquo;</a></li>
+  </ul>
+</nav>
+
+
+
+<div id="comment-form">
+  <h3>Leave a Comment</h3>
+
+  
+  
+  
+
+  
+<form action="#comment-form" method="post">
+  <input id="url" name="url" type="hidden" value="">
+<input id="csrf_token" name="csrf_token" type="hidden" value="IjQyYjY5YzZlNTcyYjFkMTVlZGRkOWJjYjA3ZmFlYWFiNTg3YmU5ODki.Zxdnlg.uFYF5lclQjBltvFbqGScBSjBQdo">
+    
+  <div class="mb-3">
+    <label class="form-label" for="name">Name</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="name" name="name" required type="text" value="">
+    </div>
+  </div>
+
+    
+    
+  <div class="mb-3">
+    <label class="form-label" for="email">Email</label>
+    <div class="input-group has-validation">
+      <input class="form-control" id="email" name="email" required type="text" value="">
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="comment">Comment</label>
+    <div class="input-group has-validation">
+      <textarea class="form-control" id="comment" name="comment" required>
+</textarea>
+    </div>
+  </div>
+
+    
+  <div class="mb-3">
+    <label class="form-label" for="captcha">Captcha</label>
+    <div class="input-group has-validation">
+      
+<script src='https://www.google.com/recaptcha/api.js' async defer></script>
+<div class="g-recaptcha" data-sitekey="6Ld5Zs4SAAAAAOY0DOi4r18bgHlEaz41qAoRf__S"></div>
+
+    </div>
+  </div>
+
+    
+  <input class="btn btn-primary mb-3" id="submit" name="submit" type="submit" value="Submit">
+
+      
+</form>
+
+</div>
+
+
+</div>
+
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div id="sidebar">
+        
+          
+  
+
+
+
+<div class="card">
+  
+  
+  
+  
+  <div class="card-header">
+    <div class="row">
+      <div class="col">The Flask Mega-Tutorial</div>
+      <div class="col text-end">
+        <a href="../../announcing-the-flask-mega-tutorial-2024-edition.html">
+          <h5 style="margin-bottom: 0px"><span class="badge text-bg-warning">New 2024 Edition!</span></h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <a class="card-book-cover" href="https://amzn.to/3MQffrm">
+    <img src="../../../static/mega-tutorial-2024-small.png" alt="The New Flask Mega-Tutorial">
+  </a>
+  <div class="card-body">
+    <p class="card-text">If you would you like to support my work on my <a href="../../the-flask-mega-tutorial-part-i-hello-world.html">Flask Mega-Tutorial series</a> on this blog and as a reward have access to the complete tutorial nicely structured as a book and/or a set of videos, you can now order it from my <a href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Courses</a> site or from <a href="https://amzn.to/3MQffrm">Amazon</a>.</p>
+  </div>
+  <div class="card-body">
+    <a class="card-link" href="https://amzn.to/3MQffrm">Click here to get the Book!</a><br />
+    <a class="card-link" href="https://courses.miguelgrinberg.com/p/flask-mega-tutorial">Click here to get the Video Course!</a>
+  </div>
+
+  
+</div>
+        
+        <div class="card">
+  <div class="card-header">About Miguel</div>
+  <div class="card-body">
+    <img style="float: right; margin: 0px 8px 8px 0px; padding: 4px; border: 1px solid #ccc;" src="../../../static/miguel.jpg" />
+    <p class="card-text">Welcome to my blog!</p>
+    <p class="card-text">I'm a software engineer and technical writer, currently living in Drogheda, Ireland.</p>
+    <p class="card-text">You can also find me on <a href="https://twitter.com/miguelgrinberg">Twitter</a>, <a href="https://mstdn.social/@miguelgrinberg">Mastodon</a>, <a href="https://github.com/miguelgrinberg">Github</a>, <a href="http://www.linkedin.com/in/miguelgrinberg">LinkedIn</a>, <a href="https://youtube.com/miguelgrinberg">YouTube</a>, <a href="https://www.facebook.com/miguelgrinbergblog">Facebook</a> and <a href="https://patreon.com/miguelgrinberg">Patreon</a>.</p>
+    <p class="card-text">Thank you for visiting!</p>
+  </div>
+</div>
+        
+        <div class="card" id="categories">
+  <div class="card-header">Categories</div>
+  <div class="card-body">
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AI/feed"><img src="../../../static/rss-small.png" title="AI RSS Feed" label="AI RSS Feed" alt="AI RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AI" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AI" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/AWS/feed"><img src="../../../static/rss-small.png" title="AWS RSS Feed" label="AWS RSS Feed" alt="AWS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/AWS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="AWS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Arduino/feed"><img src="../../../static/rss-small.png" title="Arduino RSS Feed" label="Arduino RSS Feed" alt="Arduino RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Arduino" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Arduino" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Authentication/feed"><img src="../../../static/rss-small.png" title="Authentication RSS Feed" label="Authentication RSS Feed" alt="Authentication RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Authentication" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Authentication" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Blog/feed"><img src="../../../static/rss-small.png" title="Blog RSS Feed" label="Blog RSS Feed" alt="Blog RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Blog" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Blog" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/C++/feed"><img src="../../../static/rss-small.png" title="C++ RSS Feed" label="C++ RSS Feed" alt="C++ RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/C++" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="C++" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/CSS/feed"><img src="../../../static/rss-small.png" title="CSS RSS Feed" label="CSS RSS Feed" alt="CSS RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/CSS" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="CSS" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Cloud/feed"><img src="../../../static/rss-small.png" title="Cloud RSS Feed" label="Cloud RSS Feed" alt="Cloud RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Cloud" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Cloud" /> <small><em>10</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Database/feed"><img src="../../../static/rss-small.png" title="Database RSS Feed" label="Database RSS Feed" alt="Database RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Database" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Database" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Docker/feed"><img src="../../../static/rss-small.png" title="Docker RSS Feed" label="Docker RSS Feed" alt="Docker RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Docker" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Docker" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Filmmaking/feed"><img src="../../../static/rss-small.png" title="Filmmaking RSS Feed" label="Filmmaking RSS Feed" alt="Filmmaking RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Filmmaking" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Filmmaking" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Flask/feed"><img src="../../../static/rss-small.png" title="Flask RSS Feed" label="Flask RSS Feed" alt="Flask RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Flask" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Flask" /> <small><em>126</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Games/feed"><img src="../../../static/rss-small.png" title="Games RSS Feed" label="Games RSS Feed" alt="Games RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Games" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Games" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Heroku/feed"><img src="../../../static/rss-small.png" title="Heroku RSS Feed" label="Heroku RSS Feed" alt="Heroku RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Heroku" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Heroku" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/IoT/feed"><img src="../../../static/rss-small.png" title="IoT RSS Feed" label="IoT RSS Feed" alt="IoT RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/IoT" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="IoT" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/JavaScript/feed"><img src="../../../static/rss-small.png" title="JavaScript RSS Feed" label="JavaScript RSS Feed" alt="JavaScript RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/JavaScript" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="JavaScript" /> <small><em>35</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/MicroPython/feed"><img src="../../../static/rss-small.png" title="MicroPython RSS Feed" label="MicroPython RSS Feed" alt="MicroPython RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/MicroPython" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="MicroPython" /> <small><em>9</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microdot/feed"><img src="../../../static/rss-small.png" title="Microdot RSS Feed" label="Microdot RSS Feed" alt="Microdot RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microdot" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microdot" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Microservices/feed"><img src="../../../static/rss-small.png" title="Microservices RSS Feed" label="Microservices RSS Feed" alt="Microservices RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Microservices" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Microservices" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Movie Reviews/feed"><img src="../../../static/rss-small.png" title="Movie Reviews RSS Feed" label="Movie Reviews RSS Feed" alt="Movie Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Movie Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Movie Reviews" /> <small><em>5</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/OpenStack/feed"><img src="../../../static/rss-small.png" title="OpenStack RSS Feed" label="OpenStack RSS Feed" alt="OpenStack RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/OpenStack" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="OpenStack" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Personal/feed"><img src="../../../static/rss-small.png" title="Personal RSS Feed" label="Personal RSS Feed" alt="Personal RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Personal" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Personal" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Photography/feed"><img src="../../../static/rss-small.png" title="Photography RSS Feed" label="Photography RSS Feed" alt="Photography RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Photography" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Photography" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Product Reviews/feed"><img src="../../../static/rss-small.png" title="Product Reviews RSS Feed" label="Product Reviews RSS Feed" alt="Product Reviews RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Product Reviews" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Product Reviews" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Programming/feed"><img src="../../../static/rss-small.png" title="Programming RSS Feed" label="Programming RSS Feed" alt="Programming RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Programming" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Programming" /> <small><em>187</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Project Management/feed"><img src="../../../static/rss-small.png" title="Project Management RSS Feed" label="Project Management RSS Feed" alt="Project Management RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Project Management" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Project Management" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Python/feed"><img src="../../../static/rss-small.png" title="Python RSS Feed" label="Python RSS Feed" alt="Python RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Python" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Python" /> <small><em>169</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/REST/feed"><img src="../../../static/rss-small.png" title="REST RSS Feed" label="REST RSS Feed" alt="REST RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/REST" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="REST" /> <small><em>7</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Rackspace/feed"><img src="../../../static/rss-small.png" title="Rackspace RSS Feed" label="Rackspace RSS Feed" alt="Rackspace RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Rackspace" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Rackspace" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Raspberry Pi/feed"><img src="../../../static/rss-small.png" title="Raspberry Pi RSS Feed" label="Raspberry Pi RSS Feed" alt="Raspberry Pi RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Raspberry Pi" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Raspberry Pi" /> <small><em>8</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/React/feed"><img src="../../../static/rss-small.png" title="React RSS Feed" label="React RSS Feed" alt="React RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/React" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="React" /> <small><em>18</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Robotics/feed"><img src="../../../static/rss-small.png" title="Robotics RSS Feed" label="Robotics RSS Feed" alt="Robotics RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Robotics" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Robotics" /> <small><em>6</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Security/feed"><img src="../../../static/rss-small.png" title="Security RSS Feed" label="Security RSS Feed" alt="Security RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Security" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Security" /> <small><em>12</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Video/feed"><img src="../../../static/rss-small.png" title="Video RSS Feed" label="Video RSS Feed" alt="Video RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Video" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Video" /> <small><em>22</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/WebSocket/feed"><img src="../../../static/rss-small.png" title="WebSocket RSS Feed" label="WebSocket RSS Feed" alt="WebSocket RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/WebSocket" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="WebSocket" /> <small><em>2</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Webcast/feed"><img src="../../../static/rss-small.png" title="Webcast RSS Feed" label="Webcast RSS Feed" alt="Webcast RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Webcast" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Webcast" /> <small><em>3</em></small>
+      </form>
+    </div>
+    
+    <div class="category">
+      <a href="https://blog.miguelgrinberg.com/category/Windows/feed"><img src="../../../static/rss-small.png" title="Windows RSS Feed" label="Windows RSS Feed" alt="Windows RSS Feed" /></a>
+      <form action="https://blog.miguelgrinberg.com/category/Windows" method="POST">
+        <input type="submit" class="btn btn-primary btn-sm" value="Windows" /> <small><em>1</em></small>
+      </form>
+    </div>
+    
+  </div>
+</div>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div id="footer">
+    
+    <p>&copy; 2012-<script type="text/javascript">document.write(new Date().getFullYear());</script> by Miguel Grinberg. All rights reserved. <a href="mailto:webmaster _at_ miguelgrinberg _dot_ com">Questions?</a></p>
+  </div>
+</div>
+
+  
+    <script src="../../../../cdn.jsdelivr.net/npm/bootstrap%405.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../../../static/prettify.js"></script>
+  <script src="../../../../cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js" integrity="sha512-42PE0rd+wZ2hNXftlM78BSehIGzezNeQuzihiBCvUEB3CVxHvsShF86wBWwQORNxNINlBPuq7rG4WWhNiTVHFg==" crossorigin="anonymous"></script>
+
+<script>
+moment.locale("en");
+function flask_moment_render(elem) {{
+    const timestamp = moment(elem.dataset.timestamp);
+    const func = elem.dataset.function;
+    const format = elem.dataset.format;
+    const timestamp2 = elem.dataset.timestamp2;
+    const no_suffix = elem.dataset.nosuffix;
+    const units = elem.dataset.units;
+    let args = [];
+    if (format)
+        args.push(format);
+    if (timestamp2)
+        args.push(moment(timestamp2));
+    if (no_suffix)
+        args.push(no_suffix);
+    if (units)
+        args.push(units);
+    elem.textContent = timestamp[func].apply(timestamp, args);
+    elem.classList.remove('flask-moment');
+    elem.style.display = "";
+}}
+function flask_moment_render_all() {{
+    const moments = document.querySelectorAll('.flask-moment');
+    moments.forEach(function(moment) {{
+        flask_moment_render(moment);
+        const refresh = moment.dataset.refresh;
+        if (refresh && refresh > 0) {{
+            (function(elem, interval) {{
+                setInterval(function() {{
+                    flask_moment_render(elem);
+                }}, interval);
+            }})(moment, refresh);
+        }}
+    }})
+}}
+document.addEventListener("DOMContentLoaded", flask_moment_render_all);
+</script>
+
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20EHZP9GRZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20EHZP9GRZ');
+  </script>
+  
+  <script type="text/javascript">
+    function setThemeUI() {
+      document.getElementById('select-theme-auto').classList.remove('active');
+      document.getElementById('select-theme-light').classList.remove('active');
+      document.getElementById('select-theme-dark').classList.remove('active');
+      const theme = getPreferredTheme();
+      const actualTheme = document.documentElement.getAttribute('data-bs-theme', 'light');
+      document.getElementById('select-theme-' + theme).classList.add('active');
+      document.getElementById('current-theme').href.baseVal = `#icon-theme-${actualTheme}`;
+    };
+
+    function updateTheme(theme) {
+      if (theme === 'auto') {
+        localStorage.removeItem('theme')
+      }
+      else {
+        localStorage.setItem('theme', theme)
+      }
+      setTheme(getPreferredTheme());
+    }
+
+    setThemeUI();
+
+    const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+    darkModePreference.addEventListener("change", e => {
+      if (getPreferredTheme() === 'auto') {
+        setTheme('auto');
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // add prettyprint class to all <pre><code></code></pre> blocks
+      let prettify = false;
+      document.querySelectorAll('div.post-body pre code').forEach((code) => {
+        code.parentNode.classList.add('prettyprint');
+        prettify = true;
+      });
+      prettyPrint();
+    });
+  </script>
+
+  </body>
+
+<!-- Mirrored from blog.miguelgrinberg.com/post/celery-and-the-flask-application-factory-pattern/page/2 by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 22 Oct 2024 08:51:40 GMT -->
+</html>
