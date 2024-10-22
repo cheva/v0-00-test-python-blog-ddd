@@ -1,7 +1,10 @@
 Package                       Version
 ----------------------------- ---------
+aiosmtpd                      1.4.6
 alabaster                     0.7.16
 alembic                       1.13.3
+atpublic                      5.0
+attrs                         24.2.0
 babel                         2.16.0
 blinker                       1.8.2
 certifi                       2024.7.4
