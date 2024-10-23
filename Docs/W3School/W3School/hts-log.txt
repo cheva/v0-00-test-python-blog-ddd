@@ -1,25 +1,338 @@
-HTTrack3.49-2+htsswf+htsjava launched on Wed, 23 Oct 2024 13:12:44 at https://www.w3schools.com/python/ +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar -githubassets.com* -githubassets.com/* -gitlab.com* -gitlab.com/* -github.com* -github.com/* -*githubassets.com* -*githubassets.com/* -*gitlab.com* -*gitlab.com/* -*github.com* -*github.com/* -google.com -google.com/* -*.google.com -*.google.com/* -www.npmjs.com -www.npmjs.com/* -npmjs.com -npmjs.com/* -*.www.npmjs.com -*.www.npmjs.com/* -*.npmjs.com -*.npmjs.com/* -developer.mozilla.org -developer.mozilla.org/* -*.developer.mozilla.org/en-US -*.developer.mozilla.org/en-US/* -https://www.w3schools.com/* +https://www.w3schools.com/python/*
-(winhttrack -qwC2%Ps2u1%s%uN0%I0p3DaK0H0%kf2A25000%f#f -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" https://www.w3schools.com/python/ -O1 "C:\Projects\v0-00-test-python-blog-ddd\Docs\W3School\W3School" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar -githubassets.com* -githubassets.com/* -gitlab.com* -gitlab.com/* -github.com* -github.com/* -*githubassets.com* -*githubassets.com/* -*gitlab.com* -*gitlab.com/* -*github.com* -*github.com/* -google.com -google.com/* -*.google.com -*.google.com/* -www.npmjs.com -www.npmjs.com/* -npmjs.com -npmjs.com/* -*.www.npmjs.com -*.www.npmjs.com/* -*.npmjs.com -*.npmjs.com/* -developer.mozilla.org -developer.mozilla.org/* -*.developer.mozilla.org/en-US -*.developer.mozilla.org/en-US/* -https://www.w3schools.com/* +https://www.w3schools.com/python/* )
+HTTrack3.49-2+htsswf+htsjava launched on Wed, 23 Oct 2024 17:28:52 at https://www.w3schools.com/python/ +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar -githubassets.com* -githubassets.com/* -gitlab.com* -gitlab.com/* -github.com* -github.com/* -*githubassets.com* -*githubassets.com/* -*gitlab.com* -*gitlab.com/* -*github.com* -*github.com/* -google.com -google.com/* -*.google.com -*.google.com/* -www.npmjs.com -www.npmjs.com/* -npmjs.com -npmjs.com/* -*.www.npmjs.com -*.www.npmjs.com/* -*.npmjs.com -*.npmjs.com/* -developer.mozilla.org -developer.mozilla.org/* -*.developer.mozilla.org/en-US -*.developer.mozilla.org/en-US/* -https://www.w3schools.com/* +https://www.w3schools.com/python/*
+(winhttrack -qiC1%Ps2u1%s%uN0%I0p3DaK0H0%kf2A25000%f#f -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" https://www.w3schools.com/python/ -O1 "C:\Projects\v0-00-test-python-blog-ddd\Docs\W3School\W3School" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar -githubassets.com* -githubassets.com/* -gitlab.com* -gitlab.com/* -github.com* -github.com/* -*githubassets.com* -*githubassets.com/* -*gitlab.com* -*gitlab.com/* -*github.com* -*github.com/* -google.com -google.com/* -*.google.com -*.google.com/* -www.npmjs.com -www.npmjs.com/* -npmjs.com -npmjs.com/* -*.www.npmjs.com -*.www.npmjs.com/* -*.npmjs.com -*.npmjs.com/* -developer.mozilla.org -developer.mozilla.org/* -*.developer.mozilla.org/en-US -*.developer.mozilla.org/en-US/* -https://www.w3schools.com/* +https://www.w3schools.com/python/* )
 
 Information, Warnings and Errors reported for this mirror:
 note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
 	such as username/password authentication for websites mirrored in this project
 	do not share these files/folders if you want these information to remain private
 
-13:18:40	Error: 	"Bad Request" (400) at link https://www.googletagmanager.com/gtm.js?id= (from https://www.w3schools.com/python/)
-13:18:40	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/python/ (from https://www.w3schools.com/python/)
-13:20:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/w3.css (from https://www.w3schools.com/python/)
-17:10:32	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/w3.js (from https://www.w3schools.com/python/)
-17:10:35	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/node.js (from https://www.w3schools.com/python/)
-17:24:19	Error: 	Exit requested by shell or user
-17:24:20	Warning: 	File not added due to mirror cancel: https://www.w3schools.com/python/trypandas.asp?filename=demo_ml_coef
-17:24:39	Error: 	Exit requested by shell or user
-17:24:39	Error: 	"" (-1) at link https://www.w3schools.com/python/python_ref_string.asp (from https://www.w3schools.com/python/)
-17:24:39	Error: 	Exit requested by shell or user
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/w3-2.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/default.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/node.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_reference.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_exercises.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_quiz.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_exercises.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_quiz.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_exercises.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_quiz.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_exercises.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_quiz.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_arrays.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/ref_func_input.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_numbers.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_server.html.tmp already exists
+17:28:53	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/trypython99ba.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_intro.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_getstarted.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_syntax.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_comments.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_variables.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/React.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_variables_names.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_variables_multiple.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_variables_output.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_variables_global.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_variables_exercises.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_datatypes.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_casting.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_strings.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_strings_slicing.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_strings_modify.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_strings_concatenate.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_strings_format.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_strings_escape.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_strings_methods.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_strings_exercises.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_booleans.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_operators.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_access.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_change.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_add.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_remove.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_loop.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_comprehension.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_sort.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_copy.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_join.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_methods.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lists_exercises.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_tuples.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_tuples_access.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_tuples_update.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_tuples_unpack.html.tmp already exists
+17:28:54	Error: 	"Bad Request" (400) at link https://www.googletagmanager.com/gtm.js?id= (from https://www.w3schools.com/python/)
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_tuples_loop.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_tuples_join.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_tuples_methods.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_tuples_exercises.html.tmp already exists
+17:28:54	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/python/ (from https://www.w3schools.com/python/)
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_sets.html.tmp already exists
+17:28:54	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_sets_access.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_sets_add.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_sets_remove.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_sets_loop.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_sets_join.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_sets_methods.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_sets_exercises.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_access.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_change.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_add.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_remove.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_loop.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_copy.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_nested.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_methods.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_dictionaries_exercises.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_conditions.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_while_loops.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_for_loops.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_functions.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_lambda.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_classes.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_inheritance.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_iterators.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_polymorphism.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_scope.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_modules.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_datetime.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_math.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_json.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/w3.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_regex.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_pip.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_try_except.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_user_input.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_string_formatting.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_file_handling.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_file_open.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_file_write.html.tmp already exists
+17:28:55	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_file_remove.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_getting_started.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_pyplot.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_plotting.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_markers.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_line.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_labels.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_grid.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_subplot.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_scatter.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_bars.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_histograms.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/matplotlib_pie_charts.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_mean_median_mode.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_standard_deviation.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_percentile.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_data_distribution.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_normal_data_distribution.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_scatterplot.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_linear_regression.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_polynomial_regression.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_multiple_regression.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_scale.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_train_test.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_decision_tree.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_confusion_matrix.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_hierarchial_clustering.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_logistic_regression.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/w3-2.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_grid_search.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_preprocessing.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_k-means.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_bagging.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_cross_validation.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_auc_roc.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ml_knn.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_getstarted.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_create_db.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_create_table.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_insert.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_select.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_where.html.tmp already exists
+17:28:56	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_orderby.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_delete.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_drop_table.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_update.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_limit.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mysql_join.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_getstarted.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_create_db.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_create_collection.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_insert.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_find.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_query.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_sort.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_delete.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_drop_collection.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_update.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_mongodb_limit.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_functions.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_string.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/node.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_list.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_dictionary.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_tuple.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_set.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_file.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_keywords.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_exceptions.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_ref_glossary.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/module_random.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/module_requests.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/module_statistics.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/module_math.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/module_cmath.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_howto_remove_duplicates.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_howto_reverse_string.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_howto_add_two_numbers.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_examples.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_compiler.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_interview_questions.html.tmp already exists
+17:28:57	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_bootcamp.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/python_exam.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/python/index.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy/index.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/pandas/index.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/scipy/index.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_intro.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_getting_started.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_creating_arrays.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_indexing.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_slicing.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_data_types.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_copy_vs_view.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_shape.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_reshape.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_iterating.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_join.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_split.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_search.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_sort.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_array_filter.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_distribution.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_permutation.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_seaborn.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_normal.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_binomial.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_poisson.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_uniform.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_logistic.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_multinomial.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_exponential.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_chisquare.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/w3.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_rayleigh.html.tmp already exists
+17:28:58	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_pareto.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_random_zipf.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_create_function.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_simple_arithmetic.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_rounding_decimals.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_logs.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_summations.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_products.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_differences.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_lcm.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_gcd.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_trigonometric.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_hyperbolic.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_ufunc_set_operations.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_compiler.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/numpy_exam.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/numpy/trypython6919.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/python/index.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/numpy/index.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas/index.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/scipy/index.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/w3-2.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/node.html.tmp already exists
+17:28:59	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_intro.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_getting_started.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_series.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_dataframes.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_csv.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_json.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_analyzing.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_cleaning.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_cleaning_empty_cells.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_cleaning_wrong_format.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_cleaning_wrong_data.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_cleaning_duplicates.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_correlations.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_plotting.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_compiler.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_exam.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/pandas_ref_dataframe.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/pandas/trypandas4cd0.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/python/index.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/numpy/index.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/pandas/index.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy/index.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/w3.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/w3-2.html.tmp already exists
+17:29:00	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/node.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_intro.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_getting_started.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_constants.html.tmp already exists
+17:29:01	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/w3.css (from https://www.w3schools.com/python/)
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_optimizers.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_sparse_data.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_graphs.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_spatial_data.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_matlab_arrays.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_interpolation.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_statistical_significance_tests.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_compiler.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/scipy_exam.html.tmp already exists
+17:29:01	Warning: 	engine: warning: temporary file C:/Projects/v0-00-test-python-blog-ddd/Docs/W3School/W3School/www.w3schools.com/python/scipy/trypython81b2.html.tmp already exists
+17:29:04	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/w3.js (from https://www.w3schools.com/python/)
+17:29:06	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/node.js (from https://www.w3schools.com/python/)
+17:36:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/React.js (from https://www.w3schools.com/python/)
+17:36:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/python/ (from https://www.w3schools.com/python/numpy/)
+17:36:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/numpy/ (from https://www.w3schools.com/python/numpy/)
+17:36:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/pandas/ (from https://www.w3schools.com/python/numpy/)
+17:36:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/scipy/ (from https://www.w3schools.com/python/numpy/)
+17:36:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/w3.css (from https://www.w3schools.com/python/numpy/)
+17:36:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/w3.js (from https://www.w3schools.com/python/numpy/)
+17:36:52	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/node.js (from https://www.w3schools.com/python/numpy/)
+17:39:33	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/python/ (from https://www.w3schools.com/python/pandas/)
+17:39:33	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/numpy/ (from https://www.w3schools.com/python/pandas/)
+17:39:33	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/pandas/ (from https://www.w3schools.com/python/pandas/)
+17:39:33	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/scipy/ (from https://www.w3schools.com/python/pandas/)
+17:39:33	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/w3.css (from https://www.w3schools.com/python/pandas/)
+17:39:33	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/w3.js (from https://www.w3schools.com/python/pandas/)
+17:39:33	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/node.js (from https://www.w3schools.com/python/pandas/)
+17:41:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/python/ (from https://www.w3schools.com/python/scipy/)
+17:41:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/numpy/ (from https://www.w3schools.com/python/scipy/)
+17:41:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/pandas/ (from https://www.w3schools.com/python/scipy/)
+17:41:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/scipy/ (from https://www.w3schools.com/python/scipy/)
+17:41:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/w3.css (from https://www.w3schools.com/python/scipy/)
+17:41:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/w3.js (from https://www.w3schools.com/python/scipy/)
+17:41:43	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/node.js (from https://www.w3schools.com/python/scipy/)
+17:42:38	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/React.js (from https://www.w3schools.com/python/numpy/numpy_exercises.asp)
+17:42:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/React.js (from https://www.w3schools.com/python/pandas/pandas_exercises.asp)
+17:42:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/numpy_quiz.asp (from https://www.w3schools.com/python/pandas/pandas_exercises.asp)
+17:42:42	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/numpy_exam.asp (from https://www.w3schools.com/python/pandas/pandas_exercises.asp)
+17:42:48	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/React.js (from https://www.w3schools.com/python/scipy/scipy_exercises.php)
+17:43:24	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/check.svg (from https://www.w3schools.com/python/python_server.asp)
+18:05:23	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/default.asp (from https://www.w3schools.com/python/scipy/scipy_compiler.php)
+18:05:25	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/exercises/getstarted.jpg (from https://www.w3schools.com/python/numpy/exercise.asp?x=xrcise_intro1)
+18:05:25	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/GET (from https://www.w3schools.com/python/numpy/exercise.asp?x=xrcise_intro1)
+18:05:25	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/numpy/api.exercise.set (from https://www.w3schools.com/python/numpy/exercise.asp?x=xrcise_intro1)
+18:05:25	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/GET (from https://www.w3schools.com/python/pandas/exercise.asp?x=xrcise_intro1)
+18:05:25	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/pandas/api.exercise.set (from https://www.w3schools.com/python/pandas/exercise.asp?x=xrcise_intro1)
+18:05:26	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/exercises/getstarted.jpg (from https://www.w3schools.com/python/scipy/exercise.php?x=xrcise_getting_started1)
+18:05:26	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/exercises/intro.jpg (from https://www.w3schools.com/python/scipy/exercise.php?x=xrcise_getting_started1)
+18:05:26	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/GET (from https://www.w3schools.com/python/scipy/exercise.php?x=xrcise_getting_started1)
+18:05:26	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/api.exercise.set (from https://www.w3schools.com/python/scipy/exercise.php?x=xrcise_getting_started1)
+18:05:26	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/scipy/SCIPY._exercises.php (from https://www.w3schools.com/python/scipy/exercise.php?x=xrcise_getting_started1)
+18:05:28	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/GET (from https://www.w3schools.com/python/exercise.asp?x=xrcise_getstarted1)
+18:05:28	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/api.exercise.set (from https://www.w3schools.com/python/exercise.asp?x=xrcise_getstarted1)
+18:05:47	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/python_conditionals.asp (from https://www.w3schools.com/python/ref_keyword_elif.asp)
+18:05:50	Error: 	"Not Found" (404) at link https://www.w3schools.com/python/gloss_python_inheritance.asp (from https://www.w3schools.com/python/gloss_python_super.asp)
 
-HTTrack Website Copier/3.49-2 mirror complete in 4 hours 11 minutes 55 seconds : 1558 links scanned, 1522 files written (159847201 bytes overall) [46874760 bytes received at 3101 bytes/sec], 159847312 bytes transferred using HTTP compression in 1523 files, ratio 28%
-(9 errors, 1 warnings, 0 messages)
-* * MIRROR ABORTED! * *
-The current temporary cache is required for any update operation and only contains data downloaded during the present aborted session.
-The former cache might contain more complete information; if you do not want to lose that information, you have to restore it and delete the current cache.
-This can easily be done here by erasing the hts-cache/new.* files]
+HTTrack Website Copier/3.49-2 mirror complete in 37 minutes 21 seconds : 3416 links scanned, 3367 files written (388086123 bytes overall), 1845 files updated [79521657 bytes received at 35484 bytes/sec], 228110273 bytes transferred using HTTP compression in 1840 files, ratio 34%
+(48 errors, 279 warnings, 0 messages)
