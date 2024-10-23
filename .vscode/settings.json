@@ -5,8 +5,11 @@
         "mailhost",
         "microblog",
         "mycroblog",
+        "primaryjoin",
+        "secondaryjoin",
         "SQLALCHEMY",
         "toaddrs",
+        "unfollow",
         "werkzeug",
         "wtforms"
     ]
