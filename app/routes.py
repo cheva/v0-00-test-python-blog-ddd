@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from flask import render_template, flash, redirect, request, url_for
 from app import app
-from app.forms import EditProfileForm, LoginForm, RegistrationForm
+from app.forms import EditProfileForm, EmptyForm, LoginForm, RegistrationForm
 from flask_login import current_user, login_user, login_required, logout_user
 from urllib.parse import urlsplit
 
@@ -23,8 +23,9 @@ def before_request():
 @login_required
 def index():
     posts = [
-        {"author": {"username": "John"}, "body": "Beautiful day in Portland!"},
-        {"author": {"username": "Susan"}, "body": "The Avengers movie was so cool!"},
+        {"author": {"username": "dee"}, "body": "Beautiful day in Portland!"},
+        {"author": {"username": "cheva"}, "body": "The Avengers movie was so cool!"},
+        {"author": {"username": "Susan"}, "body": "The Dee dee dee!"},
     ]
     return render_template("index.html", title="Home Page", posts=posts)
 
@@ -37,7 +38,8 @@ def user(username):
         {"author": user, "body": "Test post #1"},
         {"author": user, "body": "Test post #2"},
     ]
-    return render_template("user.html", user=user, posts=posts)
+    form = EmptyForm()
+    return render_template("user.html", user=user, posts=posts, form=form)
 
 
 @app.route("/edit_profile", methods=["GET", "POST"])
@@ -95,3 +97,43 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("index"))
+
+
+@app.route("/follow/<username>", methods=["POST"])
+@login_required
+def follow(username):
+    form = EmptyForm()
+    if form.validate_on_submit():
+        user = db.session.scalar(sa.select(User).where(User.username == username))
+        if user is None:
+            flash(f"User {username} not found.")
+            return redirect(url_for("index"))
+        if user == current_user:
+            flash("You cannot follow yourself!")
+            return redirect(url_for("user", username=username))
+        current_user.follow(user)
+        db.session.commit()
+        flash(f"You are following {username}!")
+        return redirect(url_for("user", username=username))
+    else:
+        return redirect(url_for("index"))
+
+
+@app.route("/unfollow/<username>", methods=["POST"])
+@login_required
+def unfollow(username):
+    form = EmptyForm()
+    if form.validate_on_submit():
+        user = db.session.scalar(sa.select(User).where(User.username == username))
+        if user is None:
+            flash(f"User {username} not found.")
+            return redirect(url_for("index"))
+        if user == current_user:
+            flash("You cannot unfollow yourself!")
+            return redirect(url_for("user", username=username))
+        current_user.unfollow(user)
+        db.session.commit()
+        flash(f"You are not following {username}.")
+        return redirect(url_for("user", username=username))
+    else:
+        return redirect(url_for("index"))
