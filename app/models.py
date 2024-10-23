@@ -20,7 +20,9 @@ class User(UserMixin, db.Model):
     email: so.Mapped[str] = so.mapped_column(sa.String(120), index=True, unique=True)
     password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
     about_me: so.Mapped[Optional[str]] = so.mapped_column(sa.String(140))
-    last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
+    last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(
+        default=lambda: datetime.now(timezone.utc)
+    )
 
     posts: so.WriteOnlyMapped["Post"] = so.relationship(back_populates="author")
 
@@ -50,3 +52,11 @@ class Post(db.Model):
 
     def __repr__(self):
         return "<Post {}>".format(self.body)
+
+
+followers = sa.Table(
+    "followers",
+    db.metadata,
+    sa.Column("follower_id", sa.Integer, sa.ForeignKey("user.id"), primary_key=True),
+    sa.Column("followed_id", sa.Integer, sa.ForeignKey("user.id"), primary_key=True),
+)

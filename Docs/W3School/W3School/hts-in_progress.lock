@@ -1,0 +1,5 @@
+Mirror in progress since Wed, 23 Oct 2024 13:12:44 .. please wait!
+winhttrack -qwC2%Ps2u1%s%uN0%I0p3DaK0H0%kf2A25000%f#f -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" https://www.w3schools.com/python/ -O1 "C:\Projects\v0-00-test-python-blog-ddd\Docs\W3School\W3School" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar -githubassets.com* -githubassets.com/* -gitlab.com* -gitlab.com/* -github.com* -github.com/* -*githubassets.com* -*githubassets.com/* -*gitlab.com* -*gitlab.com/* -*github.com* -*github.com/* -google.com -google.com/* -*.google.com -*.google.com/* -www.npmjs.com -www.npmjs.com/* -npmjs.com -npmjs.com/* -*.www.npmjs.com -*.www.npmjs.com/* -*.npmjs.com -*.npmjs.com/* -developer.mozilla.org -developer.mozilla.org/* -*.developer.mozilla.org/en-US -*.developer.mozilla.org/en-US/* -https://www.w3schools.com/* +https://www.w3schools.com/python/* 
+To pause the engine: create an empty file named 'hts-stop.lock'
+PID=9408
+START=1729678364
