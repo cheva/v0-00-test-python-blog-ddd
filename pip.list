@@ -19,6 +19,7 @@ EditorConfig                  0.12.4    C:\Python\Lib\site-packages pip
 email_validator               2.2.0     C:\Python\Lib\site-packages pip
 Flask                         3.0.3     C:\Python\Lib\site-packages pip
 Flask-Login                   0.6.3     C:\Python\Lib\site-packages pip
+Flask-Mail                    0.10.0    C:\Python\Lib\site-packages pip
 Flask-Migrate                 4.0.7     C:\Python\Lib\site-packages pip
 Flask-SQLAlchemy              3.1.1     C:\Python\Lib\site-packages pip
 Flask-WTF                     1.2.1     C:\Python\Lib\site-packages pip
@@ -37,6 +38,7 @@ packaging                     24.1      C:\Python\Lib\site-packages pip
 pathspec                      0.12.1    C:\Python\Lib\site-packages pip
 pip                           24.2      C:\Python\Lib\site-packages pip
 Pygments                      2.18.0    C:\Python\Lib\site-packages pip
+PyJWT                         2.9.0     C:\Python\Lib\site-packages pip
 python-dotenv                 1.0.1     C:\Python\Lib\site-packages pip
 PyYAML                        6.0.2     C:\Python\Lib\site-packages pip
 regex                         2024.9.11 C:\Python\Lib\site-packages pip

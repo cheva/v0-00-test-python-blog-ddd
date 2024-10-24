@@ -1,4 +1,5 @@
 set FLASK_APP=microblog.py
+set MY_SECRET=my_superstrong_secret
 
 @rem @TODO deploy https://github.com/railsware/mailtrap-python?tab=readme-ov-file
 
