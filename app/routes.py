@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
+from langdetect import detect, LangDetectException
 from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_babel import _, get_locale
@@ -25,11 +26,19 @@ def before_request():
 def index():
     form = PostForm()
     if form.validate_on_submit():
+        try:
+            language = detect(form.post.data)
+        except LangDetectException:
+            language = ''
+        post = Post(body=form.post.data, author=current_user,
+                    language=language)
+        
         post = Post(body=form.post.data, author=current_user)
         db.session.add(post)
         db.session.commit()
         flash(_('Your post is now live!'))
         return redirect(url_for('index'))
+    
     page = request.args.get('page', 1, type=int)
     posts = db.paginate(current_user.following_posts(), page=page,
                         per_page=app.config['POSTS_PER_PAGE'], error_out=False)
