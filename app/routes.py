@@ -5,7 +5,7 @@ from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_babel import _, get_locale
 import sqlalchemy as sa
-from app import app, db
+from app import app, db, translate
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, \
     EmptyForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm
 from app.models import User, Post
@@ -65,6 +65,15 @@ def explore():
     return render_template('index.html', title=_('Explore'),
                            posts=posts.items, next_url=next_url,
                            prev_url=prev_url)
+    
+    
+@app.route('/translate', methods=['POST'])
+@login_required
+def translate_text():
+    data = request.get_json()
+    return {'text': translate(data['text'],
+                            data['source_language'],
+                            data['dest_language'])}
 
 
 @app.route('/login', methods=['GET', 'POST'])
